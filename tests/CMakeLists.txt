@@ -11,7 +11,9 @@ add_executable(FleetSimTests
     domain/MapLoaderTest.cpp
     domain/MapSerializerTest.cpp
     domain/AStarPlannerTest.cpp
+    domain/HybridAStarPlannerTest.cpp
     domain/PurePursuitTrackerTest.cpp
+    domain/StanleyTrackerTest.cpp
     domain/SteeringAdapterTest.cpp
     domain/VehicleTest.cpp
     domain/BicycleModelTest.cpp

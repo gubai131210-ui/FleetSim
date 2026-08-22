@@ -12,12 +12,16 @@ add_library(FleetSimDomain STATIC
     map/LaneGraph.h
     planning/AStarPlanner.cpp
     planning/AStarPlanner.h
+    planning/HybridAStarPlanner.cpp
+    planning/HybridAStarPlanner.h
     planning/DouglasPeuckerSmoother.cpp
     planning/DouglasPeuckerSmoother.h
     planning/IPathPlanner.h
     planning/IPathSmoother.h
     control/PurePursuitTracker.cpp
     control/PurePursuitTracker.h
+    control/StanleyTracker.cpp
+    control/StanleyTracker.h
     control/SteeringAdapter.cpp
     control/SteeringAdapter.h
     control/IPathTracker.h

@@ -11,6 +11,81 @@
 
 ---
 
+## [2026-08-23] Phase 5 Session 0 — ADR + 接口调研 + 红灯测骨架
+
+### 本次 Scope（Architect 定义）
+- 目标：Phase 5 会话 0 — ADR-011/012/013 草案；IPathPlanner/IPathTracker 扩展点调研落地；Hybrid/Stanley stub + 红灯 GTest；CMake 登记
+- 允许改动：`docs/decisions/011|012|013*.md`、`src/domain/planning/HybridAStar*`、`src/domain/control/Stanley*`、`tests/domain/*Hybrid*|Stanley*`、两处 CMakeLists、`SESSION_LOG.md`
+- 明确不在本次范围：Hybrid/Stanley 真算法、SimEngine 接线、UI、Priority 实装、Phase5 ✅
+
+### ✅ 已完成
+- [x] ADR-011 Hybrid A*（接口保持、运动学扩展、跳过 DP、bicycle 默认 hybrid）
+- [x] ADR-012 Stanley（前轴横偏+航向、ε、与 PP 并存）
+- [x] ADR-013 Priority + TimeWindow 协同边界（CBS-lite 可选）
+- [x] 调研结论写入 ADR：SimEngine 硬编码 A*+PP；Path 无 θ；scenario 尚无 planner/tracker
+- [x] `HybridAStarPlanner` stub（空 plan；`minTurningRadiusM` 可用）
+- [x] `StanleyTracker` stub（零命令）
+- [x] `HybridAStarPlannerTest` / `StanleyTrackerTest` 红灯骨架（期望 stub 下多项 FAIL）
+- [x] Domain/Tests CMakeLists 登记新源（保留 include/link）
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| Hybrid 运动学搜索 + Dubins | 会话 1 | Session 1 |
+| SimEngine/scenario planner 字段 | 会话 2 | Session 2 |
+| Stanley 真公式 | 会话 3 | Session 3 |
+| PriorityPathCoordinator | 会话 4 | Session 4 |
+| PlannerTracker UI / Monitor 误差 | 会话 5 | Session 5 |
+| Phase5 ✅ / MUTATION M28+ | 会话 6 | Session 6 |
+
+### 🚫 禁止偷懒自检
+- [x] 没有把多个类挤进同一文件
+- [x] 没有在 MainWindow 堆业务控件
+- [x] 无新 UI（本会话不做 UI）
+- [x] Domain 层无 Qt / rclcpp
+- [x] 新 Domain 类有对应单测（红灯骨架）
+- [x] 未跨 Phase 写完整 Hybrid/Stanley/CBS
+- [x] SESSION_LOG 本节完整
+- [x] 未削 CMake target_include / target_link
+- [x] 未碰 `.cursor/plans/`
+
+### 新增/变更文件清单
+| 文件 | 操作 | 说明 |
+|------|------|------|
+| `docs/decisions/011-hybrid-astar.md` | 新增 | ADR-011 |
+| `docs/decisions/012-stanley-tracker.md` | 新增 | ADR-012 |
+| `docs/decisions/013-priority-or-cbs-lite.md` | 新增 | ADR-013 |
+| `src/domain/planning/HybridAStarPlanner.h/.cpp` | 新增 | Session0 stub |
+| `src/domain/control/StanleyTracker.h/.cpp` | 新增 | Session0 stub |
+| `tests/domain/HybridAStarPlannerTest.cpp` | 新增 | 红灯 |
+| `tests/domain/StanleyTrackerTest.cpp` | 新增 | 红灯 |
+| `src/domain/CMakeLists.txt` | 修改 | 登记源 |
+| `tests/CMakeLists.txt` | 修改 | 登记测 |
+| `SESSION_LOG.md` | 修改 | 本条目 |
+
+### 接口变更
+- 新增 `planning::HybridAStarPlanner : IPathPlanner`（构造注入 L/δmax；`plan` 签名不变）
+- 新增 `control::StanleyTracker : IPathTracker`
+- scenario / SimEngine **尚未**接线（Session 2/3）
+
+### Reviewer 结果
+- Reviewer-Code: **PASS**（Domain 零 Qt；CMake 仅追加源；stub 诚实；ADR 覆盖扩展点）
+- Reviewer-Test: **PASS**（7 例预期红灯；`MinTurningRadiusMatchesBicycleGeometry` 可绿；OccupancyGrid/BicycleModel API 正确）
+- Reviewer-UI: N/A（本会话无 UI）
+- 主 Agent 不自评；以子 Agent 结论为准
+
+### 用户本地验证
+1. `git pull origin main`
+2. Qt Creator 重新 Configure → Build FleetSimTests
+3. 运行测试：预期 **Hybrid\*** / **Stanley\*** 多项 FAIL（红灯锚点）；其余旧测应仍绿；`MinTurningRadiusMatchesBicycleGeometry` 可 PASS
+4. 确认 Domain 无 Qt include；CMake 仍有 `target_include_directories` / `target_link_libraries`
+
+### 下次会话建议
+- 第一条任务：实现 HybridAStarPlanner（自行车扩展 + Dubins MVP）使 Hybrid 单测转绿
+- 前置条件：本会话 ADR-011 已接受；用户确认红灯测能编译链接
+
+---
+
 ## [2026-08-23] Phase 4 Goal J — CMake export fix + full FleetSimTests green
 
 ### ✅ 已完成
