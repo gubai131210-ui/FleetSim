@@ -14,7 +14,8 @@ target_link_libraries(QCustomPlot
 target_compile_definitions(QCustomPlot PRIVATE QCUSTOMPLOT_COMPILE_LIBRARY)
 
 if(MSVC)
-    target_compile_options(QCustomPlot PRIVATE /wd4996)
+    target_compile_options(QCustomPlot PRIVATE /wd4996 /bigobj)
 else()
-    target_compile_options(QCustomPlot PRIVATE -Wno-deprecated-declarations)
+    # qcustomplot.cpp is a large amalgamated TU; MinGW COFF needs big-obj.
+    target_compile_options(QCustomPlot PRIVATE -Wno-deprecated-declarations -Wa,-mbig-obj)
 endif()
