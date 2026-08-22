@@ -132,10 +132,6 @@ void SimEngine::publishPathUpdate()
 
 void SimEngine::tick(double dt)
 {
-    if (clock_.isPaused()) {
-        return;
-    }
-
     scheduling_.tick(dt);
     collision_.tick(dt);
 
