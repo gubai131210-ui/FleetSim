@@ -7,22 +7,22 @@
 
 namespace fleetsim::app {
 
-map::MapDocument& ProjectManager::mapDocument()
+domain::map::MapDocument& ProjectManager::mapDocument()
 {
     return map_document_;
 }
 
-const map::MapDocument& ProjectManager::mapDocument() const
+const domain::map::MapDocument& ProjectManager::mapDocument() const
 {
     return map_document_;
 }
 
-scenario::ScenarioData& ProjectManager::scenarioData()
+domain::scenario::ScenarioData& ProjectManager::scenarioData()
 {
     return scenario_data_;
 }
 
-const scenario::ScenarioData& ProjectManager::scenarioData() const
+const domain::scenario::ScenarioData& ProjectManager::scenarioData() const
 {
     return scenario_data_;
 }
@@ -38,8 +38,8 @@ bool ProjectManager::load(const std::string& scenario_directory, double inflatio
         return false;
     }
 
-    map_document_ = map::MapSerializer::fromFile(map_path.string());
-    scenario_data_ = scenario::ScenarioSerializer::fromFile(
+    map_document_ = domain::map::MapSerializer::fromFile(map_path.string());
+    scenario_data_ = domain::scenario::ScenarioSerializer::fromFile(
         scenario_path.string(), scenario_directory, inflation_radius_m);
     project_directory_ = scenario_directory;
     loaded_ = true;
@@ -56,16 +56,16 @@ bool ProjectManager::save(const std::string& scenario_directory) const
     const auto map_path = std::filesystem::path(scenario_directory) / "map.json";
     const auto scenario_path = std::filesystem::path(scenario_directory) / "scenario.json";
 
-    scenario::ScenarioData scenario_copy = scenario_data_;
+    domain::scenario::ScenarioData scenario_copy = scenario_data_;
     scenario_copy.scenario_directory = scenario_directory;
 
-    return map::MapSerializer::saveToFile(map_document_, map_path.string())
-        && scenario::ScenarioSerializer::saveToFile(scenario_copy, scenario_path.string());
+    return domain::map::MapSerializer::saveToFile(map_document_, map_path.string())
+        && domain::scenario::ScenarioSerializer::saveToFile(scenario_copy, scenario_path.string());
 }
 
-map::OccupancyGrid ProjectManager::buildOccupancyGrid(double inflation_radius_m) const
+domain::map::OccupancyGrid ProjectManager::buildOccupancyGrid(double inflation_radius_m) const
 {
-    return map::MapSerializer::toOccupancyGrid(map_document_, inflation_radius_m);
+    return domain::map::MapSerializer::toOccupancyGrid(map_document_, inflation_radius_m);
 }
 
 void ProjectManager::setDefaultMapSize(double width_m, double height_m, double resolution_m)
@@ -80,17 +80,17 @@ void ProjectManager::newProject(const std::string& scenario_directory)
     project_directory_ = scenario_directory;
     loaded_ = true;
 
-    map_document_ = map::MapDocument{};
+    map_document_ = domain::map::MapDocument{};
     map_document_.width_m = 20.0;
     map_document_.height_m = 15.0;
     map_document_.grid_resolution_m = 0.1;
 
-    scenario_data_ = scenario::ScenarioData{};
+    scenario_data_ = domain::scenario::ScenarioData{};
     scenario_data_.scenario_directory = scenario_directory;
     scenario_data_.simulation.dt_s = 0.05;
     scenario_data_.simulation.realtime = false;
 
-    scenario::VehicleConfig vehicle;
+    domain::scenario::VehicleConfig vehicle;
     vehicle.id = "agv_0";
     vehicle.model = "diff_drive";
     vehicle.svg_path = "assets/vehicles/agv_diff.svg";
