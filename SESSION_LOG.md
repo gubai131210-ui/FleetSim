@@ -11,6 +11,33 @@
 
 ---
 
+## [2026-08-23] Phase 5 Goal J — FleetSimTests 82/82 green (ASCII out-of-tree)
+
+### ✅ 已完成
+- [x] Configure/Build at `D:\build\FleetSim_phase5` (Ninja + MinGW + Qt 6.11.1)
+- [x] **FleetSimTests 82/82 PASSED**（含 Hybrid*/Dubins*/Stanley*/PlannerSwitch*/Priority*/MultiAgv*/Bicycle*）
+- [x] Static `verify_phase5_evidence.py` 32 PASS（既有）
+- [x] A–J 代码交付齐；Goal 可 complete
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 |
+|------|------|
+| 手工变异 M28–M30 实跑 | 清单已写；可选后续 |
+
+### 证据
+- exe: `D:\build\FleetSim_phase5\FleetSimTests.exe`
+- gtest: 82 tests, 0 failures, EXIT=0
+- xml: `D:\build\FleetSim_phase5\gtest_results.xml`
+
+### Reviewer
+- 运行时全绿作 Goal J 终证；会话 0–5 子 Agent 已审过各交付物
+
+### 用户本地验证（仍建议）
+1. Qt Creator 对本仓库 Kit 再编一次（与 `D:\build\…` 并行无妨）
+2. File → Planner / Tracker…；Open `hybrid_narrow_turn`
+
+---
+
 ## [2026-08-23] Phase 5 Session 6 — 文档 / MUTATION / 静态取证（待用户全绿）
 
 ### 本次 Scope
