@@ -10,6 +10,24 @@
 
 namespace fleetsim::app {
 
+namespace {
+
+constexpr double kPi = 3.14159265358979323846;
+constexpr double kTwoPi = 2.0 * kPi;
+
+double wrapToPi(double a)
+{
+    while (a > kPi) {
+        a -= kTwoPi;
+    }
+    while (a < -kPi) {
+        a += kTwoPi;
+    }
+    return a;
+}
+
+}  // namespace
+
 MonitorBridge::MonitorBridge(SimController* controller, QObject* parent)
     : QObject(parent)
     , controller_(controller)
@@ -27,11 +45,14 @@ void MonitorBridge::bind()
         const nlohmann::json json = nlohmann::json::parse(payload);
         const double x = json.at("x").get<double>();
         const double y = json.at("y").get<double>();
+        const double theta = json.value("theta", 0.0);
         const double linear_velocity = json.value("linear_velocity", 0.0);
 
         sim_time_s_ += controller_->engine().clock().fixedDt();
-        const double cross_track_error = computeCrossTrackError(x, y);
-        emit sampleReady(sim_time_s_, cross_track_error, linear_velocity);
+        double cross_track = 0.0;
+        double heading_error = 0.0;
+        computePathErrors(x, y, theta, &cross_track, &heading_error);
+        emit sampleReady(sim_time_s_, cross_track, heading_error, linear_velocity);
     });
 }
 
@@ -49,19 +70,30 @@ void MonitorBridge::reset()
     sim_time_s_ = 0.0;
 }
 
-double MonitorBridge::computeCrossTrackError(double x_m, double y_m) const
+void MonitorBridge::computePathErrors(double x_m,
+                                      double y_m,
+                                      double theta_rad,
+                                      double* cross_track_error_m,
+                                      double* heading_error_rad) const
 {
+    if (cross_track_error_m != nullptr) {
+        *cross_track_error_m = 0.0;
+    }
+    if (heading_error_rad != nullptr) {
+        *heading_error_rad = 0.0;
+    }
     if (controller_ == nullptr) {
-        return 0.0;
+        return;
     }
 
     const auto& path = controller_->engine().referencePath();
     const auto& waypoints = path.waypoints();
     if (waypoints.size() < 2) {
-        return 0.0;
+        return;
     }
 
     double min_distance = std::numeric_limits<double>::max();
+    double best_heading = 0.0;
     for (std::size_t i = 0; i + 1 < waypoints.size(); ++i) {
         const core::Waypoint& a = waypoints[i];
         const core::Waypoint& b = waypoints[i + 1];
@@ -78,10 +110,22 @@ double MonitorBridge::computeCrossTrackError(double x_m, double y_m) const
         const double proj_y = a.y + t * aby;
         const double dx = x_m - proj_x;
         const double dy = y_m - proj_y;
-        min_distance = std::min(min_distance, std::sqrt(dx * dx + dy * dy));
+        const double dist = std::sqrt(dx * dx + dy * dy);
+        if (dist < min_distance) {
+            min_distance = dist;
+            best_heading = std::atan2(aby, abx);
+        }
     }
 
-    return min_distance == std::numeric_limits<double>::max() ? 0.0 : min_distance;
+    if (min_distance == std::numeric_limits<double>::max()) {
+        return;
+    }
+    if (cross_track_error_m != nullptr) {
+        *cross_track_error_m = min_distance;
+    }
+    if (heading_error_rad != nullptr) {
+        *heading_error_rad = wrapToPi(theta_rad - best_heading);
+    }
 }
 
 }  // namespace fleetsim::app

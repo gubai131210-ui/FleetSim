@@ -28,6 +28,8 @@ qt_add_library(FleetSimUI STATIC
     dialogs/ProjectDialog.h
     dialogs/SettingsDialog.cpp
     dialogs/SettingsDialog.h
+    dialogs/PlannerTrackerDialog.cpp
+    dialogs/PlannerTrackerDialog.h
 )
 
 target_include_directories(FleetSimUI

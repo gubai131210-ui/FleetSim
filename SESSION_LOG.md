@@ -11,6 +11,75 @@
 
 ---
 
+## [2026-08-23] Phase 5 Session 6 — 文档 / MUTATION / 静态取证（待用户全绿）
+
+### 本次 Scope
+- MUTATION M28–M30；DEVELOPMENT_PLAN Phase5；verify_phase5_evidence；SESSION_LOG
+- **不** UpdateGoal complete：缺用户本地 FleetSimTests 全绿证据
+
+### ✅ 已完成
+- [x] MUTATION M28/M29/M30
+- [x] DEVELOPMENT_PLAN Phase 5 ✅（附「待用户全绿」）
+- [x] `tools/verify_phase5_evidence.py` + `run_phase5_verify.ps1`
+- [x] Session 5 UI 已合入
+
+### ❌ 未完成
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| Goal UpdateGoal complete | 无用户 FleetSimTests 全绿取证 | 用户验证后回复 |
+| 手工执行变异 M28–M30 | 需本地改码跑测 | 用户可选 |
+
+### 🚫 禁止偷懒自检
+- [x] 未宣称运行时全绿
+- [x] SESSION_LOG 写明没做什么
+
+### Reviewer 结果
+- 静态脚本 + 会话 0–5 子 Agent 已审；终态 Goal 需用户绿证
+
+### 用户本地验证
+1. `git pull`
+2. `pwsh -File tools/run_phase5_verify.ps1`
+3. Qt Configure → Build → FleetSimTests 全绿
+4. 回复「全绿」后主 Agent 方可 UpdateGoal complete
+
+---
+
+## [2026-08-23] Phase 5 Session 5 — PlannerTrackerDialog + Monitor 航向误差
+
+### 本次 Scope
+- 独立 `PlannerTrackerDialog`（禁堆 ControlPanel）；Monitor 增加 heading error；接线 SimEngine
+- NOT DO：MUTATION 全表、Phase5 ✅ 宣称（需用户本地全绿）
+
+### ✅ 已完成
+- [x] `PlannerTrackerDialog` + File 菜单挂载（≤15 行）
+- [x] 应用 planner/tracker/coordination 到 engine + scenario stamp
+- [x] `MonitorBridge`/`MonitorPanel` 航向误差曲线
+- [x] panels/README 更新
+
+### ❌ 未完成
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| Phase5 ✅ / MUTATION M28+ | Session 6 + 用户绿证 | Session 6 |
+
+### 🚫 禁止偷懒自检
+- [x] 未堆 ControlPanel/MainWindow 业务控件（仅菜单）
+- [x] 独立 Dialog 文件
+- [x] Domain 无 Qt
+
+### Reviewer 结果
+- Reviewer-UI: **PASS**（独立 Dialog；Monitor heading；MainWindow 仅菜单）
+- 主 Agent 不自评
+
+### 用户本地验证
+1. git pull；Build
+2. File → Planner / Tracker… 切换算法
+3. Monitor 见 Cross-track + Heading + Velocity
+
+### 下次会话建议
+- MUTATION、DEVELOPMENT_PLAN、verify 脚本、双 Reviewer、用户全绿后 complete
+
+---
+
 ## [2026-08-23] Phase 5 Session 4 — PriorityPathCoordinator + TimeWindow 协同
 
 ### 本次 Scope

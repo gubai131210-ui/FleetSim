@@ -32,6 +32,15 @@
 | M25 | `BicycleModel.cpp` / wheelbase | 去掉 `wheelbase>0` 防护 | `BicycleModelTest.InvalidWheelbase*` |
 | M26 | `SteeringAdapter.cpp` / atan | `atan(κL)` 改为 `κL` | `SteeringAdapterTest` |
 | M27 | `HungarianAssigner.cpp` / 代价 | 最大化代价而非最小化 | `HungarianAssignerTest` |
+| M28 | `HybridAStarPlanner.cpp` / 扩展步 | `motion_resolution` 符号取反或舵角全 0 | `HybridAStarPlannerTest` / `PlannerSwitch*` |
+| M29 | `StanleyTracker.cpp` / k | `k_gain` 取反或忽略横偏项 | `StanleyTrackerTest` |
+| M30 | `PriorityPathCoordinator` / 顺序 | 忽略高优先级，低优先级先占走廊 | `PriorityCoordinatorTest.LowerPriorityDetours*` |
+
+## Phase 5 变异说明
+
+- M28：证明 Hybrid 做了运动学扩展而非栅格 A* 换皮  
+- M29：证明 Stanley 含前轴横偏项，非 Pure Pursuit 换皮  
+- M30：证明 Priority 尊重高优先级轨迹占用  
 
 ## 执行记录模板
 

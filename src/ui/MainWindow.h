@@ -7,6 +7,7 @@
 
 #include "domain/map/MapData.h"
 #include "dialogs/SettingsDialog.h"
+#include "dialogs/PlannerTrackerDialog.h"
 
 namespace fleetsim::app {
 class FleetUiCoordinator;
@@ -50,6 +51,7 @@ private:
     void handleOpenProject();
     void handleSaveProject();
     void handleSettings();
+    void handlePlannerTracker();
     void syncSettingsFromScenario();
     void applyProjectToSimulation();
     void refreshMapVisualization();
@@ -79,6 +81,7 @@ private:
     std::vector<domain::map::MapDocument> undo_stack_;
     int next_task_index_{0};
     SimulationSettings current_settings_;
+    PlannerTrackerSettings planner_tracker_settings_;
 };
 
 }  // namespace fleetsim::ui

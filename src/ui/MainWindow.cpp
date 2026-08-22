@@ -9,6 +9,7 @@
 #include "domain/map/OccupancyGrid.h"
 #include "dialogs/ProjectDialog.h"
 #include "dialogs/SettingsDialog.h"
+#include "dialogs/PlannerTrackerDialog.h"
 #include "domain/scheduling/GreedyAssigner.h"
 #include "domain/scheduling/HungarianAssigner.h"
 
@@ -99,6 +100,7 @@ void MainWindow::setupMenuBar()
     file_menu->addAction(tr("Save Project"), this, &MainWindow::handleSaveProject);
     file_menu->addSeparator();
     file_menu->addAction(tr("Settings..."), this, &MainWindow::handleSettings);
+    file_menu->addAction(tr("Planner / Tracker..."), this, &MainWindow::handlePlannerTracker);
     file_menu->addSeparator();
     file_menu->addAction(tr("Exit"), this, &QWidget::close);
 }
@@ -338,6 +340,34 @@ void MainWindow::handleSettings()
             .arg(current_settings_.vehicle_model, current_settings_.assigner));
 }
 
+void MainWindow::handlePlannerTracker()
+{
+    PlannerTrackerDialog dialog(this);
+    dialog.setSettings(planner_tracker_settings_);
+    if (dialog.exec() != QDialog::Accepted) {
+        return;
+    }
+
+    planner_tracker_settings_ = dialog.settings();
+    sim_controller_->engine().setPlannerKind(planner_tracker_settings_.planner.toStdString());
+    sim_controller_->engine().setTrackerKind(planner_tracker_settings_.tracker.toStdString());
+    sim_controller_->engine().setCoordinationKind(
+        planner_tracker_settings_.coordination.toStdString());
+
+    if (project_manager_->hasProject()) {
+        auto& scenario = project_manager_->scenarioData();
+        scenario.simulation.planner = planner_tracker_settings_.planner.toStdString();
+        scenario.simulation.tracker = planner_tracker_settings_.tracker.toStdString();
+        scenario.simulation.coordination = planner_tracker_settings_.coordination.toStdString();
+    }
+
+    statusBar()->showMessage(
+        tr("Planner/Tracker applied (planner=%1, tracker=%2, coordination=%3).")
+            .arg(planner_tracker_settings_.planner,
+                 planner_tracker_settings_.tracker,
+                 planner_tracker_settings_.coordination));
+}
+
 void MainWindow::syncSettingsFromScenario()
 {
     if (!project_manager_->hasProject()) {
@@ -353,6 +383,16 @@ void MainWindow::syncSettingsFromScenario()
     if (vehicle.model == "bicycle") {
         current_settings_.wheelbase_m = vehicle.wheelbase_m;
         current_settings_.max_steering_rad = vehicle.max_steering_rad;
+    }
+    if (!scenario.simulation.planner.empty()) {
+        planner_tracker_settings_.planner = QString::fromStdString(scenario.simulation.planner);
+    }
+    if (!scenario.simulation.tracker.empty()) {
+        planner_tracker_settings_.tracker = QString::fromStdString(scenario.simulation.tracker);
+    }
+    if (!scenario.simulation.coordination.empty()) {
+        planner_tracker_settings_.coordination =
+            QString::fromStdString(scenario.simulation.coordination);
     }
 }
 

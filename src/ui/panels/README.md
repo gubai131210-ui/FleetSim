@@ -12,13 +12,14 @@
 | TaskPanel | `TaskPanel.*` | 任务列表与 Add Task | Phase 3 |
 | VehicleInfoPanel | `VehicleInfoPanel.*` | 选中车辆详情 | Phase 3 |
 | SettingsDialog | `dialogs/SettingsDialog.*` | 模型/轴距/分配器 | Phase 4 |
+| PlannerTrackerDialog | `dialogs/PlannerTrackerDialog.*` | planner/tracker/coordination | Phase 5 |
 
 ## 计划面板
 
 | 面板 | 计划文件 | Phase | 禁止 |
 |------|---------|-------|------|
 | SettingsDialog | `SettingsDialog.*` | 4 ✅ | 禁止堆在 ControlPanel |
-| PlannerTrackerDialog（或扩展 Settings） | `dialogs/PlannerTrackerDialog.*` | 5 | 禁止堆在 ControlPanel；禁止塞进 MainWindow |
+| PlannerTrackerDialog | `PlannerTrackerDialog.*` | 5 ✅ | 禁止堆在 ControlPanel；禁止塞进 MainWindow |
 
 ## 新增面板流程
 
