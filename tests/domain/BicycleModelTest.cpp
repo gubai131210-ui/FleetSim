@@ -84,3 +84,18 @@ TEST(BicycleModelTest, DoesNotUseAngularVelocityLikeDiffDrive)
     const Pose next = model.integrate(pose, cmd, 0.1);
     EXPECT_NEAR(next.theta, 0.0, kEps);
 }
+
+TEST(BicycleModelTest, InvalidWheelbaseProducesNoYaw)
+{
+    BicycleModel model(0.0, 1.0, 0.6);
+    Pose pose{0.0, 0.0, 0.0};
+    ControlCommand cmd;
+    cmd.linear_velocity = 1.0;
+    cmd.steering_angle = 0.3;
+
+    const Pose next = model.integrate(pose, cmd, 0.1);
+    EXPECT_NEAR(next.x, 0.1, kEps);
+    EXPECT_NEAR(next.theta, 0.0, kEps);
+    EXPECT_TRUE(std::isfinite(next.x));
+    EXPECT_TRUE(std::isfinite(next.theta));
+}

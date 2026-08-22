@@ -4,8 +4,8 @@
 
 namespace fleetsim::domain::vehicle {
 
-// Kinematic bicycle (rear-axle reference). Session 0: stub only — Session 1 implements
-// ẋ=v cosθ, ẏ=v sinθ, θ̇=(v/L) tanδ.
+// Kinematic bicycle (rear-axle reference):
+// ẋ=v cosθ, ẏ=v sinθ, θ̇=(v/L) tanδ. Ignores ControlCommand::angular_velocity.
 class BicycleModel : public IVehicleModel {
 public:
     BicycleModel(double wheelbase_m = 0.8,

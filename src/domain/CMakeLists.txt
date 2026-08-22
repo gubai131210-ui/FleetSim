@@ -24,6 +24,8 @@ add_library(FleetSimDomain STATIC
     vehicle/DiffDriveModel.h
     vehicle/BicycleModel.cpp
     vehicle/BicycleModel.h
+    vehicle/VehicleModelFactory.cpp
+    vehicle/VehicleModelFactory.h
     vehicle/Vehicle.cpp
     vehicle/Vehicle.h
     vehicle/FleetManager.cpp

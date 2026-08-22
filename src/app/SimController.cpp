@@ -1,6 +1,7 @@
 #include "SimController.h"
 
 #include "domain/vehicle/Vehicle.h"
+#include "domain/vehicle/VehicleModelFactory.h"
 
 #include <memory>
 
@@ -25,10 +26,12 @@ void SimController::applyScenarioToEngine()
     engine_.clearFleet();
 
     for (const auto& vehicle_config : scenario_.vehicles) {
+        auto model = domain::vehicle::createVehicleModel(vehicle_config.model);
         auto vehicle = std::make_unique<domain::vehicle::Vehicle>(
             vehicle_config.id,
             vehicle_config.length_m,
-            vehicle_config.initial_pose);
+            vehicle_config.initial_pose,
+            std::move(model));
         engine_.addVehicle(std::move(vehicle));
     }
 
