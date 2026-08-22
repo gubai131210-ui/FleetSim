@@ -14,7 +14,7 @@ using fleetsim::domain::vehicle::Vehicle;
 TEST(FleetManagerTest, StartTaskSetsPickupPhase)
 {
     FleetManager fleet;
-    fleet.addVehicle(std::make_unique<Vehicle>("agv_0", 1.0, core::Pose{0.0, 0.0, 0.0}));
+    fleet.addVehicle(std::make_unique<Vehicle>("agv_0", 1.0, Pose{0.0, 0.0, 0.0}));
 
     Task task;
     task.id = "task_0";
@@ -32,7 +32,7 @@ TEST(FleetManagerTest, StartTaskSetsPickupPhase)
 TEST(FleetManagerTest, IdleVehicleStatesOnlyReturnsIdleAgents)
 {
     FleetManager fleet;
-    fleet.addVehicle(std::make_unique<Vehicle>("agv_0", 1.0, core::Pose{0.0, 0.0, 0.0}));
+    fleet.addVehicle(std::make_unique<Vehicle>("agv_0", 1.0, Pose{0.0, 0.0, 0.0}));
     EXPECT_EQ(fleet.idleVehicleStates().size(), 1U);
 
     Task task;

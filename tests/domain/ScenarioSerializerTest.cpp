@@ -50,7 +50,7 @@ TEST(ScenarioSerializerTest, RequiresVehicleId)
 TEST(ScenarioSerializerTest, RoundTripTasks)
 {
     ScenarioData scenario;
-    core::Task task;
+    Task task;
     task.id = "task_0";
     task.pickup = {1.0, 2.0, 0.0};
     task.dropoff = {5.0, 6.0, 0.0};

@@ -17,7 +17,7 @@ TEST(CollisionModule, CanInstantiateAndTick)
 {
     CollisionModule module;
     FleetManager fleet;
-    fleet.addVehicle(std::make_unique<Vehicle>("agv_0", 1.0, core::Pose{0.0, 0.0, 0.0}));
+    fleet.addVehicle(std::make_unique<Vehicle>("agv_0", 1.0, Pose{0.0, 0.0, 0.0}));
     OccupancyGrid grid(10, 10, 0.1, 1.0, 1.0);
     module.tick(0.05, fleet, 0.0, grid);
     EXPECT_GE(module.conflictCount(), 0);
