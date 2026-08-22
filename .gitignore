@@ -1,0 +1,46 @@
+# Build
+build/
+cmake-build-*/
+out/
+
+# Qt Creator
+*.user
+*.user.*
+.qtcreator/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Compiled
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+!**/CMakeLists.txt
+
+# Generated
+*_autogen/
+ui_*.h
+moc_*.cpp
+qrc_*.cpp
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store

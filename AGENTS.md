@@ -1,0 +1,69 @@
+# FleetSim Agent 协作规范
+
+## 项目概述
+
+多 AGV 调度与控制系统 2D 仿真平台。C++17 + Qt 6 Widgets + QGraphicsView + CMake。
+
+## 硬规则（违反 = Review 不通过）
+
+1. **Domain 层禁止 `#include <Qt*>`** — 保证可抽离为 ROS2 静态库
+2. **每次会话必须更新 SESSION_LOG.md**
+3. **接口先于实现** — 新模块先写 `.h` + 单测，再写 `.cpp`
+4. **不改无关文件** — 本次 scope 外的代码不动
+5. **UI 禁止堆控件** — 新功能开独立 Panel / Dialog / Widget，不往 MainWindow 硬塞
+6. **必须写单测** — Core / Domain 每个新类至少 1 个 test
+7. **禁止跳过 Reviewer** — 每次会话末尾跑 Reviewer 子 agent
+8. **一文件一职责** — 见下方「文件组织规范」
+9. **车辆外观用 SVG 资源** — 见 `docs/decisions/004-vehicle-rendering.md`
+
+## 模块边界
+
+| 层 | 目录 | 可依赖 | 禁止依赖 |
+|----|------|--------|---------|
+| Core | `src/core/` | STL, Eigen | Qt, Domain |
+| Domain | `src/domain/` | Core, Eigen, nlohmann/json | Qt |
+| App | `src/app/` | Domain | UI 控件 |
+| UI | `src/ui/` | App, Domain(只读类型), Qt | — |
+
+## 文件组织规范（可持续开发）
+
+| 规则 | 说明 |
+|------|------|
+| **一类一文件** | 每个公开类独立 `.h` + `.cpp`，禁止多个类挤在同一文件 |
+| **行数上限** | 单文件建议 ≤ 300 行；超过 500 行必须拆分 |
+| **MainWindow** | 仅负责布局编排、菜单、面板挂载，**不含**仿真/规划/控制逻辑 |
+| **SimEngine** | 只做 tick 编排，具体算法在子模块 |
+| **UI 子目录** | `ui/map/` 地图视图；`ui/graphics/` SVG 图元；`ui/panels/` 控制/监控面板；`ui/editor/` 编辑器 |
+| **Domain 子目录** | 按领域拆分：`map/`, `planning/`, `control/`, `vehicle/`, `scheduling/`, `collision/` |
+| **资源与代码分离** | 车辆 SVG 放 `assets/vehicles/`，场景放 `assets/scenarios/` |
+
+## 命名规范
+
+- 类名：`PascalCase`（`SimEngine`, `PurePursuitTracker`）
+- 接口：`I` 前缀（`IPathTracker`, `ITaskAssigner`）
+- 成员变量：`snake_case_`（尾部下划线）
+- 文件名：与类名一致
+- 测试：`<ClassName>_<Scenario>Test`
+
+## 仿真约定
+
+- 坐标：米制 `(x, y, θ_rad)`，原点在地图左下
+- 时间：`SimClock` 固定 dt 默认 `0.05s` (20Hz)
+- 栅格：默认分辨率 `0.1 m/cell`
+
+## 会话流程（4 角色）
+
+1. 读 `AGENTS.md` + `SESSION_LOG.md` 最新条目
+2. **Architect** → mini-plan（≤30 行）+ ADR（若有架构变更）
+3. **Implementer** → 代码 + 单测（限定 scope）
+4. **Reviewer** → 对照硬规则检查 diff
+5. **Scribe** → 更新 `SESSION_LOG.md`
+6. 用户本地编译测试（中文路径，Agent 不代跑编译）
+
+## 当前 Phase
+
+→ 见 `SESSION_LOG.md` 最新条目
+
+## 决策记录
+
+架构与格式决策见 `docs/decisions/`。变更架构必须先新增 ADR。

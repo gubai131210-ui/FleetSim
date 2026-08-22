@@ -1,0 +1,18 @@
+---
+description: FleetSim 多 AGV 仿真项目开发规则
+globs: **/*
+alwaysApply: true
+---
+
+# FleetSim 开发规则
+
+1. 开发前必读 `AGENTS.md` 和 `SESSION_LOG.md` 最新条目
+2. Domain 层（`src/domain/`）禁止 `#include <Qt*>`
+3. 一文件一职责，单文件不超过 300 行（硬上限 500 行）
+4. MainWindow 只做布局编排，业务逻辑放 App/Domain
+5. UI 新功能用独立 Panel/Widget，禁止堆控件
+6. 车辆 2D 外观使用 SVG（`assets/vehicles/`）+ `VehicleGraphicsItem`
+7. 每次会话结束更新 `SESSION_LOG.md`
+8. Core/Domain 新类必须附带 Google Test
+9. 架构变更需新增 `docs/decisions/` ADR
+10. 不在命令行代用户编译（中文路径）；告知用户自行在 Qt Creator 测试
