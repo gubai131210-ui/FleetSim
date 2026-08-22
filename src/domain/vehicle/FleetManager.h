@@ -3,6 +3,7 @@
 #include "core/types/Path.h"
 #include "core/types/Pose.h"
 #include "core/types/Task.h"
+#include "core/types/VehicleState.h"
 #include "vehicle/Vehicle.h"
 
 #include <memory>
@@ -44,6 +45,7 @@ public:
 
     const Vehicle* primaryVehicle() const;
     VehicleAgent* primaryAgent();
+    const VehicleAgent* primaryAgent() const;
 
     void startTask(const core::VehicleId& vehicle_id, const core::Task& task);
     void completeActiveTask(const core::VehicleId& vehicle_id);

@@ -75,6 +75,7 @@ private:
     void publishPathUpdate(const core::VehicleId& vehicle_id, const core::Path& path);
     void handleAgentGoalReached(vehicle::VehicleAgent& agent);
     vehicle::VehicleAgent* selectedAgent();
+    const vehicle::VehicleAgent* selectedAgent() const;
 
     core::SimClock clock_;
     core::EventBus event_bus_;

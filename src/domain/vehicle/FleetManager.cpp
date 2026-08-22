@@ -60,6 +60,14 @@ VehicleAgent* FleetManager::primaryAgent()
     return &agents_.front();
 }
 
+const VehicleAgent* FleetManager::primaryAgent() const
+{
+    if (agents_.empty()) {
+        return nullptr;
+    }
+    return &agents_.front();
+}
+
 void FleetManager::startTask(const core::VehicleId& vehicle_id, const core::Task& task)
 {
     VehicleAgent* agent = findAgent(vehicle_id);

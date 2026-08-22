@@ -141,6 +141,12 @@ const core::Pose& SimEngine::goal() const
 
 vehicle::VehicleAgent* SimEngine::selectedAgent()
 {
+    return const_cast<vehicle::VehicleAgent*>(
+        static_cast<const SimEngine*>(this)->selectedAgent());
+}
+
+const vehicle::VehicleAgent* SimEngine::selectedAgent() const
+{
     if (!selected_vehicle_id_.empty()) {
         return fleet_.findAgent(selected_vehicle_id_);
     }
