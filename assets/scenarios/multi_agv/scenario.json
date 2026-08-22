@@ -2,7 +2,8 @@
   "version": 1,
   "simulation": {
     "dt_s": 0.05,
-    "realtime": false
+    "realtime": false,
+    "coordination": "priority"
   },
   "vehicles": [
     {

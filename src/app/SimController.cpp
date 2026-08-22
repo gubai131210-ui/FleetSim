@@ -30,6 +30,8 @@ void SimController::applyScenarioToEngine()
         scenario_.simulation.planner.empty() ? "auto" : scenario_.simulation.planner);
     engine_.setTrackerKind(
         scenario_.simulation.tracker.empty() ? "auto" : scenario_.simulation.tracker);
+    engine_.setCoordinationKind(
+        scenario_.simulation.coordination.empty() ? "priority" : scenario_.simulation.coordination);
 
     for (const auto& vehicle_config : scenario_.vehicles) {
         auto model = domain::vehicle::createVehicleModel(

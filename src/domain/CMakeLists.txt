@@ -57,6 +57,8 @@ add_library(FleetSimDomain STATIC
     collision/PathReservationTable.h
     collision/TimeWindowCollisionAvoidance.cpp
     collision/TimeWindowCollisionAvoidance.h
+    collision/PriorityPathCoordinator.cpp
+    collision/PriorityPathCoordinator.h
     collision/ICollisionAvoidance.h
 )
 

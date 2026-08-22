@@ -34,6 +34,7 @@ ScenarioData ScenarioSerializer::fromJson(const nlohmann::json& json,
     data.simulation.realtime = simulation.value("realtime", false);
     data.simulation.planner = simulation.value("planner", std::string{});
     data.simulation.tracker = simulation.value("tracker", std::string{});
+    data.simulation.coordination = simulation.value("coordination", std::string{});
 
     for (const auto& vehicle_json : json.at("vehicles")) {
         VehicleConfig vehicle;
@@ -95,6 +96,9 @@ nlohmann::json ScenarioSerializer::toJson(const ScenarioData& scenario)
     }
     if (!scenario.simulation.tracker.empty()) {
         json["simulation"]["tracker"] = scenario.simulation.tracker;
+    }
+    if (!scenario.simulation.coordination.empty()) {
+        json["simulation"]["coordination"] = scenario.simulation.coordination;
     }
 
     nlohmann::json tasks = nlohmann::json::array();

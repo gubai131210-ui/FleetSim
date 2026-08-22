@@ -71,6 +71,11 @@ public:
     /// Resolved tracker for a vehicle (ADR-012). auto → pure_pursuit.
     std::string resolvedTrackerKind(const vehicle::Vehicle& vehicle) const;
 
+    /// coordination: "priority" | "none" (empty → priority).
+    void setCoordinationKind(const std::string& kind);
+    const std::string& coordinationKind() const { return coordination_kind_; }
+    bool usesPriorityCoordination() const;
+
     bool planPath();
     bool planPathFor(const core::VehicleId& vehicle_id);
     const core::Path& referencePath() const;
@@ -85,6 +90,8 @@ public:
 
 private:
     bool planPathForAgent(vehicle::VehicleAgent& agent);
+    bool planPathForAgentOnGrid(vehicle::VehicleAgent& agent, const map::OccupancyGrid& planning_grid);
+    void replanFleetWithPriorityCoordination();
     void publishPoseUpdate(const vehicle::VehicleAgent& agent);
     void publishPathUpdate(const core::VehicleId& vehicle_id, const core::Path& path);
     void handleAgentGoalReached(vehicle::VehicleAgent& agent);
@@ -105,6 +112,7 @@ private:
 
     std::string planner_kind_{"auto"};
     std::string tracker_kind_{"auto"};
+    std::string coordination_kind_{"priority"};
 
     core::VehicleId selected_vehicle_id_;
     core::Pose manual_goal_;

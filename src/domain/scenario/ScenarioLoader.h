@@ -17,6 +17,8 @@ struct SimulationConfig {
     std::string planner;
     /// "pure_pursuit" | "stanley" | empty/"auto" (Session 3 wires stanley).
     std::string tracker;
+    /// "priority" | "none" | empty → priority (ADR-013).
+    std::string coordination;
 };
 
 struct VehicleConfig {

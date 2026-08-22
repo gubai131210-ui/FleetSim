@@ -11,6 +11,45 @@
 
 ---
 
+## [2026-08-23] Phase 5 Session 4 — PriorityPathCoordinator + TimeWindow 协同
+
+### 本次 Scope
+- 目标：Priority 按优先级依次规划；高优先级路径写入低优先级规划栅格障碍；保留 TimeWindow 预约/速度缩放；禁止距离判碰
+- NOT DO：完整 CBS、UI、MUTATION 收尾
+
+### ✅ 已完成
+- [x] `PriorityPathCoordinator`（排序、paintPathOccupied）
+- [x] `SimEngine::replanFleetWithPriorityCoordination` + `coordination` 字段
+- [x] scenario / SimController 接线；multi_agv 标注 coordination
+- [x] `PriorityCoordinatorTest`；ADR-013 已接受
+- [x] CMake 登记
+
+### ❌ 未完成
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| CBS-lite | ADR 标可选，Priority 为 MVP | 不做 |
+| PlannerTracker UI | Session 5 | Session 5 |
+
+### 🚫 禁止偷懒自检
+- [x] 非距离停车冒充
+- [x] 未删 TimeWindow
+- [x] Domain 无 Qt
+- [x] 有单测
+
+### Reviewer 结果
+- Reviewer-Code: **PASS**
+- Reviewer-Test: **PASS**
+- 主 Agent 不自评
+
+### 用户本地验证
+1. git pull；Build FleetSimTests
+2. `PriorityCoordinator*`、`MultiAgv*` 预期 PASS
+
+### 下次会话建议
+- PlannerTrackerDialog + Monitor 横偏/航向误差
+
+---
+
 ## [2026-08-23] Phase 5 Session 3 — StanleyTracker + tracker 切换
 
 ### 本次 Scope

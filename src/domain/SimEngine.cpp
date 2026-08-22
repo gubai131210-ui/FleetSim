@@ -1,5 +1,6 @@
 #include "SimEngine.h"
 
+#include "collision/PriorityPathCoordinator.h"
 #include "control/StanleyTracker.h"
 #include "planning/HybridAStarPlanner.h"
 
@@ -172,6 +173,20 @@ std::string SimEngine::resolvedTrackerKind(const vehicle::Vehicle& /*vehicle*/) 
     return "pure_pursuit";
 }
 
+void SimEngine::setCoordinationKind(const std::string& kind)
+{
+    if (kind.empty() || kind == "auto") {
+        coordination_kind_ = "priority";
+        return;
+    }
+    coordination_kind_ = kind;
+}
+
+bool SimEngine::usesPriorityCoordination() const
+{
+    return coordination_kind_ != "none";
+}
+
 const core::Pose& SimEngine::goal() const
 {
     const vehicle::VehicleAgent* agent = selectedAgent();
@@ -197,7 +212,13 @@ const vehicle::VehicleAgent* SimEngine::selectedAgent() const
 
 bool SimEngine::planPathForAgent(vehicle::VehicleAgent& agent)
 {
-    if (agent.vehicle == nullptr || map_.rows() == 0) {
+    return planPathForAgentOnGrid(agent, map_);
+}
+
+bool SimEngine::planPathForAgentOnGrid(vehicle::VehicleAgent& agent,
+                                       const map::OccupancyGrid& planning_grid)
+{
+    if (agent.vehicle == nullptr || planning_grid.rows() == 0) {
         return false;
     }
 
@@ -211,11 +232,10 @@ bool SimEngine::planPathForAgent(vehicle::VehicleAgent& agent)
             ? agent.vehicle->maxSteeringRad()
             : 0.6;
         planning::HybridAStarPlanner hybrid(wheelbase, max_steer);
-        raw_path = hybrid.plan(map_, agent.vehicle->pose(), agent.goal);
-        // ADR-011: Hybrid output is already dense; skip Douglas-Peucker.
+        raw_path = hybrid.plan(planning_grid, agent.vehicle->pose(), agent.goal);
         agent.reference_path = raw_path;
     } else {
-        raw_path = astar_planner_.plan(map_, agent.vehicle->pose(), agent.goal);
+        raw_path = astar_planner_.plan(planning_grid, agent.vehicle->pose(), agent.goal);
         if (raw_path.empty()) {
             agent.reference_path.clear();
             publishPathUpdate(agent.vehicle->id(), agent.reference_path);
@@ -236,11 +256,44 @@ bool SimEngine::planPathForAgent(vehicle::VehicleAgent& agent)
     return !agent.reference_path.empty();
 }
 
+void SimEngine::replanFleetWithPriorityCoordination()
+{
+    // ADR-013: clear then plan/reserve in priority order; paint higher paths as obstacles.
+    collision_.clearReservations();
+    map::OccupancyGrid working = map_;
+    const auto order = collision::PriorityPathCoordinator::orderedAgentIndices(fleet_);
+
+    for (std::size_t idx : order) {
+        vehicle::VehicleAgent& agent = fleet_.agent(idx);
+        if (agent.vehicle == nullptr) {
+            continue;
+        }
+
+        if (agent.needs_replan) {
+            agent.needs_replan = false;
+            planPathForAgentOnGrid(agent, working);
+        } else if (!agent.reference_path.empty()) {
+            // Keep committed path; re-register reservation under cleared table.
+            collision_.reservePath(
+                agent.vehicle->id(), agent.reference_path, sim_time_s_, agent.task_priority, map_);
+        }
+
+        if (!agent.reference_path.empty()) {
+            collision::PriorityPathCoordinator::paintPathOccupied(working, agent.reference_path, 1);
+        }
+    }
+}
+
 bool SimEngine::planPath()
 {
     vehicle::VehicleAgent* agent = selectedAgent();
     if (agent == nullptr) {
         return false;
+    }
+    agent->needs_replan = true;
+    if (usesPriorityCoordination() && fleet_.count() > 1) {
+        replanFleetWithPriorityCoordination();
+        return !agent->reference_path.empty();
     }
     agent->needs_replan = false;
     return planPathForAgent(*agent);
@@ -251,6 +304,11 @@ bool SimEngine::planPathFor(const core::VehicleId& vehicle_id)
     vehicle::VehicleAgent* agent = fleet_.findAgent(vehicle_id);
     if (agent == nullptr) {
         return false;
+    }
+    agent->needs_replan = true;
+    if (usesPriorityCoordination() && fleet_.count() > 1) {
+        replanFleetWithPriorityCoordination();
+        return !agent->reference_path.empty();
     }
     agent->needs_replan = false;
     return planPathForAgent(*agent);
@@ -321,11 +379,23 @@ void SimEngine::tick(double dt)
 {
     scheduling_.tick(dt, fleet_);
 
+    bool any_replan = false;
     for (std::size_t i = 0; i < fleet_.count(); ++i) {
-        vehicle::VehicleAgent& agent = fleet_.agent(i);
-        if (agent.needs_replan) {
-            agent.needs_replan = false;
-            planPathForAgent(agent);
+        if (fleet_.agent(i).needs_replan) {
+            any_replan = true;
+            break;
+        }
+    }
+
+    if (any_replan && usesPriorityCoordination()) {
+        replanFleetWithPriorityCoordination();
+    } else if (any_replan) {
+        for (std::size_t i = 0; i < fleet_.count(); ++i) {
+            vehicle::VehicleAgent& agent = fleet_.agent(i);
+            if (agent.needs_replan) {
+                agent.needs_replan = false;
+                planPathForAgent(agent);
+            }
         }
     }
 

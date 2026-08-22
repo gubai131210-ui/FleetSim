@@ -27,6 +27,7 @@ add_executable(FleetSimTests
     domain/GreedyAssignerTest.cpp
     domain/HungarianAssignerTest.cpp
     domain/PathReservationTableTest.cpp
+    domain/PriorityCoordinatorTest.cpp
     domain/FleetManagerTest.cpp
     integration/DemoScenarioTest.cpp
     integration/MultiAgvScenarioTest.cpp
