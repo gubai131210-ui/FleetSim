@@ -1,5 +1,7 @@
 #include "PathReservationTable.h"
 
+#include <cmath>
+
 namespace fleetsim::domain::collision {
 
 void PathReservationTable::clear()
