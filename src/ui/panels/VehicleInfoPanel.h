@@ -4,6 +4,8 @@
 
 #include <QWidget>
 
+class QLabel;
+
 namespace fleetsim::ui {
 
 class VehicleInfoPanel : public QWidget {
@@ -20,10 +22,10 @@ public:
     void updateTaskId(const QString& task_id);
 
 private:
-    class QLabel* vehicle_id_label_{nullptr};
-    class QLabel* pose_label_{nullptr};
-    class QLabel* velocity_label_{nullptr};
-    class QLabel* task_label_{nullptr};
+    QLabel* vehicle_id_label_{nullptr};
+    QLabel* pose_label_{nullptr};
+    QLabel* velocity_label_{nullptr};
+    QLabel* task_label_{nullptr};
     QString selected_vehicle_id_;
 };
 

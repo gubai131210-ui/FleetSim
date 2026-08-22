@@ -2,6 +2,8 @@
 
 #include <QWidget>
 
+class QTableWidget;
+
 namespace fleetsim::ui {
 
 class TaskPanel : public QWidget {
@@ -16,7 +18,7 @@ signals:
     void addTaskRequested(double pickup_x, double pickup_y, double dropoff_x, double dropoff_y);
 
 private:
-    class QTableWidget* task_table_{nullptr};
+    QTableWidget* task_table_{nullptr};
 };
 
 }  // namespace fleetsim::ui
