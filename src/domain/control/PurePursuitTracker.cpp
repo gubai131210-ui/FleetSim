@@ -54,6 +54,14 @@ core::Waypoint PurePursuitTracker::findLookaheadPoint(const core::Pose& pose,
     double best_delta = std::numeric_limits<double>::max();
 
     for (const core::Waypoint& point : points) {
+        const double dx = point.x - pose.x;
+        const double dy = point.y - pose.y;
+        const double forward_x = std::cos(pose.theta);
+        const double forward_y = std::sin(pose.theta);
+        if (dx * forward_x + dy * forward_y <= 0.0) {
+            continue;
+        }
+
         const double dist = distance(pose, point);
         const double delta = std::abs(dist - lookahead_m);
         if (dist >= lookahead_m * 0.5 && delta < best_delta) {

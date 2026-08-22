@@ -22,14 +22,14 @@ TEST(PurePursuitTrackerTest, TracksStraightLineWithLowLateralError)
     PurePursuitTracker tracker;
     DiffDriveModel model;
 
-    Pose pose{0.0, 0.5, 0.0};
-    for (int i = 0; i < 100; ++i) {
+    Pose pose{0.0, 0.0, 0.0};
+    for (int i = 0; i < 200; ++i) {
         const auto command = tracker.compute(pose, path, 0.05);
         pose = model.integrate(pose, command, 0.05);
     }
 
-    EXPECT_GT(pose.x, 1.0);
-    EXPECT_NEAR(pose.y, 0.5, 0.15);
+    EXPECT_GT(pose.x, 2.0);
+    EXPECT_NEAR(pose.y, 0.0, 0.15);
 }
 
 TEST(DiffDriveModelTest, IntegratesForwardMotion)

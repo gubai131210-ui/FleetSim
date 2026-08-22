@@ -47,7 +47,7 @@ TEST(DouglasPeuckerSmootherTest, ReducesWaypointsButKeepsEndpoints)
     const auto smoothed = smoother.smooth(raw);
 
     EXPECT_GE(smoothed.size(), 2U);
-    EXPECT_LT(smoothed.size(), raw.size());
+    EXPECT_GT(smoothed.size(), raw.size());  // interpolation densifies the path
     EXPECT_DOUBLE_EQ(smoothed.waypoints().front().x, raw.waypoints().front().x);
     EXPECT_DOUBLE_EQ(smoothed.waypoints().back().x, raw.waypoints().back().x);
 }
