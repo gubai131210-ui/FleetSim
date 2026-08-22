@@ -5,6 +5,7 @@
 
 #include <memory>
 
+using fleetsim::core::Pose;
 using fleetsim::core::Task;
 using fleetsim::domain::vehicle::AgentPhase;
 using fleetsim::domain::vehicle::FleetManager;

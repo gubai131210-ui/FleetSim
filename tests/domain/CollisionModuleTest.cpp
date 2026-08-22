@@ -7,6 +7,7 @@
 
 #include <memory>
 
+using fleetsim::core::Pose;
 using fleetsim::domain::collision::CollisionModule;
 using fleetsim::domain::map::OccupancyGrid;
 using fleetsim::domain::vehicle::FleetManager;

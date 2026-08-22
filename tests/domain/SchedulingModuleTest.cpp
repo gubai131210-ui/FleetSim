@@ -6,6 +6,7 @@
 
 #include <memory>
 
+using fleetsim::core::Pose;
 using fleetsim::domain::scheduling::SchedulingModule;
 using fleetsim::domain::vehicle::FleetManager;
 using fleetsim::domain::vehicle::Vehicle;

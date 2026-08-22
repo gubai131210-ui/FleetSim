@@ -4,6 +4,7 @@
 
 #include <nlohmann/json.hpp>
 
+using fleetsim::core::Task;
 using fleetsim::domain::scenario::ScenarioData;
 using fleetsim::domain::scenario::ScenarioSerializer;
 using fleetsim::domain::scenario::VehicleConfig;
