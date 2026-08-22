@@ -20,7 +20,14 @@ const domain::SimEngine& SimController::engine() const
 
 bool SimController::loadScenario(const std::string& scenario_directory)
 {
-    scenario_ = domain::scenario::ScenarioLoader::loadFromDirectory(scenario_directory);
+    domain::scenario::ScenarioData loaded =
+        domain::scenario::ScenarioLoader::loadFromDirectory(scenario_directory);
+    return loadScenarioData(std::move(loaded));
+}
+
+bool SimController::loadScenarioData(domain::scenario::ScenarioData scenario)
+{
+    scenario_ = std::move(scenario);
     engine_.setMap(scenario_.map);
     engine_.clock().setFixedDt(scenario_.simulation.dt_s);
 

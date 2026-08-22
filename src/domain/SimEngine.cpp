@@ -118,6 +118,7 @@ void SimEngine::publishPoseUpdate()
     payload["x"] = vehicle_->pose().x;
     payload["y"] = vehicle_->pose().y;
     payload["theta"] = vehicle_->pose().theta;
+    payload["linear_velocity"] = last_linear_velocity_;
     event_bus_.publish("sim/pose_updated", payload.dump());
 }
 
@@ -137,6 +138,7 @@ void SimEngine::tick(double dt)
 
     if (vehicle_ != nullptr && !reference_path_.empty() && !goal_reached_) {
         const core::ControlCommand command = tracker_.compute(vehicle_->pose(), reference_path_, dt);
+        last_linear_velocity_ = command.linear_velocity;
         vehicle_->integrate(command, dt);
         publishPoseUpdate();
 

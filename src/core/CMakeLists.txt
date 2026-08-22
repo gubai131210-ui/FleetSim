@@ -23,3 +23,5 @@ target_link_libraries(FleetSimCore
 )
 
 target_compile_features(FleetSimCore PUBLIC cxx_std_17)
+
+fleetsim_enable_coverage(FleetSimCore)

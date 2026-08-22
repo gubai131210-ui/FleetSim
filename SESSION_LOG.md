@@ -57,6 +57,44 @@
 
 ---
 
+## [2026-08-22] Phase 2 — 地图编辑 + 持久化 + 监控 + 质量 Harness
+
+### 本次 Scope
+- 目标：MapEditor、ProjectManager/Serializer、MonitorPanel、CRAP Harness
+- 允许改动：`src/app/`, `src/domain/`, `src/ui/`, `tests/`, `tools/`, `docs/`, `third_party/qcustomplot/`, `cmake/`
+
+### ✅ 已完成
+- [x] 会话0：`ENABLE_COVERAGE`、`tools/crap_score.py`、`tools/run_quality.ps1`、ADR-007、`MUTATION_CHECKLIST.md`
+- [x] 会话1：`ProjectManager`、`MapSerializer`、`ScenarioSerializer` + 单测
+- [x] 会话2：`MapEditorPanel`、`ObstacleGraphicsItem`、`MapView` 编辑模式、`MapScene::editorLayer_`
+- [x] 会话3：`ProjectDialog`、File 菜单、去除启动 hardcode demo
+- [x] 会话4：`MonitorPanel` + QCustomPlot、`MonitorBridge`、cross-track/velocity 曲线
+- [x] 会话5：`LaneGraph` stub、SimEngine pose 发布 linear_velocity、SESSION_LOG/DEVELOPMENT_PLAN 更新
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| Mull 自动变异 | MinGW/Clang Kit 冲突 | Phase 4 或 CI 评估 |
+| 多车 TaskPanel | Phase 3 范围 | Phase 3 |
+| 本地 CRAP 报告数值 | Agent 环境无 Qt Kit | 用户本地跑 `tools/run_quality.ps1` |
+
+### 🚫 禁止偷懒自检
+- [x] MapEditor / Monitor 独立 Dock，未堆进 MainWindow/ControlPanel
+- [x] Domain Serializer 无 Qt include
+- [x] 新 Serializer/ProjectManager 有单测
+- [x] SESSION_LOG 已填写
+
+### Reviewer 结果
+- 待 Reviewer 子 agent
+
+### 用户本地验证
+1. Qt Creator Configure + Build + Run Tests（应含 MapSerializer/ScenarioSerializer/ProjectManager 测试）
+2. Run → File → Open → `assets/scenarios/demo` → Editor 画矩形障碍 → File → Save → 重开验证
+3. Editor 设 goal / Shift+点击 → Play → Monitor 面板曲线滚动
+4. PowerShell：`./tools/run_quality.ps1` 生成 `build-quality/crap_report.txt`
+
+---
+
 ## [2026-08-22] 框架强化 — Agent 反偷懒 + UI 面板规范
 
 （略，见历史条目）

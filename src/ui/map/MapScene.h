@@ -5,6 +5,7 @@
 
 namespace fleetsim::ui {
 
+class ObstacleGraphicsItem;
 class ObstacleOverlayItem;
 class PathGraphicsItem;
 
@@ -21,7 +22,10 @@ public:
     PathGraphicsItem* pathItem();
     ObstacleOverlayItem* obstacleOverlayItem();
 
+    QGraphicsItemGroup* editorLayer();
     QGraphicsItemGroup* vehicleLayer();
+
+    void clearEditorLayer();
 
 private:
     void rebuildBackground();
@@ -31,6 +35,7 @@ private:
     QGraphicsItemGroup* background_group_{nullptr};
     ObstacleOverlayItem* obstacle_overlay_{nullptr};
     PathGraphicsItem* path_item_{nullptr};
+    QGraphicsItemGroup* editor_layer_{nullptr};
     QGraphicsItemGroup* vehicle_layer_{nullptr};
 };
 

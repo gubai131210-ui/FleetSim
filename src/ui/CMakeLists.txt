@@ -12,8 +12,16 @@ qt_add_library(FleetSimUI STATIC
     graphics/PathGraphicsItem.h
     graphics/ObstacleOverlayItem.cpp
     graphics/ObstacleOverlayItem.h
+    graphics/ObstacleGraphicsItem.cpp
+    graphics/ObstacleGraphicsItem.h
     panels/ControlPanel.cpp
     panels/ControlPanel.h
+    panels/MapEditorPanel.cpp
+    panels/MapEditorPanel.h
+    panels/MonitorPanel.cpp
+    panels/MonitorPanel.h
+    dialogs/ProjectDialog.cpp
+    dialogs/ProjectDialog.h
 )
 
 target_include_directories(FleetSimUI
@@ -25,6 +33,7 @@ target_include_directories(FleetSimUI
 target_link_libraries(FleetSimUI
     PUBLIC
         FleetSimApp
+        QCustomPlot
         Qt6::Core
         Qt6::Widgets
         Qt6::Svg

@@ -51,6 +51,8 @@ public:
     int tickCount() const;
     bool goalReached() const;
 
+    double lastLinearVelocity() const { return last_linear_velocity_; }
+
 private:
     void publishPoseUpdate();
     void publishPathUpdate();
@@ -72,6 +74,7 @@ private:
     bool goal_reached_{false};
     bool goal_reached_published_{false};
     int tick_count_{0};
+    double last_linear_velocity_{0.0};
 };
 
 }  // namespace fleetsim::domain

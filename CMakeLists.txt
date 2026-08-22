@@ -7,6 +7,8 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+include(cmake/Coverage.cmake)
+
 # --- Third-party: FetchContent ---
 include(FetchContent)
 
@@ -35,11 +37,12 @@ set(BUILD_TESTING OFF CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(eigen)
 
 # --- Qt ---
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Svg)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Svg PrintSupport)
 
 qt_standard_project_setup()
 
 # --- Subdirectories ---
+add_subdirectory(third_party/qcustomplot)
 add_subdirectory(src/core)
 add_subdirectory(src/domain)
 add_subdirectory(src/app)

@@ -5,6 +5,11 @@ add_library(FleetSimDomain STATIC
     map/OccupancyGrid.h
     map/MapLoader.cpp
     map/MapLoader.h
+    map/MapData.h
+    map/MapSerializer.cpp
+    map/MapSerializer.h
+    map/LaneGraph.cpp
+    map/LaneGraph.h
     planning/AStarPlanner.cpp
     planning/AStarPlanner.h
     planning/DouglasPeuckerSmoother.cpp
@@ -20,6 +25,8 @@ add_library(FleetSimDomain STATIC
     vehicle/Vehicle.h
     scenario/ScenarioLoader.cpp
     scenario/ScenarioLoader.h
+    scenario/ScenarioSerializer.cpp
+    scenario/ScenarioSerializer.h
     scheduling/SchedulingModule.cpp
     scheduling/SchedulingModule.h
     collision/CollisionModule.cpp
@@ -39,3 +46,5 @@ target_link_libraries(FleetSimDomain
 )
 
 target_compile_features(FleetSimDomain PUBLIC cxx_std_17)
+
+fleetsim_enable_coverage(FleetSimDomain)
