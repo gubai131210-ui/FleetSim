@@ -42,6 +42,8 @@ private:
     void bindEditorSignals();
     void bindMonitorBridge();
 
+    void handleNewProject();
+    void handleOpenProject();
     void handleSaveProject();
     void applyProjectToSimulation();
     void refreshMapVisualization();
