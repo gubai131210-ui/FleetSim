@@ -22,7 +22,7 @@ MapEditorPanel::MapEditorPanel(QWidget* parent)
     auto* tool_box = new QGroupBox(tr("Tools"), this);
     auto* tool_layout = new QVBoxLayout(tool_box);
 
-    auto add_tool_button = [this, tool_layout](const QString& label, EditorTool tool) {
+    auto add_tool_button = [this, tool_layout, tool_box](const QString& label, EditorTool tool) {
         auto* button = new QPushButton(label, tool_box);
         connect(button, &QPushButton::clicked, this, [this, tool]() {
             current_tool_ = tool;
