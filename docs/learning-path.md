@@ -6,5 +6,6 @@
 | Phase 2 | 地图编辑 + 监控曲线 | 高精地图、调试可视化 | Lanelet2 |
 | Phase 3 | 多车调度 + 时间窗口避碰 | 多智能体、V2X 协同 | 拍卖算法、ST-Graph |
 | Phase 4 | Bicycle + ROS2 桥接 | 乘用车控制、中间件 | nav2, Autoware |
+| Phase 5 | Hybrid A* + Stanley + Priority/CBS-lite | 非完整约束规划、横向控制、MAPF | MPC、ST-Graph、EECBS |
 
-Domain 层保持无 Qt，Phase 4 导出静态库或 JSON 桥接 ROS2 topic。
+Domain 层保持无 Qt，Phase 4 已导出静态库 / ROS2 桥；Phase 5 在 Domain 内增强规划与跟踪（仍零 Qt）。

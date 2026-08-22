@@ -9,6 +9,9 @@
 | **2** | 地图编辑器 + JSON 持久化 + QCustomPlot 监控 + CRAP Harness | 1.5 周 ✅ |
 | **3** | 多 AGV + 贪心调度 + 时间窗口避碰 | 3 周 ✅ |
 | **4** | Bicycle 模型 + Domain 静态库 + ROS2 桥接 | 3 周 ✅ |
+| **5** | Hybrid A* + Stanley 跟踪 + Priority/CBS-lite 多车协调 | 3 周 |
+
+> Phase 5 完整 Goal 提示词：`docs/PHASE5_GOAL_PROMPT.md`（复制 §0 给 Goal Agent）。
 
 ## 禁止偷懒清单（Reviewer 必查）
 
