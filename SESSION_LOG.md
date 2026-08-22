@@ -59,7 +59,7 @@
 | `AGENTS.md`, `.cursor/rules/fleetsim.mdc` | 修改 |
 
 ### Reviewer 结果
-- 待 Reviewer 子 agent
+- PASS（MainWindow.h 已补全 setupDockPanels/setupViewMenu 声明）
 
 ### 用户本地验证
 - Qt Creator 重新 Build → Run

@@ -22,6 +22,8 @@ public:
 
 private:
     void setupUiLayout();
+    void setupDockPanels();
+    void setupViewMenu();
     void setupDemoVehicle();
     QString resolveAssetPath(const QString& relative_path) const;
 
