@@ -6,6 +6,13 @@ add_executable(FleetSimTests
     domain/SimEngineTest.cpp
     domain/SchedulingModuleTest.cpp
     domain/CollisionModuleTest.cpp
+    domain/OccupancyGridTest.cpp
+    domain/MapLoaderTest.cpp
+    domain/AStarPlannerTest.cpp
+    domain/PurePursuitTrackerTest.cpp
+    domain/VehicleTest.cpp
+    domain/ScenarioLoaderTest.cpp
+    integration/DemoScenarioTest.cpp
 )
 
 target_link_libraries(FleetSimTests

@@ -40,6 +40,17 @@ void ControlPanel::setupUi()
     group_layout->addLayout(button_row);
 
     root_layout->addWidget(group);
+
+    auto* speed_group = new QGroupBox(tr("Speed"), this);
+    auto* speed_layout = new QHBoxLayout(speed_group);
+    auto* speed_1x = new QPushButton(tr("1x"), speed_group);
+    auto* speed_2x = new QPushButton(tr("2x"), speed_group);
+    auto* speed_4x = new QPushButton(tr("4x"), speed_group);
+    speed_layout->addWidget(speed_1x);
+    speed_layout->addWidget(speed_2x);
+    speed_layout->addWidget(speed_4x);
+    root_layout->addWidget(speed_group);
+
     root_layout->addStretch();
 
     connect(play_btn, &QPushButton::clicked, this, [this]() {
@@ -61,6 +72,25 @@ void ControlPanel::setupUi()
             controller_->stepOnce();
             emit statusMessage(
                 tr("Tick count: %1").arg(controller_->engine().tickCount()));
+        }
+    });
+
+    connect(speed_1x, &QPushButton::clicked, this, [this]() {
+        if (controller_ != nullptr) {
+            controller_->setTimeScale(1.0);
+            emit statusMessage(tr("Speed 1x"));
+        }
+    });
+    connect(speed_2x, &QPushButton::clicked, this, [this]() {
+        if (controller_ != nullptr) {
+            controller_->setTimeScale(2.0);
+            emit statusMessage(tr("Speed 2x"));
+        }
+    });
+    connect(speed_4x, &QPushButton::clicked, this, [this]() {
+        if (controller_ != nullptr) {
+            controller_->setTimeScale(4.0);
+            emit statusMessage(tr("Speed 4x"));
         }
     });
 }

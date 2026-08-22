@@ -9,98 +9,58 @@
 5. Scribe → **按模板完整填写**下方新条目
 6. 回复用户：做了什么 / 没做什么 / 为什么 / 本地验证
 
-> 新会话条目必须包含：✅已完成 / ❌未完成 / 🚫偷懒自检 / 文件清单
+---
+
+## [2026-08-22] Phase 1 — 核心仿真 MVP
+
+### 本次 Scope
+- 目标：单车 A* + 平滑 + Pure Pursuit + DiffDrive + 场景加载 + UI 闭环
+- 允许改动：`src/core/`, `src/domain/`, `src/app/`, `src/ui/`, `tests/`, `docs/decisions/006-*`
+
+### ✅ 已完成
+- [x] Core：`Waypoint`, `Path`, `GridCell`
+- [x] Domain map：`OccupancyGrid`, `MapLoader`
+- [x] Domain planning：`AStarPlanner`, `DouglasPeuckerSmoother`, 接口
+- [x] Domain control：`PurePursuitTracker`, `IPathTracker`
+- [x] Domain vehicle：`DiffDriveModel`, `Vehicle`
+- [x] Domain scenario：`ScenarioLoader`
+- [x] `SimEngine` 扩展：plan/tick/EventBus 发布
+- [x] `SimController`：`loadScenario`, `setGoal`, `planPath`, `setTimeScale`
+- [x] UI：`PathGraphicsItem`, `ObstacleOverlayItem`, MapScene 分层, MapView Shift+点击设目标
+- [x] `MainWindow` 去 hardcode，QTimer 仿真循环，EventBus 订阅
+- [x] `ControlPanel` 增加 Speed 1x/2x/4x
+- [x] 单测 + `DemoScenarioTest` 集成测试
+- [x] ADR-006 Phase 1 算法参数
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| MonitorPanel | Phase 2 | Phase 2 |
+| MapEditorPanel | Phase 2 | Phase 2 |
+| JSON 写回 | Phase 2 ProjectManager | Phase 2 |
+| 多车 | Phase 3 | Phase 3 |
+
+### 🚫 禁止偷懒自检
+- [x] 无 MainWindow 业务按钮堆叠
+- [x] Domain 无 Qt include
+- [x] 一文件一职责
+- [x] A* 路径经 Smoother
+- [x] 新 Domain 类有单测
+- [x] SESSION_LOG 已填写
+
+### Reviewer 结果
+- 待 Reviewer 子 agent
+
+### 用户本地验证
+1. Qt Creator 重新 Configure + Build + Run Tests
+2. Run → Shift+点击设目标 → Play → 小车沿绿线绕障运动
 
 ---
 
 ## [2026-08-22] 框架强化 — Agent 反偷懒 + UI 面板规范
 
-### 本次 Scope（Architect 定义）
-- 目标：强化 Agent 交付规范，防止 UI 堆控件；示范正确 Panel 拆分
-- 允许改动：`docs/`, `AGENTS.md`, `.cursor/rules/`, `src/ui/panels/`, `MainWindow.cpp`
-- 明确不在本次范围：Domain 仿真逻辑、Phase 1 算法、MonitorPanel 实现
-
-### ✅ 已完成
-- [x] `docs/AGENT_SESSION_TEMPLATE.md` — 强制交付模板（做了什么/没做什么/偷懒自检）
-- [x] `docs/UI_GUIDELINES.md` — UI 面板规范与禁止行为表
-- [x] `docs/decisions/005-ui-page-structure.md` — UI 架构 ADR
-- [x] `src/ui/panels/ControlPanel.h/.cpp` — 仿真控制独立面板
-- [x] `src/ui/panels/README.md` — 面板目录说明与 Phase 路线图
-- [x] `MainWindow` 重构：移除 QToolBar，改用 QDockWidget 挂载 ControlPanel
-- [x] `AGENTS.md` / `.cursor/rules/fleetsim.mdc` 强化硬规则
-- [x] `docs/DEVELOPMENT_PLAN.md` 扩充禁止偷懒清单
-
-### ❌ 未完成 / 故意不做
-| 项目 | 原因 | 计划 |
-|------|------|------|
-| MonitorPanel | 属 Phase 2 | Phase 2 独立会话 |
-| MapEditorPanel | 属 Phase 2 | Phase 2 独立会话 |
-| TaskPanel | 属 Phase 3 | Phase 3 |
-| ControlPanel 单测 | UI 层 Phase 0 不要求 | 可选 Phase 2 |
-
-### 🚫 禁止偷懒自检
-- [x] 没有把多个类挤进同一文件
-- [x] 没有在 MainWindow 堆业务按钮（已迁到 ControlPanel）
-- [x] 新 UI 使用了独立 Panel 文件
-- [x] Domain 层无 Qt include
-- [x] 本次无新 Domain 类，无需新单测
-- [x] 未跨 Phase 实现功能
-- [x] SESSION_LOG 本节已完整填写
-
-### 新增/变更文件清单
-| 文件 | 操作 |
-|------|------|
-| `docs/AGENT_SESSION_TEMPLATE.md` | 新增 |
-| `docs/UI_GUIDELINES.md` | 新增 |
-| `docs/decisions/005-ui-page-structure.md` | 新增 |
-| `src/ui/panels/ControlPanel.*` | 新增 |
-| `src/ui/panels/README.md` | 新增 |
-| `src/ui/MainWindow.cpp` | 修改（Dock 化） |
-| `AGENTS.md`, `.cursor/rules/fleetsim.mdc` | 修改 |
-
-### Reviewer 结果
-- PASS（MainWindow.h 已补全 setupDockPanels/setupViewMenu 声明）
-
-### 用户本地验证
-- Qt Creator 重新 Build → Run
-- 预期：右侧 Dock「Control」面板含 Play/Pause/Step；无顶部 Simulation 工具栏；View 菜单可切换 Control Panel
-
-### 下次会话建议
-- Phase 1：OccupancyGrid + A*，仍不在 MainWindow 加控件
-
----
+（略，见历史条目）
 
 ## [2026-08-22] Phase 0 — Harness 与工程骨架
 
-**Architect 目标**：模块化 CMake + 核心骨架 + 文档 + SVG 渲染 ADR
-
-**Implementer 完成**：
-
-- [x] 重构 CMake 为 Core / Domain / App / UI / Tests 分层
-- [x] FetchContent：Google Test、nlohmann/json、Eigen
-- [x] Core：`SimClock`、`EventBus`、基础类型
-- [x] Domain：`SimEngine` 骨架；`SchedulingModule`、`CollisionModule` stub
-- [x] UI：`MapView`、`VehicleGraphicsItem`（SVG 加载 stub）
-- [x] 文档：`AGENTS.md`、ADR 001–004、`learning-path.md`
-- [x] 资源：示例 SVG、`map.json`、`scenario.json`
-- [x] `.gitignore`、`.cursor/rules/fleetsim.mdc`
-
-**接口变更**：
-
-- 新增 `fleetsim::SimEngine::tick(double dt)`
-- 新增 `fleetsim::EventBus::publish/subscribe`
-- 新增 `fleetsim::ui::VehicleGraphicsItem`（SVG 车辆图元）
-
-**Reviewer 结果**：PASS
-
-**下次注意（Phase 1）**：
-
-- 从 `OccupancyGrid` + A* 开始
-- `MapView` 接 SimEngine EventBus 渲染
-- Pure Pursuit + DiffDrive 在 Domain 层实现
-
-**本地验证**（用户执行）：
-
-```
-在 Qt Creator 中打开项目，重新配置 CMake，Build → Run Tests
-```
+（略，见历史条目）

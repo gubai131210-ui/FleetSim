@@ -1,10 +1,13 @@
 #pragma once
 
 #include <QGraphicsScene>
+#include <QGraphicsItemGroup>
 
 namespace fleetsim::ui {
 
-/// Manages map layers: background, grid, obstacles, paths, vehicles.
+class ObstacleOverlayItem;
+class PathGraphicsItem;
+
 class MapScene : public QGraphicsScene {
     Q_OBJECT
 
@@ -15,11 +18,20 @@ public:
     double mapWidthM() const;
     double mapHeightM() const;
 
+    PathGraphicsItem* pathItem();
+    ObstacleOverlayItem* obstacleOverlayItem();
+
+    QGraphicsItemGroup* vehicleLayer();
+
 private:
     void rebuildBackground();
 
     double map_width_m_{20.0};
     double map_height_m_{15.0};
+    QGraphicsItemGroup* background_group_{nullptr};
+    ObstacleOverlayItem* obstacle_overlay_{nullptr};
+    PathGraphicsItem* path_item_{nullptr};
+    QGraphicsItemGroup* vehicle_layer_{nullptr};
 };
 
 }  // namespace fleetsim::ui

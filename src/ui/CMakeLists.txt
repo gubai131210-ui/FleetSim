@@ -8,6 +8,10 @@ qt_add_library(FleetSimUI STATIC
     map/MapView.h
     graphics/VehicleGraphicsItem.cpp
     graphics/VehicleGraphicsItem.h
+    graphics/PathGraphicsItem.cpp
+    graphics/PathGraphicsItem.h
+    graphics/ObstacleOverlayItem.cpp
+    graphics/ObstacleOverlayItem.h
     panels/ControlPanel.cpp
     panels/ControlPanel.h
 )

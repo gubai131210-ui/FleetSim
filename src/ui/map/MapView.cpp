@@ -1,6 +1,7 @@
 #include "MapView.h"
 #include "MapScene.h"
 
+#include <QMouseEvent>
 #include <QWheelEvent>
 
 namespace fleetsim::ui {
@@ -36,6 +37,18 @@ void MapView::wheelEvent(QWheelEvent* event)
     } else {
         scale(1.0 / kZoomFactor, 1.0 / kZoomFactor);
     }
+}
+
+void MapView::mousePressEvent(QMouseEvent* event)
+{
+    if (event->modifiers().testFlag(Qt::ShiftModifier) && event->button() == Qt::LeftButton) {
+        const QPointF scene_pos = mapToScene(event->pos());
+        emit goalRequested(scene_pos.x(), scene_pos.y());
+        event->accept();
+        return;
+    }
+
+    QGraphicsView::mousePressEvent(event);
 }
 
 }  // namespace fleetsim::ui

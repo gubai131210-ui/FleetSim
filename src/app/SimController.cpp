@@ -1,5 +1,9 @@
 #include "SimController.h"
 
+#include "domain/vehicle/Vehicle.h"
+
+#include <memory>
+
 namespace fleetsim::app {
 
 SimController::SimController() = default;
@@ -12,6 +16,47 @@ domain::SimEngine& SimController::engine()
 const domain::SimEngine& SimController::engine() const
 {
     return engine_;
+}
+
+bool SimController::loadScenario(const std::string& scenario_directory)
+{
+    scenario_ = domain::scenario::ScenarioLoader::loadFromDirectory(scenario_directory);
+    engine_.setMap(scenario_.map);
+    engine_.clock().setFixedDt(scenario_.simulation.dt_s);
+
+    if (scenario_.vehicles.empty()) {
+        scenario_loaded_ = false;
+        return false;
+    }
+
+    const auto& vehicle_config = scenario_.vehicles.front();
+    auto vehicle = std::make_unique<domain::vehicle::Vehicle>(
+        vehicle_config.id,
+        vehicle_config.length_m,
+        vehicle_config.initial_pose);
+    engine_.setVehicle(std::move(vehicle));
+
+    scenario_loaded_ = true;
+    return true;
+}
+
+const domain::scenario::ScenarioData* SimController::scenario() const
+{
+    return scenario_loaded_ ? &scenario_ : nullptr;
+}
+
+void SimController::setGoal(double x, double y, double theta)
+{
+    core::Pose goal;
+    goal.x = x;
+    goal.y = y;
+    goal.theta = theta;
+    engine_.setGoal(goal);
+}
+
+bool SimController::planPath()
+{
+    return engine_.planPath();
 }
 
 void SimController::start()
@@ -43,6 +88,11 @@ void SimController::tick()
     if (dt > 0.0) {
         engine_.tick(dt);
     }
+}
+
+void SimController::setTimeScale(double scale)
+{
+    engine_.clock().setTimeScale(scale);
 }
 
 bool SimController::isRunning() const

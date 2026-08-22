@@ -1,6 +1,25 @@
 add_library(FleetSimDomain STATIC
     SimEngine.cpp
     SimEngine.h
+    map/OccupancyGrid.cpp
+    map/OccupancyGrid.h
+    map/MapLoader.cpp
+    map/MapLoader.h
+    planning/AStarPlanner.cpp
+    planning/AStarPlanner.h
+    planning/DouglasPeuckerSmoother.cpp
+    planning/DouglasPeuckerSmoother.h
+    planning/IPathPlanner.h
+    planning/IPathSmoother.h
+    control/PurePursuitTracker.cpp
+    control/PurePursuitTracker.h
+    control/IPathTracker.h
+    vehicle/DiffDriveModel.cpp
+    vehicle/DiffDriveModel.h
+    vehicle/Vehicle.cpp
+    vehicle/Vehicle.h
+    scenario/ScenarioLoader.cpp
+    scenario/ScenarioLoader.h
     scheduling/SchedulingModule.cpp
     scheduling/SchedulingModule.h
     collision/CollisionModule.cpp

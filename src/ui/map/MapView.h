@@ -6,8 +6,6 @@ namespace fleetsim::ui {
 
 class MapScene;
 
-/// QGraphicsView wrapper: zoom, pan, simulation canvas.
-/// Phase 1: grid + path + vehicle layers.
 class MapView : public QGraphicsView {
     Q_OBJECT
 
@@ -18,8 +16,12 @@ public:
 
     void setMapSizeM(double width_m, double height_m);
 
+signals:
+    void goalRequested(double x_m, double y_m);
+
 protected:
     void wheelEvent(QWheelEvent* event) override;
+    void mousePressEvent(QMouseEvent* event) override;
 
 private:
     MapScene* scene_{nullptr};

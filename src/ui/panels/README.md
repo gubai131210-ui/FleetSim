@@ -6,7 +6,7 @@
 
 | 面板 | 文件 | 职责 |
 |------|------|------|
-| ControlPanel | `ControlPanel.*` | 仿真播放/暂停/单步 |
+| ControlPanel | `ControlPanel.*` | 仿真播放/暂停/单步/倍率 | Phase 1 |
 
 ## 计划面板（Phase 1+，各自独立文件）
 
