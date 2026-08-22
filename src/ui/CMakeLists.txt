@@ -8,6 +8,8 @@ qt_add_library(FleetSimUI STATIC
     map/MapView.h
     graphics/VehicleGraphicsItem.cpp
     graphics/VehicleGraphicsItem.h
+    panels/ControlPanel.cpp
+    panels/ControlPanel.h
 )
 
 target_include_directories(FleetSimUI

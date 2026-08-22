@@ -4,7 +4,9 @@
 
 ## 文档
 
-- [AGENTS.md](AGENTS.md) — Agent 协作规范
+- [AGENTS.md](AGENTS.md) — Agent 协作规范（含反偷懒硬规则）
+- [docs/AGENT_SESSION_TEMPLATE.md](docs/AGENT_SESSION_TEMPLATE.md) — **会话交付强制模板**
+- [docs/UI_GUIDELINES.md](docs/UI_GUIDELINES.md) — **UI 面板规范**
 - [docs/DEVELOPMENT_PLAN.md](docs/DEVELOPMENT_PLAN.md) — 阶段计划
 - [docs/decisions/](docs/decisions/) — 架构决策（ADR）
 - [SESSION_LOG.md](SESSION_LOG.md) — 会话记录
@@ -25,7 +27,7 @@
 src/core/      — SimClock, EventBus, 基础类型（无 Qt）
 src/domain/    — SimEngine, 调度/避碰 stub（无 Qt）
 src/app/       — SimController
-src/ui/        — MainWindow, MapView, VehicleGraphicsItem（SVG）
+src/ui/        — MainWindow(壳), MapView, panels/, graphics/
 assets/        — 车辆 SVG、场景 JSON
 tests/         — Google Test
 ```

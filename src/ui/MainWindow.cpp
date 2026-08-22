@@ -4,12 +4,14 @@
 #include "graphics/VehicleGraphicsItem.h"
 #include "map/MapScene.h"
 #include "map/MapView.h"
+#include "panels/ControlPanel.h"
 
 #include <QCoreApplication>
 #include <QDir>
+#include <QDockWidget>
 #include <QFile>
+#include <QMenuBar>
 #include <QStatusBar>
-#include <QToolBar>
 
 namespace fleetsim::ui {
 
@@ -34,23 +36,34 @@ void MainWindow::setupUiLayout()
     map_view_->setMapSizeM(20.0, 15.0);
     setCentralWidget(map_view_);
 
-    auto* toolbar = addToolBar(tr("Simulation"));
-    toolbar->setMovable(false);
+    setupDockPanels();
+    setupViewMenu();
+}
 
-    // Phase 1: wire play/pause/step to SimController.
-    toolbar->addAction(tr("Play"), this, [this]() {
-        sim_controller_->start();
-        statusBar()->showMessage(tr("Simulation running"));
-    });
-    toolbar->addAction(tr("Pause"), this, [this]() {
-        sim_controller_->pause();
-        statusBar()->showMessage(tr("Simulation paused"));
-    });
-    toolbar->addAction(tr("Step"), this, [this]() {
-        sim_controller_->stepOnce();
-        statusBar()->showMessage(
-            tr("Tick count: %1").arg(sim_controller_->engine().tickCount()));
-    });
+void MainWindow::setupDockPanels()
+{
+    auto* control_dock = new QDockWidget(tr("Control"), this);
+    control_dock->setObjectName(QStringLiteral("ControlDock"));
+    control_dock->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea);
+
+    auto* control_panel = new ControlPanel(sim_controller_, control_dock);
+    control_dock->setWidget(control_panel);
+    addDockWidget(Qt::RightDockWidgetArea, control_dock);
+
+    connect(control_panel, &ControlPanel::statusMessage,
+            statusBar(), &QStatusBar::showMessage);
+}
+
+void MainWindow::setupViewMenu()
+{
+    auto* view_menu = menuBar()->addMenu(tr("View"));
+    if (view_menu != nullptr) {
+        view_menu->addAction(tr("Control Panel"), this, [this]() {
+            if (auto* dock = findChild<QDockWidget*>(QStringLiteral("ControlDock"))) {
+                dock->setVisible(!dock->isVisible());
+            }
+        });
+    }
 }
 
 void MainWindow::setupDemoVehicle()
@@ -80,7 +93,6 @@ QString MainWindow::resolveAssetPath(const QString& relative_path) const
         return candidate;
     }
 
-    // Qt Creator may run from build dir; also try source tree (dev fallback).
     const QDir source_dir(QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("../..")));
     return source_dir.filePath(relative_path);
 }
