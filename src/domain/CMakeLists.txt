@@ -18,6 +18,8 @@ add_library(FleetSimDomain STATIC
     planning/IPathSmoother.h
     control/PurePursuitTracker.cpp
     control/PurePursuitTracker.h
+    control/SteeringAdapter.cpp
+    control/SteeringAdapter.h
     control/IPathTracker.h
     vehicle/IVehicleModel.h
     vehicle/DiffDriveModel.cpp

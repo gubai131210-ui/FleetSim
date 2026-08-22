@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "width_m": 20.0,
+  "height_m": 15.0,
+  "grid_resolution_m": 0.1,
+  "obstacles": [
+    {
+      "type": "rect",
+      "x": 9.0,
+      "y": 4.0,
+      "width": 2.0,
+      "height": 6.0
+    }
+  ],
+  "lanes": []
+}

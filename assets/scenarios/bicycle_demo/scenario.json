@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "simulation": {
+    "dt_s": 0.05,
+    "realtime": false
+  },
+  "vehicles": [
+    {
+      "id": "car_0",
+      "model": "bicycle",
+      "svg": "assets/vehicles/agv_diff.svg",
+      "length_m": 1.2,
+      "wheelbase_m": 0.9,
+      "max_steering_rad": 0.6,
+      "pose": { "x": 2.0, "y": 2.0, "theta": 0.0 }
+    }
+  ],
+  "tasks": []
+}

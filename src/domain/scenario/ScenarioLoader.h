@@ -20,6 +20,8 @@ struct VehicleConfig {
     std::string model;
     std::string svg_path;
     double length_m{1.0};
+    double wheelbase_m{0.8};       // used when model == "bicycle"
+    double max_steering_rad{0.6};  // used when model == "bicycle"
     core::Pose initial_pose;
 };
 

@@ -11,6 +11,79 @@
 
 ---
 
+---
+
+## [2026-08-23] Phase 4 Session 1 — BicycleModel 实装 + Vehicle 策略切换
+
+### 本次 Scope
+- 目标：后轴 Bicycle 运动学绿测；Vehicle `unique_ptr<IVehicleModel>`；工厂 diff_drive|bicycle；DiffDrive 默认不破
+- 允许：`BicycleModel.*`、`Vehicle.*`、`VehicleModelFactory.*`、CMake、`SimController`、测试、SESSION_LOG
+- 不做：舵角适配、bicycle 资产、Settings、Hungarian、ROS2、export
+
+### ✅ 已完成
+- [x] Bicycle 后轴方程 + clamp + L≤0 防护
+- [x] Vehicle unique_ptr + 双构造 + setModel
+- [x] VehicleModelFactory / createVehicleModel
+- [x] SimController 按 model 工厂创建
+- [x] BicycleModelTest / VehicleTest bicycle 注入
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| Pure Pursuit→舵角 | Session 2 | Session 2 |
+| bicycle_demo 资产 | Session 2 | Session 2 |
+| Domain export / ROS2 / Settings / Hungarian | 后续 | Session 3–5 |
+
+### Reviewer 结果
+- Reviewer-Code: PASS / Reviewer-Test: PASS / Reviewer-UI: N/A
+
+### 用户本地验证
+1. `git pull` → Configure → Build → Run `FleetSimTests`
+2. 预期：`BicycleModelTest.*` / `VehicleTest.*` / DiffDrive / MultiAgv **全 PASS**
+
+---
+
+## [2026-08-23] Phase 4 Session 2 — 舵角适配 + scenario bicycle + 场景资产
+
+### 本次 Scope
+- 目标：κ→δ=`atan(κL)`；scenario `wheelbase_m`；`bicycle_demo`；集成测；DiffDrive 路径不破
+- 不做：Settings、Hungarian、ROS2、CMake export、Phase4 ✅
+
+### ✅ 已完成
+- [x] `SteeringAdapter`（atan + clamp）
+- [x] `PurePursuitTracker` bicycle 重载填 `steering_angle`；大航向误差 creep+满舵
+- [x] Vehicle 运动学元数据；SimEngine 按 isBicycle 分流
+- [x] Scenario 读写 `wheelbase_m` / `max_steering_rad`
+- [x] `assets/scenarios/bicycle_demo/`
+- [x] `SteeringAdapterTest` + `BicycleScenarioTest`
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| Domain 静态库 export | Session 3 | Session 3 |
+| ROS2 桥 | Session 4 | Session 4 |
+| SettingsDialog / Hungarian | Session 5 | Session 5 |
+| Stanley tracker | 非 MVP | 后续可选 |
+
+### 🚫 禁止偷懒自检
+- [x] Bicycle ≠ DiffDrive 换皮
+- [x] Domain 无 Qt/rclcpp
+- [x] 未堆 Settings 进 ControlPanel
+- [x] CMake include/link + 新源登记
+- [x] 新类有单测；SESSION_LOG 写了没做什么
+
+### Reviewer 结果
+- Reviewer-Code: PASS / Reviewer-Test: PASS / Reviewer-UI: N/A
+
+### 用户本地验证
+1. `git pull` → Configure → Build → Run Tests（含 SteeringAdapter* / BicycleScenario*）
+2. Open `assets/scenarios/bicycle_demo` → Play，观察转弯与 DiffDrive 差异
+
+### 下次会话建议
+- Session 3：CMake export FleetSimDomain + 无 Qt smoke
+
+---
+
 ## [2026-08-23] Phase 4 Session 0 — ADR + IVehicleModel / ControlCommand stub + 红灯测
 
 ### 本次 Scope（Architect 定义）

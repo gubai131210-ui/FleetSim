@@ -275,8 +275,16 @@ void SimEngine::tick(double dt)
             continue;
         }
 
-        core::ControlCommand command =
-            tracker_.compute(agent.vehicle->pose(), agent.reference_path, dt);
+        core::ControlCommand command;
+        if (agent.vehicle->isBicycle()) {
+            command = tracker_.compute(agent.vehicle->pose(),
+                                       agent.reference_path,
+                                       dt,
+                                       agent.vehicle->wheelbaseM(),
+                                       agent.vehicle->maxSteeringRad());
+        } else {
+            command = tracker_.compute(agent.vehicle->pose(), agent.reference_path, dt);
+        }
         command.linear_velocity *= agent.speed_scale;
         agent.linear_velocity = command.linear_velocity;
         last_linear_velocity_ = command.linear_velocity;

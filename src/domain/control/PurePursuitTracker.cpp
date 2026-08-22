@@ -1,5 +1,7 @@
 #include "PurePursuitTracker.h"
 
+#include "SteeringAdapter.h"
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -42,8 +44,8 @@ double PurePursuitTracker::distance(const core::Pose& a, const core::Waypoint& b
 }
 
 core::Waypoint PurePursuitTracker::findLookaheadPoint(const core::Pose& pose,
-                                                    const core::Path& path,
-                                                    double lookahead_m)
+                                                      const core::Path& path,
+                                                      double lookahead_m)
 {
     const auto& points = path.waypoints();
     if (points.empty()) {
@@ -77,6 +79,24 @@ core::ControlCommand PurePursuitTracker::compute(const core::Pose& current_pose,
                                                  const core::Path& reference_path,
                                                  double /*dt*/) const
 {
+    return computeInternal(current_pose, reference_path, 0.0, 0.6);
+}
+
+core::ControlCommand PurePursuitTracker::compute(const core::Pose& current_pose,
+                                                 const core::Path& reference_path,
+                                                 double /*dt*/,
+                                                 double bicycle_wheelbase_m,
+                                                 double max_steering_rad) const
+{
+    return computeInternal(current_pose, reference_path, bicycle_wheelbase_m, max_steering_rad);
+}
+
+core::ControlCommand PurePursuitTracker::computeInternal(
+    const core::Pose& current_pose,
+    const core::Path& reference_path,
+    double bicycle_wheelbase_m,
+    double max_steering_rad) const
+{
     core::ControlCommand command;
 
     if (reference_path.empty()) {
@@ -88,23 +108,41 @@ core::ControlCommand PurePursuitTracker::compute(const core::Pose& current_pose,
         return command;
     }
 
-    const core::Waypoint lookahead = findLookaheadPoint(current_pose, reference_path, lookahead_m_);
+    const core::Waypoint lookahead =
+        findLookaheadPoint(current_pose, reference_path, lookahead_m_);
     const double dx = lookahead.x - current_pose.x;
     const double dy = lookahead.y - current_pose.y;
     const double target_heading = std::atan2(dy, dx);
     const double heading_error = normalizeAngle(target_heading - current_pose.theta);
+    const bool bicycle = bicycle_wheelbase_m > 0.0;
 
     if (std::abs(heading_error) > rotate_in_place_threshold_rad_) {
-        command.linear_velocity = 0.0;
-        command.angular_velocity = std::clamp(heading_error, -max_angular_velocity_, max_angular_velocity_);
+        if (bicycle) {
+            // Car-like robots cannot spin in place: creep + saturated steering.
+            command.linear_velocity = max_linear_velocity_ * 0.3;
+            command.steering_angle =
+                std::copysign(max_steering_rad, heading_error);
+            command.angular_velocity = 0.0;
+        } else {
+            command.linear_velocity = 0.0;
+            command.angular_velocity =
+                std::clamp(heading_error, -max_angular_velocity_, max_angular_velocity_);
+        }
         return command;
     }
 
-    const double curvature = 2.0 * std::sin(heading_error) / std::max(lookahead_m_, 1e-3);
+    const double curvature =
+        2.0 * std::sin(heading_error) / std::max(lookahead_m_, 1e-3);
     command.linear_velocity = max_linear_velocity_;
     command.angular_velocity = std::clamp(curvature * command.linear_velocity,
                                           -max_angular_velocity_,
                                           max_angular_velocity_);
+
+    if (bicycle) {
+        SteeringAdapter::applyCurvatureToCommand(
+            command, curvature, bicycle_wheelbase_m, max_steering_rad);
+    }
+
     return command;
 }
 

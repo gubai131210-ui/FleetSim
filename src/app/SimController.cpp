@@ -26,12 +26,22 @@ void SimController::applyScenarioToEngine()
     engine_.clearFleet();
 
     for (const auto& vehicle_config : scenario_.vehicles) {
-        auto model = domain::vehicle::createVehicleModel(vehicle_config.model);
+        auto model = domain::vehicle::createVehicleModel(
+            vehicle_config.model,
+            0.5,
+            1.0,
+            vehicle_config.wheelbase_m,
+            vehicle_config.max_steering_rad);
         auto vehicle = std::make_unique<domain::vehicle::Vehicle>(
             vehicle_config.id,
             vehicle_config.length_m,
             vehicle_config.initial_pose,
             std::move(model));
+        vehicle->setModelKind(vehicle_config.model);
+        if (vehicle_config.model == "bicycle") {
+            vehicle->setWheelbaseM(vehicle_config.wheelbase_m);
+            vehicle->setMaxSteeringRad(vehicle_config.max_steering_rad);
+        }
         engine_.addVehicle(std::move(vehicle));
     }
 

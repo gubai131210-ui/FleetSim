@@ -39,6 +39,8 @@ ScenarioData ScenarioSerializer::fromJson(const nlohmann::json& json,
         vehicle.model = vehicle_json.at("model").get<std::string>();
         vehicle.svg_path = vehicle_json.at("svg").get<std::string>();
         vehicle.length_m = vehicle_json.value("length_m", 1.0);
+        vehicle.wheelbase_m = vehicle_json.value("wheelbase_m", 0.8);
+        vehicle.max_steering_rad = vehicle_json.value("max_steering_rad", 0.6);
         vehicle.initial_pose = parsePose(vehicle_json.at("pose"));
         data.vehicles.push_back(std::move(vehicle));
     }
@@ -110,7 +112,7 @@ nlohmann::json ScenarioSerializer::toJson(const ScenarioData& scenario)
 
     nlohmann::json vehicles = nlohmann::json::array();
     for (const VehicleConfig& vehicle : scenario.vehicles) {
-        vehicles.push_back({
+        nlohmann::json vehicle_json = {
             {"id", vehicle.id},
             {"model", vehicle.model},
             {"svg", vehicle.svg_path},
@@ -121,7 +123,12 @@ nlohmann::json ScenarioSerializer::toJson(const ScenarioData& scenario)
                  {"y", vehicle.initial_pose.y},
                  {"theta", vehicle.initial_pose.theta},
              }},
-        });
+        };
+        if (vehicle.model == "bicycle") {
+            vehicle_json["wheelbase_m"] = vehicle.wheelbase_m;
+            vehicle_json["max_steering_rad"] = vehicle.max_steering_rad;
+        }
+        vehicles.push_back(std::move(vehicle_json));
     }
     json["vehicles"] = vehicles;
     return json;
