@@ -68,6 +68,9 @@ public:
     /// Resolved planner for a vehicle given current kind + model defaults (ADR-011).
     std::string resolvedPlannerKind(const vehicle::Vehicle& vehicle) const;
 
+    /// Resolved tracker for a vehicle (ADR-012). auto → pure_pursuit.
+    std::string resolvedTrackerKind(const vehicle::Vehicle& vehicle) const;
+
     bool planPath();
     bool planPathFor(const core::VehicleId& vehicle_id);
     const core::Path& referencePath() const;
@@ -98,7 +101,7 @@ private:
 
     planning::AStarPlanner astar_planner_;
     planning::DouglasPeuckerSmoother smoother_;
-    control::PurePursuitTracker tracker_;
+    control::PurePursuitTracker pure_pursuit_tracker_;
 
     std::string planner_kind_{"auto"};
     std::string tracker_kind_{"auto"};

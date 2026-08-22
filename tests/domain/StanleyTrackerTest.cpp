@@ -70,9 +70,8 @@ TEST(StanleyTrackerTest, SofteningEpsilonProtectsZeroSpeed)
     const ControlCommand cmd = tracker.compute(pose, path, 0.05);
     EXPECT_TRUE(std::isfinite(cmd.steering_angle));
     EXPECT_TRUE(std::isfinite(cmd.linear_velocity));
-    // Stub returns zeros — after Session 3, non-trivial steer for lateral offset expected.
-    EXPECT_NE(cmd.steering_angle, 0.0)
-        << "RED Session0 stub: Stanley must produce non-zero δ for nonzero cross-track";
+    // Non-zero steer expected for nonzero cross-track (ε softens v=0).
+    EXPECT_NE(cmd.steering_angle, 0.0);
 }
 
 TEST(StanleyTrackerTest, SteeringClampedToMax)
@@ -82,7 +81,7 @@ TEST(StanleyTrackerTest, SteeringClampedToMax)
     Pose pose{0.0, 2.0, 0.0};
 
     const ControlCommand cmd = tracker.compute(pose, path, 0.05);
-    ASSERT_NE(cmd.steering_angle, 0.0) << "RED until Session 3 implements Stanley";
+    ASSERT_NE(cmd.steering_angle, 0.0);
     EXPECT_LE(std::abs(cmd.steering_angle), 0.4 + 1e-9);
 }
 
@@ -105,19 +104,25 @@ TEST(StanleyTrackerTest, CrossTrackErrorDecreasesOnStraightPath)
 
     const double e1 = std::abs(crossTrackAtFrontAxle(pose, L, path));
     EXPECT_GT(e0, 0.2);
-    EXPECT_LT(e1, e0 * 0.5)
-        << "RED Session0: stub does not reduce cross-track; Session 3 must";
+    EXPECT_LT(e1, e0 * 0.5);
 }
 
 TEST(StanleyTrackerTest, FormulaIncludesHeadingAndCrossTrackTerms)
 {
-    // With e≈0 and large θe, δ should be dominated by heading error (≈θe clamped).
-    StanleyTracker tracker(1.5, 0.1, 0.6, 0.8, 0.5);
+    // Place front axle on path with heading error so e≈0 and δ≈θe.
+    const double L = 0.8;
+    const double theta_e = 0.35;
+    StanleyTracker tracker(1.5, 0.1, 0.6, L, 0.5);
     const Path path = makeStraightPath(0.0, 8.0, 0.0);
-    Pose pose{1.0, 0.0, 0.35};  // on path centerline-ish, heading error 0.35 rad
+    const double fx = 2.0;
+    const double fy = 0.0;
+    Pose pose{
+        fx - L * std::cos(theta_e),
+        fy - L * std::sin(theta_e),
+        theta_e};
 
     const ControlCommand cmd = tracker.compute(pose, path, 0.05);
-    ASSERT_NE(cmd.steering_angle, 0.0) << "RED Session0 stub";
-    EXPECT_NEAR(cmd.steering_angle, 0.35, 0.15)
-        << "δ ≈ θe when e≈0 (classic Stanley); PurePursuit-skin would differ";
+    ASSERT_NE(cmd.steering_angle, 0.0);
+    EXPECT_NEAR(cmd.steering_angle, theta_e, 0.15)
+        << "δ ≈ θe when front-axle e≈0 (classic Stanley); PurePursuit-skin would differ";
 }

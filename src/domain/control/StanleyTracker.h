@@ -5,7 +5,7 @@
 namespace fleetsim::domain::control {
 
 /// Stanley tracker: front-axle cross-track + heading error (ADR-012).
-/// Session 0 stub — Session 3 fills classic δ = θe + arctan(k e / (v+ε)).
+/// δ = θe + arctan(k e / (v+ε)); not a Pure Pursuit skin.
 class StanleyTracker final : public IPathTracker {
 public:
     explicit StanleyTracker(double k_gain = 1.5,

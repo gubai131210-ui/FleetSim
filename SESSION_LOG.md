@@ -11,6 +11,44 @@
 
 ---
 
+## [2026-08-23] Phase 5 Session 3 — StanleyTracker + tracker 切换
+
+### 本次 Scope
+- 目标：经典 Stanley（前轴横偏 + 航向）；SimEngine 按 tracker 切换 PP/Stanley；单测转绿
+- NOT DO：UI 面板、Priority、Phase5 ✅
+
+### ✅ 已完成
+- [x] `StanleyTracker::compute` 真公式 + ε + 限舵
+- [x] `SimEngine::resolvedTrackerKind` + tick 分支
+- [x] Stanley 单测去红灯文案；PlannerSwitch tracker resolve 测
+- [x] ADR-012 标已接受
+
+### ❌ 未完成
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| PlannerTracker UI / Monitor 误差曲线 | Session 5 | Session 5 |
+| Priority | Session 4 | Session 4 |
+
+### 🚫 禁止偷懒自检
+- [x] Stanley ≠ PP 换皮
+- [x] Domain 无 Qt
+- [x] 有单测
+- [x] 未堆 ControlPanel
+
+### Reviewer 结果
+- Reviewer-Code/Test: 初审 FAIL（测文件破损 + θe 测未对准前轴）→ 修复后复审 **PASS**
+- 主 Agent 不自评
+
+### 用户本地验证
+1. git pull；Configure；Build FleetSimTests
+2. `Stanley*`、`PlannerSwitch*Tracker*` 预期 PASS
+3. DiffDrive / MultiAgv 仍绿
+
+### 下次会话建议
+- PriorityPathCoordinator + TimeWindow 协同
+
+---
+
 ## [2026-08-23] Phase 5 Session 2 — SimEngine/scenario hybrid_astar 接入
 
 ### 本次 Scope（Architect 定义）

@@ -1,5 +1,6 @@
 #include "SimEngine.h"
 
+#include "control/StanleyTracker.h"
 #include "planning/HybridAStarPlanner.h"
 
 #include <nlohmann/json.hpp>
@@ -160,6 +161,15 @@ std::string SimEngine::resolvedPlannerKind(const vehicle::Vehicle& vehicle) cons
         return "hybrid_astar";
     }
     return "astar";
+}
+
+std::string SimEngine::resolvedTrackerKind(const vehicle::Vehicle& /*vehicle*/) const
+{
+    if (tracker_kind_ == "stanley" || tracker_kind_ == "pure_pursuit") {
+        return tracker_kind_;
+    }
+    // auto → Pure Pursuit (DiffDrive regression + bicycle_demo default).
+    return "pure_pursuit";
 }
 
 const core::Pose& SimEngine::goal() const
@@ -328,14 +338,28 @@ void SimEngine::tick(double dt)
         }
 
         core::ControlCommand command;
-        if (agent.vehicle->isBicycle()) {
-            command = tracker_.compute(agent.vehicle->pose(),
-                                       agent.reference_path,
-                                       dt,
-                                       agent.vehicle->wheelbaseM(),
-                                       agent.vehicle->maxSteeringRad());
+        const std::string tracker_kind = resolvedTrackerKind(*agent.vehicle);
+        if (tracker_kind == "stanley") {
+            // Rebuild with vehicle geometry so δ limits / wheelbase match the agent.
+            control::StanleyTracker stanley(
+                1.5,
+                0.1,
+                agent.vehicle->isBicycle() ? agent.vehicle->maxSteeringRad() : 0.6,
+                agent.vehicle->isBicycle() ? agent.vehicle->wheelbaseM() : 0.8,
+                0.5);
+            command = stanley.compute(agent.vehicle->pose(), agent.reference_path, dt);
+            if (!agent.vehicle->isBicycle()) {
+                // DiffDrive uses ω; Stanley already fills angular_velocity from δ.
+            }
+        } else if (agent.vehicle->isBicycle()) {
+            command = pure_pursuit_tracker_.compute(agent.vehicle->pose(),
+                                                    agent.reference_path,
+                                                    dt,
+                                                    agent.vehicle->wheelbaseM(),
+                                                    agent.vehicle->maxSteeringRad());
         } else {
-            command = tracker_.compute(agent.vehicle->pose(), agent.reference_path, dt);
+            command = pure_pursuit_tracker_.compute(
+                agent.vehicle->pose(), agent.reference_path, dt);
         }
         command.linear_velocity *= agent.speed_scale;
         agent.linear_velocity = command.linear_velocity;

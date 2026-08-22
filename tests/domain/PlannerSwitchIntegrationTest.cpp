@@ -51,6 +51,23 @@ bool pathsNearlyIdentical(const fleetsim::core::Path& a, const fleetsim::core::P
 
 }  // namespace
 
+TEST(PlannerSwitchIntegrationTest, TrackerKindStanleyResolvesAndDiffersFromPurePursuit)
+{
+    SimEngine engine;
+    engine.setTrackerKind("stanley");
+    auto model = fleetsim::domain::vehicle::createVehicleModel("bicycle", 0.5, 1.0, 0.8, 0.6);
+    auto vehicle = std::make_unique<Vehicle>("car_0", 1.2, Pose{0.0, 0.0, 0.0}, std::move(model));
+    vehicle->setModelKind("bicycle");
+    vehicle->setWheelbaseM(0.8);
+    vehicle->setMaxSteeringRad(0.6);
+    EXPECT_EQ(engine.resolvedTrackerKind(*vehicle), "stanley");
+
+    engine.setTrackerKind("pure_pursuit");
+    EXPECT_EQ(engine.resolvedTrackerKind(*vehicle), "pure_pursuit");
+    engine.setTrackerKind("auto");
+    EXPECT_EQ(engine.resolvedTrackerKind(*vehicle), "pure_pursuit");
+}
+
 TEST(PlannerSwitchIntegrationTest, BicycleAutoDefaultsToHybridAstar)
 {
     SimEngine engine;
