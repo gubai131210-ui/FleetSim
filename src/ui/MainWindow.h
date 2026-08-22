@@ -6,6 +6,7 @@
 #include <QVector>
 
 #include "domain/map/MapData.h"
+#include "dialogs/SettingsDialog.h"
 
 namespace fleetsim::app {
 class FleetUiCoordinator;
@@ -48,6 +49,7 @@ private:
     void handleNewProject();
     void handleOpenProject();
     void handleSaveProject();
+    void handleSettings();
     void applyProjectToSimulation();
     void refreshMapVisualization();
     void rebuildEditorObstacles();
@@ -75,6 +77,7 @@ private:
     QTimer* simulation_timer_{nullptr};
     std::vector<domain::map::MapDocument> undo_stack_;
     int next_task_index_{0};
+    SimulationSettings current_settings_;
 };
 
 }  // namespace fleetsim::ui

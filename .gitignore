@@ -35,6 +35,8 @@ Makefile
 !CMakeLists.txt
 !**/CMakeLists.txt
 !cmake/Coverage.cmake
+!cmake/*.cmake.in
+!cmake/FleetSimDomainConfig.cmake.in
 
 # Generated
 *_autogen/

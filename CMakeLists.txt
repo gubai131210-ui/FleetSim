@@ -49,6 +49,16 @@ add_subdirectory(src/app)
 add_subdirectory(src/ui)
 add_subdirectory(tests)
 
+option(FLEETSIM_BUILD_DOMAIN_SMOKE "Build no-Qt Domain smoke executable" ON)
+if(FLEETSIM_BUILD_DOMAIN_SMOKE)
+    add_subdirectory(examples/domain_smoke)
+endif()
+
+option(FLEETSIM_BUILD_ROS2 "Build ROS2 bridge" OFF)
+if(FLEETSIM_BUILD_ROS2)
+    add_subdirectory(bridges/ros2)
+endif()
+
 # --- Main executable ---
 qt_add_executable(FleetSim
     WIN32 MACOSX_BUNDLE

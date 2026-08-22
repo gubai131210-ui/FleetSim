@@ -14,10 +14,13 @@ add_library(FleetSimCore STATIC
     EventBus.h
 )
 
+include(GNUInstallDirs)
+
 target_include_directories(FleetSimCore
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/..
-        ${CMAKE_CURRENT_SOURCE_DIR}
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 target_link_libraries(FleetSimCore
@@ -28,3 +31,16 @@ target_link_libraries(FleetSimCore
 target_compile_features(FleetSimCore PUBLIC cxx_std_17)
 
 fleetsim_enable_coverage(FleetSimCore)
+
+install(TARGETS FleetSimCore
+    EXPORT FleetSimDomainTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/core
+    FILES_MATCHING
+        PATTERN "*.h"
+)

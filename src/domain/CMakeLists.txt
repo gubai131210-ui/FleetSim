@@ -42,6 +42,8 @@ add_library(FleetSimDomain STATIC
     scheduling/TaskQueue.h
     scheduling/GreedyAssigner.cpp
     scheduling/GreedyAssigner.h
+    scheduling/HungarianAssigner.cpp
+    scheduling/HungarianAssigner.h
     scheduling/ITaskAssigner.h
     collision/CollisionModule.cpp
     collision/CollisionModule.h
@@ -52,10 +54,13 @@ add_library(FleetSimDomain STATIC
     collision/ICollisionAvoidance.h
 )
 
+include(GNUInstallDirs)
+
 target_include_directories(FleetSimDomain
     PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/..
-        ${CMAKE_CURRENT_SOURCE_DIR}
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/..>
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 target_link_libraries(FleetSimDomain
@@ -67,3 +72,41 @@ target_link_libraries(FleetSimDomain
 target_compile_features(FleetSimDomain PUBLIC cxx_std_17)
 
 fleetsim_enable_coverage(FleetSimDomain)
+
+install(TARGETS FleetSimDomain
+    EXPORT FleetSimDomainTargets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/domain
+    FILES_MATCHING
+        PATTERN "*.h"
+)
+
+install(EXPORT FleetSimDomainTargets
+    FILE FleetSimDomainTargets.cmake
+    NAMESPACE FleetSim::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FleetSimDomain
+)
+
+include(CMakePackageConfigHelpers)
+configure_package_config_file(
+    ${CMAKE_SOURCE_DIR}/cmake/FleetSimDomainConfig.cmake.in
+    ${CMAKE_CURRENT_BINARY_DIR}/FleetSimDomainConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FleetSimDomain
+)
+
+write_basic_package_version_file(
+    ${CMAKE_CURRENT_BINARY_DIR}/FleetSimDomainConfigVersion.cmake
+    VERSION ${PROJECT_VERSION}
+    COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+    ${CMAKE_CURRENT_BINARY_DIR}/FleetSimDomainConfig.cmake
+    ${CMAKE_CURRENT_BINARY_DIR}/FleetSimDomainConfigVersion.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/FleetSimDomain
+)

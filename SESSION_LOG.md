@@ -11,6 +11,55 @@
 
 ---
 
+
+## [2026-08-23] Phase 4 Sessions 3–5 — Domain export + ROS2 可选桥 + Settings/Hungarian + Phase4 ✅
+
+### 本次 Scope
+- Session3: FleetSimCore/Domain install+export + domain_smoke（无 Qt 链接）+ docs/domain_export.md
+- Session4: bridges/ros2 + FLEETSIM_BUILD_ROS2=OFF + docs/ros2_bridge.md（ADR-010）
+- Session5: SettingsDialog 独立对话框、HungarianAssigner、对比单测、DEVELOPMENT_PLAN Phase4✅、MUTATION M24–27、panels README
+
+### ✅ 已完成
+- [x] CMake export / install Domain+Core；.gitignore 白名单 cmake/*.cmake.in
+- [x] examples/domain_smoke + FLEETSIM_BUILD_DOMAIN_SMOKE
+- [x] ROS2 桥目录默认 OFF；无 rclcpp 时跳过不挂主工程
+- [x] SettingsDialog + File→Settings（未堆 ControlPanel）
+- [x] HungarianAssigner + SchedulingModule 可注入 + 对比单测
+- [x] DEVELOPMENT_PLAN Phase4 ✅；MUTATION M24–27
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| Stanley / MPC / Autoware | Phase4 明确不做 | 后续研究 |
+| Windows 原生 ROS2 实机 publish | 环境限制；文档化 WSL | 有 ROS 的机器 |
+| 用户本机 Qt Build 代跑 | 中文路径禁止 Agent 代跑 | 用户本地 |
+| 时间窗口避碰改距离 | 禁止回退 | — |
+
+### 🚫 禁止偷懒自检
+- [x] Bicycle 非 DiffDrive 换皮（前序会话已落地）
+- [x] Domain 无 Qt/rclcpp
+- [x] Settings 独立 Dialog
+- [x] 静态库 export 落地
+- [x] ROS2 默认 OFF
+- [x] 新类有单测；CMake include/link 保留
+- [x] SESSION_LOG 写了没做什么
+
+### Reviewer 结果
+- Reviewer-Code: PASS（Settings 已回写 model/wheelbase 并 recreate）
+- Reviewer-Test: PASS
+- Reviewer-UI: PASS
+
+### 用户本地验证
+1. git pull；Qt Creator 重新 Configure → Build
+2. Run FleetSimTests（Bicycle* / Steering* / Hungarian* / MultiAgv*）
+3. 构建并运行 fleet_domain_smoke
+4. Open assets/scenarios/bicycle_demo → Play
+5. File → Settings 切换 assigner / model（reload 场景生效于车辆模型）
+6. （可选）-DFLEETSIM_BUILD_ROS2=ON（需 ROS）
+
+
+---
+
 ---
 
 ## [2026-08-23] Phase 4 Session 1 — BicycleModel 实装 + Vehicle 策略切换

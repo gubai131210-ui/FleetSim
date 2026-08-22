@@ -8,6 +8,12 @@
 #include "core/types/Task.h"
 #include "domain/map/OccupancyGrid.h"
 #include "dialogs/ProjectDialog.h"
+#include "dialogs/SettingsDialog.h"
+#include "domain/scheduling/GreedyAssigner.h"
+#include "domain/scheduling/HungarianAssigner.h"
+
+#include "domain/scheduling/GreedyAssigner.h"
+#include "domain/scheduling/HungarianAssigner.h"
 #include "graphics/ObstacleGraphicsItem.h"
 #include "graphics/ObstacleOverlayItem.h"
 #include "graphics/PathGraphicsItem.h"
@@ -91,6 +97,8 @@ void MainWindow::setupMenuBar()
     file_menu->addAction(tr("New Project..."), this, &MainWindow::handleNewProject);
     file_menu->addAction(tr("Open Project..."), this, &MainWindow::handleOpenProject);
     file_menu->addAction(tr("Save Project"), this, &MainWindow::handleSaveProject);
+    file_menu->addSeparator();
+    file_menu->addAction(tr("Settings..."), this, &MainWindow::handleSettings);
     file_menu->addSeparator();
     file_menu->addAction(tr("Exit"), this, &QWidget::close);
 }
@@ -295,6 +303,40 @@ void MainWindow::handleSaveProject()
     statusBar()->showMessage(tr("Saved project: %1").arg(dir));
 }
 
+void MainWindow::handleSettings()
+{
+    SettingsDialog dialog(this);
+    dialog.setSettings(current_settings_);
+    if (dialog.exec() != QDialog::Accepted) {
+        return;
+    }
+
+    current_settings_ = dialog.settings();
+
+    if (current_settings_.assigner == QStringLiteral("hungarian")) {
+        sim_controller_->engine().scheduling().setAssigner(
+            std::make_unique<domain::scheduling::HungarianAssigner>());
+    } else {
+        sim_controller_->engine().scheduling().setAssigner(
+            std::make_unique<domain::scheduling::GreedyAssigner>());
+    }
+
+    // Stamp model / bicycle params onto open project scenario, then recreate vehicles.
+    if (project_manager_->hasProject()) {
+        auto& scenario = project_manager_->scenarioData();
+        for (auto& vehicle : scenario.vehicles) {
+            vehicle.model = current_settings_.vehicle_model.toStdString();
+            vehicle.wheelbase_m = current_settings_.wheelbase_m;
+            vehicle.max_steering_rad = current_settings_.max_steering_rad;
+        }
+        applyProjectToSimulation();
+    }
+
+    statusBar()->showMessage(
+        tr("Settings applied (model=%1, assigner=%2).")
+            .arg(current_settings_.vehicle_model, current_settings_.assigner));
+}
+
 void MainWindow::applyProjectToSimulation()
 {
     if (!project_manager_->hasProject()) {
@@ -302,6 +344,11 @@ void MainWindow::applyProjectToSimulation()
     }
 
     auto scenario = project_manager_->scenarioData();
+    for (auto& vehicle : scenario.vehicles) {
+        vehicle.model = current_settings_.vehicle_model.toStdString();
+        vehicle.wheelbase_m = current_settings_.wheelbase_m;
+        vehicle.max_steering_rad = current_settings_.max_steering_rad;
+    }
     scenario.map = project_manager_->buildOccupancyGrid(0.55);
     scenario.scenario_directory = project_manager_->projectDirectory();
 

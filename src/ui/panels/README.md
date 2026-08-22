@@ -11,12 +11,13 @@
 | MapEditorPanel | `MapEditorPanel.*` | 地图编辑 | Phase 2 |
 | TaskPanel | `TaskPanel.*` | 任务列表与 Add Task | Phase 3 |
 | VehicleInfoPanel | `VehicleInfoPanel.*` | 选中车辆详情 | Phase 3 |
+| SettingsDialog | `dialogs/SettingsDialog.*` | 模型/轴距/分配器 | Phase 4 |
 
-## 计划面板（Phase 1+，各自独立文件）
+## 计划面板（已完成 Phase 4）
 
 | 面板 | 计划文件 | Phase | 禁止 |
 |------|---------|-------|------|
-| SettingsDialog | `SettingsDialog.*` | 4 | 禁止堆在 ControlPanel |
+| SettingsDialog | `SettingsDialog.*` | 4 ✅ | 禁止堆在 ControlPanel |
 
 ## 新增面板流程
 

@@ -26,6 +26,8 @@ qt_add_library(FleetSimUI STATIC
     panels/VehicleInfoPanel.h
     dialogs/ProjectDialog.cpp
     dialogs/ProjectDialog.h
+    dialogs/SettingsDialog.cpp
+    dialogs/SettingsDialog.h
 )
 
 target_include_directories(FleetSimUI

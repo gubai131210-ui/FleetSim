@@ -1,6 +1,23 @@
 #include "SchedulingModule.h"
 
+#include <utility>
+
 namespace fleetsim::domain::scheduling {
+
+SchedulingModule::SchedulingModule()
+    : assigner_(std::make_unique<GreedyAssigner>())
+{
+}
+
+SchedulingModule::SchedulingModule(std::unique_ptr<ITaskAssigner> assigner)
+    : assigner_(assigner ? std::move(assigner) : std::make_unique<GreedyAssigner>())
+{
+}
+
+void SchedulingModule::setAssigner(std::unique_ptr<ITaskAssigner> assigner)
+{
+    assigner_ = assigner ? std::move(assigner) : std::make_unique<GreedyAssigner>();
+}
 
 TaskQueue& SchedulingModule::tasks()
 {
@@ -18,7 +35,7 @@ void SchedulingModule::loadTasks(const std::vector<core::Task>& tasks)
 }
 
 void SchedulingModule::applyAssignment(const TaskAssignment& assignment,
-                                         vehicle::FleetManager& fleet)
+                                       vehicle::FleetManager& fleet)
 {
     const auto task = task_queue_.findTask(assignment.task_id);
     if (!task.has_value()) {
@@ -39,7 +56,7 @@ void SchedulingModule::tick(double dt, vehicle::FleetManager& fleet)
 
     const std::vector<core::Task> pending = task_queue_.pendingTasks();
     const std::vector<core::VehicleState> idle_vehicles = fleet.idleVehicleStates();
-    const std::vector<TaskAssignment> assignments = assigner_.assign(pending, idle_vehicles);
+    const std::vector<TaskAssignment> assignments = assigner_->assign(pending, idle_vehicles);
     for (const TaskAssignment& assignment : assignments) {
         applyAssignment(assignment, fleet);
     }

@@ -28,6 +28,10 @@
 | M21 | `GreedyAssigner.cpp` / 距离 | 选最远车而非最近 | `GreedyAssignerTest` |
 | M22 | `PathReservationTable.cpp` / 冲突 | 永远返回无冲突 | `PathReservationTableTest` |
 | M23 | `TaskQueue.cpp` / markDone | 不更新 status | `TaskQueueTest` |
+| M24 | `BicycleModel.cpp` / tan(δ) | 将 `tan(δ)` 符号取反 | `BicycleModelTest` |
+| M25 | `BicycleModel.cpp` / wheelbase | 去掉 `wheelbase>0` 防护 | `BicycleModelTest.InvalidWheelbase*` |
+| M26 | `SteeringAdapter.cpp` / atan | `atan(κL)` 改为 `κL` | `SteeringAdapterTest` |
+| M27 | `HungarianAssigner.cpp` / 代价 | 最大化代价而非最小化 | `HungarianAssignerTest` |
 
 ## 执行记录模板
 
