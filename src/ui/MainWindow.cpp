@@ -169,6 +169,7 @@ void MainWindow::setupSimulationLoop()
     simulation_timer_->setInterval(50);
     connect(simulation_timer_, &QTimer::timeout, this, [this]() {
         sim_controller_->tick();
+        refreshTaskPanel();
     });
     simulation_timer_->start();
 }
@@ -193,12 +194,13 @@ void MainWindow::bindTaskPanel()
 
 void MainWindow::refreshTaskPanel()
 {
-    if (task_panel_ == nullptr || sim_controller_->scenario() == nullptr) {
+    if (task_panel_ == nullptr || !sim_controller_->scenario()) {
         return;
     }
 
     QStringList lines;
-    for (const core::Task& task : sim_controller_->scenario()->tasks) {
+    const auto& tasks = sim_controller_->engine().scheduling().tasks().tasks();
+    for (const core::Task& task : tasks) {
         QString status = tr("pending");
         if (task.status == core::TaskStatus::Assigned) {
             status = tr("assigned");

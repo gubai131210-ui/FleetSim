@@ -39,7 +39,7 @@ void FleetUiCoordinator::clearFleetGraphics()
     vehicle_items_.clear();
     map_view_->mapScene()->clearPathLayer();
 
-    for (PathGraphicsItem* item : path_items_) {
+    for (ui::PathGraphicsItem* item : path_items_) {
         delete item;
     }
     path_items_.clear();
