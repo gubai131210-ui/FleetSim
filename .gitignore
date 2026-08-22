@@ -34,6 +34,7 @@ Makefile
 *.cmake
 !CMakeLists.txt
 !**/CMakeLists.txt
+!cmake/Coverage.cmake
 
 # Generated
 *_autogen/

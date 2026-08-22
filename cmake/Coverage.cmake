@@ -1,0 +1,15 @@
+# FleetSim coverage instrumentation (gcov / MinGW compatible)
+option(ENABLE_COVERAGE "Enable gcov coverage instrumentation for Core/Domain/Tests" OFF)
+
+function(fleetsim_enable_coverage target_name)
+    if(NOT ENABLE_COVERAGE)
+        return()
+    endif()
+
+    if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(${target_name} PRIVATE --coverage -O0 -g)
+        target_link_options(${target_name} PRIVATE --coverage)
+    else()
+        message(WARNING "ENABLE_COVERAGE is only supported with GCC or Clang")
+    endif()
+endfunction()
