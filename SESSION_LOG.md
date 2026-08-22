@@ -11,6 +11,38 @@
 
 ---
 
+## [2026-08-23] Phase 4 audit fix — Open Project 不再覆盖 bicycle model
+
+### 本次 Scope
+- 修复：pplyProjectToSimulation 曾用默认 diff_drive Settings 覆盖 scenario 的 model=bicycle
+- 增加：syncSettingsFromScenario（Open 后 Settings 反映场景）
+- 增加：	ools/verify_phase4_evidence.py（A–J 静态证据审计，PASS=37）
+
+### ✅ 已完成
+- [x] Open Project 保留 bicycle_demo 模型
+- [x] Settings 仍可主动 stamp + recreate
+- [x] 静态审计脚本全绿（不含本机 Qt Build）
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| 代跑 Qt Build / FleetSimTests | 中文路径禁止 Agent 代跑 | **用户本地** |
+| Goal complete | 缺 J 运行时绿测证据 | 用户确认后关闭 |
+
+### Reviewer
+- 待 push 后 Code/Test 快审
+
+### 用户本地验证（关 Goal 前置）
+1. git pull
+2. Qt Creator **重新 Configure** → Build（旧 FleetSimTests.exe 时间戳早于 Phase4，必须重编）
+3. Run FleetSimTests（Bicycle*/Steering*/Hungarian*/MultiAgv*）
+4. python tools/verify_phase4_evidence.py → PASS=37 FAIL=0
+5. Open assets/scenarios/bicycle_demo → Play（须为 bicycle 转弯）
+6. File→Settings 切 hungarian / model 后观察 recreate
+
+
+---
+
 
 ## [2026-08-23] Phase 4 Sessions 3–5 — Domain export + ROS2 可选桥 + Settings/Hungarian + Phase4 ✅
 

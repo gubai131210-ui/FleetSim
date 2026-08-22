@@ -50,6 +50,7 @@ private:
     void handleOpenProject();
     void handleSaveProject();
     void handleSettings();
+    void syncSettingsFromScenario();
     void applyProjectToSimulation();
     void refreshMapVisualization();
     void rebuildEditorObstacles();

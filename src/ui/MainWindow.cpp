@@ -282,6 +282,7 @@ void MainWindow::handleOpenProject()
     }
 
     undo_stack_.clear();
+    syncSettingsFromScenario();
     applyProjectToSimulation();
     statusBar()->showMessage(tr("Opened project: %1").arg(dir));
 }
@@ -337,18 +338,33 @@ void MainWindow::handleSettings()
             .arg(current_settings_.vehicle_model, current_settings_.assigner));
 }
 
+void MainWindow::syncSettingsFromScenario()
+{
+    if (!project_manager_->hasProject()) {
+        return;
+    }
+    const auto& scenario = project_manager_->scenarioData();
+    if (scenario.vehicles.empty()) {
+        return;
+    }
+    // Reflect scenario file into Settings UI; do not overwrite scenario on load.
+    const auto& vehicle = scenario.vehicles.front();
+    current_settings_.vehicle_model = QString::fromStdString(vehicle.model);
+    if (vehicle.model == "bicycle") {
+        current_settings_.wheelbase_m = vehicle.wheelbase_m;
+        current_settings_.max_steering_rad = vehicle.max_steering_rad;
+    }
+}
+
 void MainWindow::applyProjectToSimulation()
 {
     if (!project_manager_->hasProject()) {
         return;
     }
 
+    // Preserve scenario vehicle models (e.g. bicycle_demo). Model overrides happen
+    // only in handleSettings(), which stamps project data before calling this.
     auto scenario = project_manager_->scenarioData();
-    for (auto& vehicle : scenario.vehicles) {
-        vehicle.model = current_settings_.vehicle_model.toStdString();
-        vehicle.wheelbase_m = current_settings_.wheelbase_m;
-        vehicle.max_steering_rad = current_settings_.max_steering_rad;
-    }
     scenario.map = project_manager_->buildOccupancyGrid(0.55);
     scenario.scenario_directory = project_manager_->projectDirectory();
 
