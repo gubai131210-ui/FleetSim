@@ -16,12 +16,14 @@ MapScene::MapScene(QObject* parent)
     background_group_ = new QGraphicsItemGroup();
     obstacle_overlay_ = new ObstacleOverlayItem();
     path_item_ = new PathGraphicsItem();
+    path_layer_ = new QGraphicsItemGroup();
     editor_layer_ = new QGraphicsItemGroup();
     vehicle_layer_ = new QGraphicsItemGroup();
 
     addItem(background_group_);
     addItem(obstacle_overlay_);
-    addItem(path_item_);
+    addItem(path_layer_);
+    path_layer_->addToGroup(path_item_);
     addItem(editor_layer_);
     addItem(vehicle_layer_);
 
@@ -58,6 +60,22 @@ ObstacleOverlayItem* MapScene::obstacleOverlayItem()
 QGraphicsItemGroup* MapScene::vehicleLayer()
 {
     return vehicle_layer_;
+}
+
+QGraphicsItemGroup* MapScene::pathLayer()
+{
+    return path_layer_;
+}
+
+void MapScene::clearPathLayer()
+{
+    for (QGraphicsItem* child : path_layer_->childItems()) {
+        if (child == path_item_) {
+            continue;
+        }
+        path_layer_->removeFromGroup(child);
+        delete child;
+    }
 }
 
 QGraphicsItemGroup* MapScene::editorLayer()

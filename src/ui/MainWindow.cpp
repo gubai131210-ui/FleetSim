@@ -1,10 +1,11 @@
 #include "MainWindow.h"
 
+#include "app/FleetUiCoordinator.h"
 #include "app/MonitorBridge.h"
 #include "app/ProjectManager.h"
 #include "app/SimController.h"
 #include "core/EventBus.h"
-#include "core/types/Pose.h"
+#include "core/types/Task.h"
 #include "domain/map/OccupancyGrid.h"
 #include "dialogs/ProjectDialog.h"
 #include "graphics/ObstacleGraphicsItem.h"
@@ -16,6 +17,8 @@
 #include "panels/ControlPanel.h"
 #include "panels/MapEditorPanel.h"
 #include "panels/MonitorPanel.h"
+#include "panels/TaskPanel.h"
+#include "panels/VehicleInfoPanel.h"
 
 #include <QCoreApplication>
 #include <QDir>
@@ -45,20 +48,29 @@ MainWindow::MainWindow(QWidget* parent)
     setupMenuBar();
     setupDockPanels();
     bindEditorSignals();
-    bindEventBus();
     bindMonitorBridge();
+    bindTaskPanel();
     setupSimulationLoop();
 
-    statusBar()->showMessage(tr("Phase 2 — File → Open to load a scenario"));
+    fleet_coordinator_ = new app::FleetUiCoordinator(
+        sim_controller_, map_view_, vehicle_info_panel_, this);
+    fleet_coordinator_->bind();
+    connect(fleet_coordinator_, &app::FleetUiCoordinator::fleetStatusMessage, this, [this](const QString& message) {
+        statusBar()->showMessage(message);
+    });
+    connect(fleet_coordinator_, &app::FleetUiCoordinator::vehicleSelected, this, [this](const QString& id) {
+        statusBar()->showMessage(tr("Selected vehicle: %1").arg(id));
+    });
+
+    statusBar()->showMessage(tr("Phase 3 — File → Open to load a scenario (try multi_agv)"));
 }
 
 MainWindow::~MainWindow()
 {
+    if (fleet_coordinator_ != nullptr) {
+        fleet_coordinator_->unbind();
+    }
     monitor_bridge_->unbind();
-    auto& bus = sim_controller_->engine().eventBus();
-    bus.unsubscribe("sim/pose_updated", pose_subscription_id_);
-    bus.unsubscribe("sim/path_updated", path_subscription_id_);
-    bus.unsubscribe("sim/goal_reached", goal_subscription_id_);
 }
 
 void MainWindow::setupUiLayout()
@@ -106,6 +118,19 @@ void MainWindow::setupDockPanels()
     monitor_panel_ = new MonitorPanel(monitor_dock);
     monitor_dock->setWidget(monitor_panel_);
     addDockWidget(Qt::BottomDockWidgetArea, monitor_dock);
+
+    auto* task_dock = new QDockWidget(tr("Tasks"), this);
+    task_dock->setObjectName(QStringLiteral("TaskDock"));
+    task_panel_ = new TaskPanel(task_dock);
+    task_dock->setWidget(task_panel_);
+    addDockWidget(Qt::RightDockWidgetArea, task_dock);
+
+    auto* vehicle_dock = new QDockWidget(tr("Vehicle Info"), this);
+    vehicle_dock->setObjectName(QStringLiteral("VehicleInfoDock"));
+    vehicle_info_panel_ = new VehicleInfoPanel(vehicle_dock);
+    vehicle_dock->setWidget(vehicle_info_panel_);
+    addDockWidget(Qt::RightDockWidgetArea, vehicle_dock);
+    tabifyDockWidget(task_dock, vehicle_dock);
 }
 
 void MainWindow::setupViewMenu()
@@ -123,6 +148,16 @@ void MainWindow::setupViewMenu()
     });
     view_menu->addAction(tr("Monitor Panel"), this, [this]() {
         if (auto* dock = findChild<QDockWidget*>(QStringLiteral("MonitorDock"))) {
+            dock->setVisible(!dock->isVisible());
+        }
+    });
+    view_menu->addAction(tr("Task Panel"), this, [this]() {
+        if (auto* dock = findChild<QDockWidget*>(QStringLiteral("TaskDock"))) {
+            dock->setVisible(!dock->isVisible());
+        }
+    });
+    view_menu->addAction(tr("Vehicle Info Panel"), this, [this]() {
+        if (auto* dock = findChild<QDockWidget*>(QStringLiteral("VehicleInfoDock"))) {
             dock->setVisible(!dock->isVisible());
         }
     });
@@ -151,35 +186,48 @@ void MainWindow::bindMonitorBridge()
     monitor_bridge_->bind();
 }
 
-void MainWindow::bindEventBus()
+void MainWindow::bindTaskPanel()
 {
-    auto& bus = sim_controller_->engine().eventBus();
+    connect(task_panel_, &TaskPanel::addTaskRequested, this, &MainWindow::handleAddTaskRequest);
+}
 
-    pose_subscription_id_ = bus.subscribe("sim/pose_updated", [this](const std::string& payload) {
-        if (vehicle_item_ == nullptr) {
-            return;
+void MainWindow::refreshTaskPanel()
+{
+    if (task_panel_ == nullptr || sim_controller_->scenario() == nullptr) {
+        return;
+    }
+
+    QStringList lines;
+    for (const core::Task& task : sim_controller_->scenario()->tasks) {
+        QString status = tr("pending");
+        if (task.status == core::TaskStatus::Assigned) {
+            status = tr("assigned");
+        } else if (task.status == core::TaskStatus::Done) {
+            status = tr("done");
         }
-        const nlohmann::json json = nlohmann::json::parse(payload);
-        core::Pose pose;
-        pose.x = json.at("x").get<double>();
-        pose.y = json.at("y").get<double>();
-        pose.theta = json.at("theta").get<double>();
-        vehicle_item_->setPose(pose);
-    });
+        lines.append(QStringLiteral("%1 | (%2,%3) | %4")
+                         .arg(QString::fromStdString(task.id))
+                         .arg(task.pickup.x, 0, 'f', 1)
+                         .arg(task.pickup.y, 0, 'f', 1)
+                         .arg(status));
+    }
+    task_panel_->refreshTasks(lines);
+}
 
-    path_subscription_id_ = bus.subscribe("sim/path_updated", [this](const std::string& payload) {
-        const nlohmann::json json = nlohmann::json::parse(payload);
-        QVector<QPointF> points;
-        for (const auto& waypoint : json) {
-            points.append(QPointF(waypoint.at("x").get<double>(), waypoint.at("y").get<double>()));
-        }
-        map_view_->mapScene()->pathItem()->setPathPoints(points);
-    });
+void MainWindow::handleAddTaskRequest(double pickup_x, double pickup_y, double dropoff_x, double dropoff_y)
+{
+    core::Task task;
+    task.id = "task_" + std::to_string(next_task_index_++);
+    task.pickup = {pickup_x, pickup_y, 0.0};
+    task.dropoff = {dropoff_x, dropoff_y, 0.0};
+    task.status = core::TaskStatus::Pending;
 
-    goal_subscription_id_ = bus.subscribe("sim/goal_reached", [this](const std::string& vehicle_id) {
-        sim_controller_->pause();
-        statusBar()->showMessage(tr("Goal reached for %1").arg(QString::fromStdString(vehicle_id)));
-    });
+    sim_controller_->addTask(task);
+    if (project_manager_->hasProject()) {
+        project_manager_->scenarioData().tasks.push_back(task);
+    }
+    refreshTaskPanel();
+    statusBar()->showMessage(tr("Added task %1").arg(QString::fromStdString(task.id)));
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* event)
@@ -264,24 +312,16 @@ void MainWindow::applyProjectToSimulation()
     map_view_->setMapSizeM(map_doc.width_m, map_doc.height_m);
     refreshMapVisualization();
 
-    if (vehicle_item_ != nullptr) {
-        map_view_->mapScene()->vehicleLayer()->removeFromGroup(vehicle_item_);
-        delete vehicle_item_;
-        vehicle_item_ = nullptr;
+    if (fleet_coordinator_ != nullptr) {
+        fleet_coordinator_->rebuildFromScenario(QString());
     }
+    refreshTaskPanel();
 
-    const auto* loaded_scenario = sim_controller_->scenario();
-    const auto* vehicle = sim_controller_->engine().vehicle();
-    if (loaded_scenario != nullptr && !loaded_scenario->vehicles.empty() && vehicle != nullptr) {
-        const auto& vehicle_config = loaded_scenario->vehicles.front();
-        const QString svg_path = resolveAssetPath(QString::fromStdString(vehicle_config.svg_path));
-        vehicle_item_ = new VehicleGraphicsItem(vehicle_config.id, svg_path, nullptr);
-        vehicle_item_->setVehicleLengthM(vehicle_config.length_m);
-        vehicle_item_->setPose(vehicle->pose());
-        map_view_->mapScene()->vehicleLayer()->addToGroup(vehicle_item_);
-        connect(vehicle_item_, &VehicleGraphicsItem::selected, this, [this](const core::VehicleId& id) {
-            statusBar()->showMessage(tr("Selected vehicle: %1").arg(QString::fromStdString(id)));
-        });
+    if (sim_controller_->scenario() != nullptr && !sim_controller_->scenario()->vehicles.empty()) {
+        const QString first_id = QString::fromStdString(sim_controller_->scenario()->vehicles.front().id);
+        if (fleet_coordinator_ != nullptr) {
+            fleet_coordinator_->setSelectedVehicle(first_id);
+        }
     }
 }
 

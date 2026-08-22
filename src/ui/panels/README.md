@@ -7,15 +7,16 @@
 | 面板 | 文件 | 职责 |
 |------|------|------|
 | ControlPanel | `ControlPanel.*` | 仿真播放/暂停/单步/倍率 | Phase 1 |
+| MonitorPanel | `MonitorPanel.*` | 误差/速度曲线 | Phase 2 |
+| MapEditorPanel | `MapEditorPanel.*` | 地图编辑 | Phase 2 |
+| TaskPanel | `TaskPanel.*` | 任务列表与 Add Task | Phase 3 |
+| VehicleInfoPanel | `VehicleInfoPanel.*` | 选中车辆详情 | Phase 3 |
 
 ## 计划面板（Phase 1+，各自独立文件）
 
 | 面板 | 计划文件 | Phase | 禁止 |
 |------|---------|-------|------|
-| MonitorPanel | `MonitorPanel.*` | 2 | 禁止与 ControlPanel 合并 |
-| MapEditorPanel | `MapEditorPanel.*` | 2 | 禁止塞进 MainWindow |
-| TaskPanel | `TaskPanel.*` | 3 | 禁止用 toolbar 按钮代替 |
-| VehicleInfoPanel | `VehicleInfoPanel.*` | 3 | 禁止堆在 statusBar |
+| SettingsDialog | `SettingsDialog.*` | 4 | 禁止堆在 ControlPanel |
 
 ## 新增面板流程
 

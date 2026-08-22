@@ -23,28 +23,24 @@ add_library(FleetSimDomain STATIC
     vehicle/DiffDriveModel.h
     vehicle/Vehicle.cpp
     vehicle/Vehicle.h
+    vehicle/FleetManager.cpp
+    vehicle/FleetManager.h
     scenario/ScenarioLoader.cpp
     scenario/ScenarioLoader.h
     scenario/ScenarioSerializer.cpp
     scenario/ScenarioSerializer.h
     scheduling/SchedulingModule.cpp
     scheduling/SchedulingModule.h
+    scheduling/TaskQueue.cpp
+    scheduling/TaskQueue.h
+    scheduling/GreedyAssigner.cpp
+    scheduling/GreedyAssigner.h
+    scheduling/ITaskAssigner.h
     collision/CollisionModule.cpp
     collision/CollisionModule.h
+    collision/PathReservationTable.cpp
+    collision/PathReservationTable.h
+    collision/TimeWindowCollisionAvoidance.cpp
+    collision/TimeWindowCollisionAvoidance.h
+    collision/ICollisionAvoidance.h
 )
-
-target_include_directories(FleetSimDomain
-    PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/..
-        ${CMAKE_CURRENT_SOURCE_DIR}
-)
-
-target_link_libraries(FleetSimDomain
-    PUBLIC
-        FleetSimCore
-        nlohmann_json::nlohmann_json
-)
-
-target_compile_features(FleetSimDomain PUBLIC cxx_std_17)
-
-fleetsim_enable_coverage(FleetSimDomain)

@@ -97,6 +97,7 @@ void ProjectManager::newProject(const std::string& scenario_directory)
     vehicle.length_m = 1.0;
     vehicle.initial_pose = {2.0, 2.0, 0.0};
     scenario_data_.vehicles = {vehicle};
+    scenario_data_.tasks.clear();
 }
 
 }  // namespace fleetsim::app

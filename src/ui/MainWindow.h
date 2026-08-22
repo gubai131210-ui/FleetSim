@@ -8,6 +8,7 @@
 #include "domain/map/MapData.h"
 
 namespace fleetsim::app {
+class FleetUiCoordinator;
 class MonitorBridge;
 class ProjectManager;
 class SimController;
@@ -17,7 +18,8 @@ namespace fleetsim::ui {
 class MapEditorPanel;
 class MapView;
 class MonitorPanel;
-class VehicleGraphicsItem;
+class TaskPanel;
+class VehicleInfoPanel;
 }
 
 namespace fleetsim::ui {
@@ -38,9 +40,10 @@ private:
     void setupDockPanels();
     void setupViewMenu();
     void setupSimulationLoop();
-    void bindEventBus();
     void bindEditorSignals();
     void bindMonitorBridge();
+    void bindTaskPanel();
+    void refreshTaskPanel();
 
     void handleNewProject();
     void handleOpenProject();
@@ -56,24 +59,22 @@ private:
     void handlePolygonObstacleCreated(const QVector<QPointF>& vertices);
     void handleStartPointRequested(double x_m, double y_m);
     void handleEndPointRequested(double x_m, double y_m);
-
-    QString resolveAssetPath(const QString& relative_path) const;
+    void handleAddTaskRequest(double pickup_x, double pickup_y, double dropoff_x, double dropoff_y);
 
     MapView* map_view_{nullptr};
     MapEditorPanel* editor_panel_{nullptr};
     MonitorPanel* monitor_panel_{nullptr};
-    VehicleGraphicsItem* vehicle_item_{nullptr};
+    TaskPanel* task_panel_{nullptr};
+    VehicleInfoPanel* vehicle_info_panel_{nullptr};
 
     app::SimController* sim_controller_{nullptr};
     app::ProjectManager* project_manager_{nullptr};
     app::MonitorBridge* monitor_bridge_{nullptr};
+    app::FleetUiCoordinator* fleet_coordinator_{nullptr};
 
     QTimer* simulation_timer_{nullptr};
-    int pose_subscription_id_{0};
-    int path_subscription_id_{0};
-    int goal_subscription_id_{0};
-
     std::vector<domain::map::MapDocument> undo_stack_;
+    int next_task_index_{0};
 };
 
 }  // namespace fleetsim::ui

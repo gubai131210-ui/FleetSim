@@ -10,6 +10,19 @@
 
 namespace fleetsim::domain::scenario {
 
+namespace {
+
+core::Pose parsePose(const nlohmann::json& pose_json)
+{
+    core::Pose pose;
+    pose.x = pose_json.at("x").get<double>();
+    pose.y = pose_json.at("y").get<double>();
+    pose.theta = pose_json.at("theta").get<double>();
+    return pose;
+}
+
+}  // namespace
+
 ScenarioData ScenarioSerializer::fromJson(const nlohmann::json& json,
                                             const std::string& scenario_directory)
 {
@@ -26,13 +39,20 @@ ScenarioData ScenarioSerializer::fromJson(const nlohmann::json& json,
         vehicle.model = vehicle_json.at("model").get<std::string>();
         vehicle.svg_path = vehicle_json.at("svg").get<std::string>();
         vehicle.length_m = vehicle_json.value("length_m", 1.0);
-
-        const auto& pose = vehicle_json.at("pose");
-        vehicle.initial_pose.x = pose.at("x").get<double>();
-        vehicle.initial_pose.y = pose.at("y").get<double>();
-        vehicle.initial_pose.theta = pose.at("theta").get<double>();
-
+        vehicle.initial_pose = parsePose(vehicle_json.at("pose"));
         data.vehicles.push_back(std::move(vehicle));
+    }
+
+    if (json.contains("tasks")) {
+        for (const auto& task_json : json.at("tasks")) {
+            core::Task task;
+            task.id = task_json.at("id").get<std::string>();
+            task.pickup = parsePose(task_json.at("pickup"));
+            task.dropoff = parsePose(task_json.at("dropoff"));
+            task.priority = task_json.value("priority", 0);
+            task.status = core::TaskStatus::Pending;
+            data.tasks.push_back(std::move(task));
+        }
     }
 
     return data;
@@ -66,7 +86,27 @@ nlohmann::json ScenarioSerializer::toJson(const ScenarioData& scenario)
         {"dt_s", scenario.simulation.dt_s},
         {"realtime", scenario.simulation.realtime},
     };
-    json["tasks"] = nlohmann::json::array();
+
+    nlohmann::json tasks = nlohmann::json::array();
+    for (const core::Task& task : scenario.tasks) {
+        tasks.push_back({
+            {"id", task.id},
+            {"pickup",
+             {
+                 {"x", task.pickup.x},
+                 {"y", task.pickup.y},
+                 {"theta", task.pickup.theta},
+             }},
+            {"dropoff",
+             {
+                 {"x", task.dropoff.x},
+                 {"y", task.dropoff.y},
+                 {"theta", task.dropoff.theta},
+             }},
+            {"priority", task.priority},
+        });
+    }
+    json["tasks"] = tasks;
 
     nlohmann::json vehicles = nlohmann::json::array();
     for (const VehicleConfig& vehicle : scenario.vehicles) {

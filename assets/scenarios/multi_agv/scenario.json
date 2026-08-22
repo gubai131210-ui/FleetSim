@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "simulation": {
+    "dt_s": 0.05,
+    "realtime": false
+  },
+  "vehicles": [
+    {
+      "id": "agv_0",
+      "model": "diff_drive",
+      "svg": "assets/vehicles/agv_diff.svg",
+      "length_m": 1.0,
+      "pose": { "x": 2.0, "y": 2.0, "theta": 0.0 }
+    },
+    {
+      "id": "agv_1",
+      "model": "diff_drive",
+      "svg": "assets/vehicles/agv_diff.svg",
+      "length_m": 1.0,
+      "pose": { "x": 2.0, "y": 12.0, "theta": 0.0 }
+    }
+  ],
+  "tasks": [
+    {
+      "id": "task_0",
+      "pickup": { "x": 3.0, "y": 2.0, "theta": 0.0 },
+      "dropoff": { "x": 16.0, "y": 3.0, "theta": 0.0 },
+      "priority": 0
+    },
+    {
+      "id": "task_1",
+      "pickup": { "x": 3.0, "y": 12.0, "theta": 0.0 },
+      "dropoff": { "x": 16.0, "y": 12.0, "theta": 0.0 },
+      "priority": 0
+    },
+    {
+      "id": "task_2",
+      "pickup": { "x": 4.0, "y": 7.0, "theta": 0.0 },
+      "dropoff": { "x": 15.0, "y": 7.0, "theta": 0.0 },
+      "priority": 1
+    }
+  ]
+}

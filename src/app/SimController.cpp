@@ -18,6 +18,28 @@ const domain::SimEngine& SimController::engine() const
     return engine_;
 }
 
+void SimController::applyScenarioToEngine()
+{
+    engine_.setMap(scenario_.map);
+    engine_.clock().setFixedDt(scenario_.simulation.dt_s);
+    engine_.clearFleet();
+
+    for (const auto& vehicle_config : scenario_.vehicles) {
+        auto vehicle = std::make_unique<domain::vehicle::Vehicle>(
+            vehicle_config.id,
+            vehicle_config.length_m,
+            vehicle_config.initial_pose);
+        engine_.addVehicle(std::move(vehicle));
+    }
+
+    if (!scenario_.vehicles.empty()) {
+        engine_.setSelectedVehicle(scenario_.vehicles.front().id);
+    }
+
+    engine_.loadTasks(scenario_.tasks);
+    engine_.collision().clearReservations();
+}
+
 bool SimController::loadScenario(const std::string& scenario_directory)
 {
     domain::scenario::ScenarioData loaded =
@@ -28,21 +50,12 @@ bool SimController::loadScenario(const std::string& scenario_directory)
 bool SimController::loadScenarioData(domain::scenario::ScenarioData scenario)
 {
     scenario_ = std::move(scenario);
-    engine_.setMap(scenario_.map);
-    engine_.clock().setFixedDt(scenario_.simulation.dt_s);
-
     if (scenario_.vehicles.empty()) {
         scenario_loaded_ = false;
         return false;
     }
 
-    const auto& vehicle_config = scenario_.vehicles.front();
-    auto vehicle = std::make_unique<domain::vehicle::Vehicle>(
-        vehicle_config.id,
-        vehicle_config.length_m,
-        vehicle_config.initial_pose);
-    engine_.setVehicle(std::move(vehicle));
-
+    applyScenarioToEngine();
     scenario_loaded_ = true;
     return true;
 }
@@ -64,6 +77,22 @@ void SimController::setGoal(double x, double y, double theta)
 bool SimController::planPath()
 {
     return engine_.planPath();
+}
+
+void SimController::addTask(const core::Task& task)
+{
+    scenario_.tasks.push_back(task);
+    engine_.addTask(task);
+}
+
+void SimController::selectVehicle(const core::VehicleId& vehicle_id)
+{
+    engine_.setSelectedVehicle(vehicle_id);
+}
+
+const core::VehicleId& SimController::selectedVehicleId() const
+{
+    return engine_.selectedVehicleId();
 }
 
 void SimController::start()

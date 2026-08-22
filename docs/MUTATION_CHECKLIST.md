@@ -25,6 +25,9 @@
 | M18 | `MapSerializer.cpp` / 空障碍 | 丢弃 obstacles 数组 | `MapSerializerTest` |
 | M19 | `PurePursuitTracker.cpp` | 到达阈值改大 10 倍 | `PurePursuitTrackerTest` |
 | M20 | `SimEngine.cpp` / goal distance | 到达阈值 `0.2` 改 `0.001` | `SimEngineTest` |
+| M21 | `GreedyAssigner.cpp` / 距离 | 选最远车而非最近 | `GreedyAssignerTest` |
+| M22 | `PathReservationTable.cpp` / 冲突 | 永远返回无冲突 | `PathReservationTableTest` |
+| M23 | `TaskQueue.cpp` / markDone | 不更新 status | `TaskQueueTest` |
 
 ## 执行记录模板
 

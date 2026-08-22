@@ -18,6 +18,12 @@ void PathGraphicsItem::setPathPoints(const QVector<QPointF>& points)
     update();
 }
 
+void PathGraphicsItem::setPathColor(const QColor& color)
+{
+    path_color_ = color;
+    update();
+}
+
 QRectF PathGraphicsItem::boundingRect() const
 {
     if (points_.isEmpty()) {
@@ -43,7 +49,7 @@ void PathGraphicsItem::paint(QPainter* painter,
     }
 
     painter->setRenderHint(QPainter::Antialiasing, true);
-    QPen pen(QColor(46, 160, 67), 0.08);
+    QPen pen(path_color_, 0.08);
     pen.setCapStyle(Qt::RoundCap);
     pen.setJoinStyle(Qt::RoundJoin);
     painter->setPen(pen);

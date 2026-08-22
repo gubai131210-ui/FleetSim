@@ -95,6 +95,53 @@
 
 ---
 
+## [2026-08-22] Phase 2 复盘 + Phase 3 启动备忘
+
+### Phase 2 编译/集成问题（Phase 3 已对策）
+- App 层裸 `map::`/`scenario::` → 一律 `domain::map::` / `domain::scenario::`
+- `.h` 缺声明 → 接口先于实现 + Reviewer 对齐 grep
+- Lambda 漏 capture → UI Review 必查
+- QCustomPlot MinGW → `-Wa,-mbig-obj`
+- MainWindow 膨胀 → Phase 3 用 `FleetUiCoordinator`
+
+---
+
+## [2026-08-22] Phase 3 — 多 AGV + 贪心调度 + 时间窗口避碰
+
+### 本次 Scope
+- 目标：FleetManager、GreedyAssigner、TimeWindow 避碰、TaskPanel、VehicleInfoPanel、multi_agv 场景
+- 允许改动：`src/core/types/`、`src/domain/`、`src/app/`、`src/ui/`、`tests/`、`assets/scenarios/multi_agv/`、`docs/`
+
+### ✅ 已完成
+- [x] Core：`Task`、`TimeWindow`、`VehicleState`
+- [x] Domain：`TaskQueue`、`GreedyAssigner`、`FleetManager`、`PathReservationTable`、`TimeWindowCollisionAvoidance`
+- [x] `SimEngine` 多车 tick + 任务状态机（Pickup → Dropoff）
+- [x] `ScenarioSerializer` tasks[] 读写；`assets/scenarios/multi_agv/`
+- [x] App：`FleetUiCoordinator`、`SimController::addTask/selectVehicle`
+- [x] UI：`TaskPanel`、`VehicleInfoPanel` 独立 Dock
+- [x] 单测 + `MultiAgvScenarioTest`；ADR-008；ADR-003 状态更新
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| HungarianAssigner | Phase 3 MVP 用 Greedy | Phase 3+ |
+| ROS2 / Bicycle | Phase 4 | Phase 4 |
+| 本地全量 Build 验证 | 中文路径由用户执行 | 用户 Qt Creator |
+
+### 🚫 禁止偷懒自检
+- [x] 未用简单距离判碰代替时间窗口
+- [x] TaskPanel/VehicleInfoPanel 独立 Dock
+- [x] Domain 无 Qt include
+- [x] 新 Domain 类有单测
+- [x] SESSION_LOG 已填写
+
+### 用户本地验证
+1. Build + Run Tests（含 MultiAgvScenarioTest）
+2. File → Open → `assets/scenarios/multi_agv` → Play → 观察两车接任务、分色路径
+3. Task 面板 Add Task；点击车辆查看 Vehicle Info
+
+---
+
 ## [2026-08-22] 框架强化 — Agent 反偷懒 + UI 面板规范
 
 （略，见历史条目）

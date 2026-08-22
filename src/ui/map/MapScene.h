@@ -20,6 +20,9 @@ public:
     double mapHeightM() const;
 
     PathGraphicsItem* pathItem();
+    QGraphicsItemGroup* pathLayer();
+    void clearPathLayer();
+
     ObstacleOverlayItem* obstacleOverlayItem();
 
     QGraphicsItemGroup* editorLayer();
@@ -35,6 +38,7 @@ private:
     QGraphicsItemGroup* background_group_{nullptr};
     ObstacleOverlayItem* obstacle_overlay_{nullptr};
     PathGraphicsItem* path_item_{nullptr};
+    QGraphicsItemGroup* path_layer_{nullptr};
     QGraphicsItemGroup* editor_layer_{nullptr};
     QGraphicsItemGroup* vehicle_layer_{nullptr};
 };

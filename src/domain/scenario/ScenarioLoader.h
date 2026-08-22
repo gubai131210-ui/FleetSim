@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/types/Pose.h"
+#include "core/types/Task.h"
 #include "core/types/VehicleId.h"
 #include "domain/map/OccupancyGrid.h"
 
@@ -25,6 +26,7 @@ struct VehicleConfig {
 struct ScenarioData {
     SimulationConfig simulation;
     std::vector<VehicleConfig> vehicles;
+    std::vector<core::Task> tasks;
     map::OccupancyGrid map;
     std::string scenario_directory;
 };

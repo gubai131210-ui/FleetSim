@@ -45,3 +45,22 @@ TEST(ScenarioSerializerTest, RequiresVehicleId)
 
     EXPECT_THROW(ScenarioSerializer::fromJson(json, "/tmp/scenario"), nlohmann::json::exception);
 }
+
+TEST(ScenarioSerializerTest, RoundTripTasks)
+{
+    ScenarioData scenario;
+    core::Task task;
+    task.id = "task_0";
+    task.pickup = {1.0, 2.0, 0.0};
+    task.dropoff = {5.0, 6.0, 0.0};
+    task.priority = 1;
+    scenario.tasks.push_back(task);
+
+    const nlohmann::json json = ScenarioSerializer::toJson(scenario);
+    const ScenarioData loaded = ScenarioSerializer::fromJson(json, "/tmp/scenario");
+
+    ASSERT_EQ(loaded.tasks.size(), 1U);
+    EXPECT_EQ(loaded.tasks.front().id, "task_0");
+    EXPECT_DOUBLE_EQ(loaded.tasks.front().dropoff.x, 5.0);
+    EXPECT_EQ(loaded.tasks.front().priority, 1);
+}

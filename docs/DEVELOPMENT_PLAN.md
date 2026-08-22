@@ -7,7 +7,7 @@
 | **0** | Harness、CMake 模块化、文档、SVG ADR | 2–3 天 |
 | **1** | 单车 A* + 平滑 + Pure Pursuit + DiffDrive + MapView | 2 周 |
 | **2** | 地图编辑器 + JSON 持久化 + QCustomPlot 监控 + CRAP Harness | 1.5 周 ✅ |
-| **3** | 多 AGV + 贪心调度 + 时间窗口避碰 | 3 周 |
+| **3** | 多 AGV + 贪心调度 + 时间窗口避碰 | 3 周 ✅ |
 | **4** | Bicycle 模型 + Domain 静态库 + ROS2 桥接 | 3 周 |
 
 ## 禁止偷懒清单（Reviewer 必查）

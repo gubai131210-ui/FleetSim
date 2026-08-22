@@ -1,17 +1,28 @@
 #pragma once
 
+#include "GreedyAssigner.h"
+#include "TaskQueue.h"
+#include "vehicle/FleetManager.h"
+
 namespace fleetsim::domain::scheduling {
 
-/// Phase 3: task queue and ITaskAssigner implementations.
-/// Phase 0–2: no-op stub registered with SimEngine.
 class SchedulingModule {
 public:
-    void tick(double dt);
+    TaskQueue& tasks();
+    const TaskQueue& tasks() const;
+
+    void loadTasks(const std::vector<core::Task>& tasks);
+    void tick(double dt, vehicle::FleetManager& fleet);
 
     int pendingTaskCount() const;
 
 private:
-    int pending_tasks_{0};
+    void applyAssignment(const TaskAssignment& assignment,
+                         vehicle::FleetManager& fleet);
+
+    TaskQueue task_queue_;
+    GreedyAssigner assigner_;
+    double assign_cooldown_s_{0.0};
 };
 
 }  // namespace fleetsim::domain::scheduling
