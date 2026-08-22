@@ -1,5 +1,7 @@
 #include "SimEngine.h"
 
+#include "planning/HybridAStarPlanner.h"
+
 #include <nlohmann/json.hpp>
 
 #include <cmath>
@@ -130,6 +132,36 @@ void SimEngine::setGoal(const core::Pose& goal)
     agent->task_id.clear();
 }
 
+void SimEngine::setPlannerKind(const std::string& kind)
+{
+    if (kind.empty()) {
+        planner_kind_ = "auto";
+        return;
+    }
+    planner_kind_ = kind;
+}
+
+void SimEngine::setTrackerKind(const std::string& kind)
+{
+    if (kind.empty()) {
+        tracker_kind_ = "auto";
+        return;
+    }
+    tracker_kind_ = kind;
+}
+
+std::string SimEngine::resolvedPlannerKind(const vehicle::Vehicle& vehicle) const
+{
+    if (planner_kind_ == "astar" || planner_kind_ == "hybrid_astar") {
+        return planner_kind_;
+    }
+    // auto / unknown → bicycle defaults to hybrid_astar (ADR-011).
+    if (vehicle.isBicycle()) {
+        return "hybrid_astar";
+    }
+    return "astar";
+}
+
 const core::Pose& SimEngine::goal() const
 {
     const vehicle::VehicleAgent* agent = selectedAgent();
@@ -159,14 +191,34 @@ bool SimEngine::planPathForAgent(vehicle::VehicleAgent& agent)
         return false;
     }
 
-    const core::Path raw_path = planner_.plan(map_, agent.vehicle->pose(), agent.goal);
-    if (raw_path.empty()) {
-        agent.reference_path.clear();
+    const std::string kind = resolvedPlannerKind(*agent.vehicle);
+    core::Path raw_path;
+    if (kind == "hybrid_astar") {
+        const double wheelbase = agent.vehicle->isBicycle()
+            ? agent.vehicle->wheelbaseM()
+            : 0.8;
+        const double max_steer = agent.vehicle->isBicycle()
+            ? agent.vehicle->maxSteeringRad()
+            : 0.6;
+        planning::HybridAStarPlanner hybrid(wheelbase, max_steer);
+        raw_path = hybrid.plan(map_, agent.vehicle->pose(), agent.goal);
+        // ADR-011: Hybrid output is already dense; skip Douglas-Peucker.
+        agent.reference_path = raw_path;
+    } else {
+        raw_path = astar_planner_.plan(map_, agent.vehicle->pose(), agent.goal);
+        if (raw_path.empty()) {
+            agent.reference_path.clear();
+            publishPathUpdate(agent.vehicle->id(), agent.reference_path);
+            return false;
+        }
+        agent.reference_path = smoother_.smooth(raw_path);
+    }
+
+    if (agent.reference_path.empty()) {
         publishPathUpdate(agent.vehicle->id(), agent.reference_path);
         return false;
     }
 
-    agent.reference_path = smoother_.smooth(raw_path);
     agent.goal_reached = false;
     publishPathUpdate(agent.vehicle->id(), agent.reference_path);
     collision_.reservePath(

@@ -2,7 +2,7 @@
 
 ## 状态
 
-草案（2026-08-23，Phase 5 Session 0；Session 1–2 实装）
+已接受（2026-08-23，Phase 5 Session 0 草案；Session 1 实装 Hybrid；Session 2 引擎接线）
 
 ## 背景
 

@@ -25,6 +25,12 @@ void SimController::applyScenarioToEngine()
     engine_.clock().setFixedDt(scenario_.simulation.dt_s);
     engine_.clearFleet();
 
+    // ADR-011: scenario planner/tracker; empty → SimEngine auto defaults.
+    engine_.setPlannerKind(
+        scenario_.simulation.planner.empty() ? "auto" : scenario_.simulation.planner);
+    engine_.setTrackerKind(
+        scenario_.simulation.tracker.empty() ? "auto" : scenario_.simulation.tracker);
+
     for (const auto& vehicle_config : scenario_.vehicles) {
         auto model = domain::vehicle::createVehicleModel(
             vehicle_config.model,

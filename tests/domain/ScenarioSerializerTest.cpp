@@ -9,6 +9,32 @@ using fleetsim::domain::scenario::ScenarioData;
 using fleetsim::domain::scenario::ScenarioSerializer;
 using fleetsim::domain::scenario::VehicleConfig;
 
+TEST(ScenarioSerializerTest, RoundTripPlannerTrackerFields)
+{
+    ScenarioData scenario;
+    scenario.simulation.dt_s = 0.05;
+    scenario.simulation.realtime = false;
+    scenario.simulation.planner = "hybrid_astar";
+    scenario.simulation.tracker = "stanley";
+
+    VehicleConfig vehicle;
+    vehicle.id = "car_0";
+    vehicle.model = "bicycle";
+    vehicle.svg_path = "assets/vehicles/agv_diff.svg";
+    vehicle.wheelbase_m = 0.9;
+    vehicle.max_steering_rad = 0.6;
+    vehicle.initial_pose = {1.0, 2.0, 0.0};
+    scenario.vehicles.push_back(vehicle);
+
+    const nlohmann::json json = ScenarioSerializer::toJson(scenario);
+    EXPECT_EQ(json["simulation"]["planner"], "hybrid_astar");
+    EXPECT_EQ(json["simulation"]["tracker"], "stanley");
+
+    const ScenarioData loaded = ScenarioSerializer::fromJson(json, "/tmp/scenario");
+    EXPECT_EQ(loaded.simulation.planner, "hybrid_astar");
+    EXPECT_EQ(loaded.simulation.tracker, "stanley");
+}
+
 TEST(ScenarioSerializerTest, RoundTripVehicleConfig)
 {
     ScenarioData scenario;

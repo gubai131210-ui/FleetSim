@@ -13,6 +13,10 @@ namespace fleetsim::domain::scenario {
 struct SimulationConfig {
     double dt_s{0.05};
     bool realtime{false};
+    /// "astar" | "hybrid_astar" | empty/"auto" (bicycle → hybrid_astar, else astar).
+    std::string planner;
+    /// "pure_pursuit" | "stanley" | empty/"auto" (Session 3 wires stanley).
+    std::string tracker;
 };
 
 struct VehicleConfig {

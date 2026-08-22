@@ -11,6 +11,70 @@
 
 ---
 
+## [2026-08-23] Phase 5 Session 2 — SimEngine/scenario hybrid_astar 接入
+
+### 本次 Scope（Architect 定义）
+- 目标：scenario `planner`/`tracker` 字段；SimEngine 按配置选 A*/Hybrid；bicycle 默认 hybrid；跳过 Hybrid 的 DP；对比/集成测；`hybrid_narrow_turn` 资产
+- 允许：`SimEngine.*`、`ScenarioLoader/Serializer`、`SimController`、资产、`PlannerSwitchIntegrationTest`、SESSION_LOG、ADR-011 状态
+- NOT DO：Stanley 真实现、UI 面板、Priority、完整 Phase5 ✅
+
+### ✅ 已完成
+- [x] `SimulationConfig.planner` / `tracker` 序列化
+- [x] `SimEngine::setPlannerKind` / `resolvedPlannerKind`；`astar_planner_` 重命名
+- [x] Hybrid 分支跳过 Douglas-Peucker
+- [x] `SimController::applyScenarioToEngine` 应用 scenario 字段
+- [x] `assets/scenarios/hybrid_narrow_turn/` + bicycle_demo 标注 hybrid
+- [x] `PlannerSwitchIntegrationTest` + Serializer round-trip
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| Stanley 真公式 / tracker 切换 | Session 3 | Session 3 |
+| PlannerTracker UI | Session 5 | Session 5 |
+| Priority | Session 4 | Session 4 |
+
+### 🚫 禁止偷懒自检
+- [x] Hybrid 接线非 A* 换皮
+- [x] Domain 无 Qt
+- [x] 有集成/对比测
+- [x] 未堆 ControlPanel
+- [x] CMake 仅追加测文件
+- [x] 未改 `.cursor/plans/`
+
+### 新增/变更文件清单
+| 文件 | 操作 | 说明 |
+|------|------|------|
+| `SimEngine.h/.cpp` | 修改 | planner 切换 |
+| `ScenarioLoader.h` / `ScenarioSerializer.cpp` | 修改 | 字段 |
+| `SimController.cpp` | 修改 | 应用配置 |
+| `assets/scenarios/hybrid_narrow_turn/*` | 新增 | 窄弯场景 |
+| `bicycle_demo/scenario.json` | 修改 | planner 字段 |
+| `PlannerSwitchIntegrationTest.cpp` | 新增 | |
+| `ScenarioSerializerTest.cpp` | 修改 | round-trip |
+| `tests/CMakeLists.txt` | 修改 | |
+| `011-hybrid-astar.md` | 修改 | 状态 |
+| `SESSION_LOG.md` | 修改 | 本条目 |
+
+### 接口变更
+- `SimEngine::setPlannerKind` / `setTrackerKind` / `resolvedPlannerKind`
+- scenario JSON：`simulation.planner` / `simulation.tracker`（可选）
+
+### Reviewer 结果
+- Reviewer-Code: **PASS**
+- Reviewer-Test: 初审 FAIL（未锁 Hybrid 分支）→ 加固对比测后复审 **PASS**
+- 主 Agent 不自评
+
+### 用户本地验证
+1. `git pull origin main`
+2. Qt Configure → Build FleetSimTests
+3. 关注 `PlannerSwitch*`、`HybridAStar*`、`ScenarioSerializer*RoundTripPlanner*`、旧 MultiAgv/Demo
+4. Open `assets/scenarios/hybrid_narrow_turn` → 设目标拐角 → Plan
+
+### 下次会话建议
+- StanleyTracker 真公式 + 与 PurePursuit 切换
+
+---
+
 ## [2026-08-23] Phase 5 Session 1 — HybridAStarPlanner + Dubins MVP
 
 ### 本次 Scope（Architect 定义）

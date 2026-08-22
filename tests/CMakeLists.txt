@@ -19,6 +19,7 @@ add_executable(FleetSimTests
     domain/VehicleTest.cpp
     domain/BicycleModelTest.cpp
     domain/BicycleScenarioTest.cpp
+    domain/PlannerSwitchIntegrationTest.cpp
     domain/ScenarioLoaderTest.cpp
     domain/ScenarioSerializerTest.cpp
     domain/ProjectManagerTest.cpp

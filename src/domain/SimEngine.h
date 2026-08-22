@@ -57,6 +57,17 @@ public:
     void setGoal(const core::Pose& goal);
     const core::Pose& goal() const;
 
+    /// planner: "astar" | "hybrid_astar" | "auto" (empty treated as auto).
+    void setPlannerKind(const std::string& kind);
+    const std::string& plannerKind() const { return planner_kind_; }
+
+    /// tracker: "pure_pursuit" | "stanley" | "auto" (Session 3 wires stanley).
+    void setTrackerKind(const std::string& kind);
+    const std::string& trackerKind() const { return tracker_kind_; }
+
+    /// Resolved planner for a vehicle given current kind + model defaults (ADR-011).
+    std::string resolvedPlannerKind(const vehicle::Vehicle& vehicle) const;
+
     bool planPath();
     bool planPathFor(const core::VehicleId& vehicle_id);
     const core::Path& referencePath() const;
@@ -85,9 +96,12 @@ private:
     map::OccupancyGrid map_;
     vehicle::FleetManager fleet_;
 
-    planning::AStarPlanner planner_;
+    planning::AStarPlanner astar_planner_;
     planning::DouglasPeuckerSmoother smoother_;
     control::PurePursuitTracker tracker_;
+
+    std::string planner_kind_{"auto"};
+    std::string tracker_kind_{"auto"};
 
     core::VehicleId selected_vehicle_id_;
     core::Pose manual_goal_;
