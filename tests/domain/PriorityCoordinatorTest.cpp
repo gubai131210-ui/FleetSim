@@ -86,8 +86,8 @@ TEST(PriorityCoordinatorTest, LowerPriorityDetoursAroundHigherPriorityCorridor)
     engine.addVehicle(std::make_unique<Vehicle>("high", 1.0, Pose{1.0, 5.0, 0.0}));
     engine.addVehicle(std::make_unique<Vehicle>("low", 1.0, Pose{5.0, 1.0, 1.57}));
 
-    vehicle::VehicleAgent* high = engine.fleet().findAgent("high");
-    vehicle::VehicleAgent* low = engine.fleet().findAgent("low");
+    VehicleAgent* high = engine.fleet().findAgent("high");
+    VehicleAgent* low = engine.fleet().findAgent("low");
     ASSERT_NE(high, nullptr);
     ASSERT_NE(low, nullptr);
     high->task_priority = 10;
