@@ -38,5 +38,16 @@ target_link_libraries(FleetSimTests
 
 fleetsim_enable_coverage(FleetSimTests)
 
+# Scenario/integration tests resolve assets relative to cwd or near the binary.
+add_custom_command(TARGET FleetSimTests POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/assets
+        $<TARGET_FILE_DIR:FleetSimTests>/assets
+    COMMENT "Copying assets next to FleetSimTests"
+)
+
 include(GoogleTest)
-gtest_discover_tests(FleetSimTests)
+gtest_discover_tests(FleetSimTests
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    PROPERTIES WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)

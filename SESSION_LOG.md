@@ -11,6 +11,30 @@
 
 ---
 
+## [2026-08-23] Phase 4 — 测试资产 cwd + 本地验证脚本（Goal J 前置）
+
+### 本次 Scope
+- 修复：FleetSimTests 未拷贝 assets / 未设 WORKING_DIRECTORY → BicycleScenarioTest 易 SKIP
+- 新增：	ools/run_phase4_verify.ps1（静态审计 + 拒绝陈旧 exe + 过滤跑测）
+
+### ✅ 已完成
+- [x] tests/CMakeLists.txt POST_BUILD copy assets + gtest WORKING_DIRECTORY=源码根
+- [x] run_phase4_verify.ps1（检出 exe 早于 2026-08-23 则拒绝作为 J 证据）
+
+### ❌ 未完成
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| Goal complete / J 运行时绿 | 现有 FleetSimTests.exe=2026-08-22 陈旧 | 用户 Qt 重编后跑 ps1 |
+
+### 用户本地验证
+1. git pull
+2. Qt Creator 重新 Configure → Build
+3. pwsh -File tools/run_phase4_verify.ps1
+4. 全绿后回复：Build/Tests 通过
+
+
+---
+
 ## [2026-08-23] Phase 4 audit fix — Open Project 不再覆盖 bicycle model
 
 ### 本次 Scope
