@@ -51,3 +51,6 @@ Desktop.ini
 
 test_tmp/
 
+
+cmake_test_discovery_*.json
+
