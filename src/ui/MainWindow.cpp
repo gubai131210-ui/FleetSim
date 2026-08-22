@@ -4,6 +4,8 @@
 #include "core/EventBus.h"
 #include "core/types/Pose.h"
 #include "domain/map/OccupancyGrid.h"
+#include "graphics/ObstacleOverlayItem.h"
+#include "graphics/PathGraphicsItem.h"
 #include "graphics/VehicleGraphicsItem.h"
 #include "map/MapScene.h"
 #include "map/MapView.h"
@@ -66,8 +68,9 @@ void MainWindow::setupDockPanels()
     control_dock->setWidget(control_panel);
     addDockWidget(Qt::RightDockWidgetArea, control_dock);
 
-    connect(control_panel, &ControlPanel::statusMessage,
-            statusBar(), &QStatusBar::showMessage);
+    connect(control_panel, &ControlPanel::statusMessage, this, [this](const QString& message) {
+        statusBar()->showMessage(message);
+    });
 }
 
 void MainWindow::setupViewMenu()

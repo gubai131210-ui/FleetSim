@@ -6,6 +6,10 @@
 
 namespace fleetsim::domain::control {
 
+namespace {
+constexpr double kPi = 3.14159265358979323846;
+}  // namespace
+
 PurePursuitTracker::PurePursuitTracker(double lookahead_m,
                                        double max_linear_velocity,
                                        double max_angular_velocity,
@@ -21,11 +25,11 @@ PurePursuitTracker::PurePursuitTracker(double lookahead_m,
 
 double PurePursuitTracker::normalizeAngle(double angle)
 {
-    while (angle > M_PI) {
-        angle -= 2.0 * M_PI;
+    while (angle > kPi) {
+        angle -= 2.0 * kPi;
     }
-    while (angle < -M_PI) {
-        angle += 2.0 * M_PI;
+    while (angle < -kPi) {
+        angle += 2.0 * kPi;
     }
     return angle;
 }

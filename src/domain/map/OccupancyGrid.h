@@ -2,6 +2,7 @@
 
 #include "core/types/GridCell.h"
 
+#include <cstdint>
 #include <vector>
 
 namespace fleetsim::domain::map {

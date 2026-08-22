@@ -4,7 +4,6 @@
 #include "core/types/VehicleId.h"
 
 #include <QGraphicsObject>
-#include <QGraphicsSvgItem>
 
 #include <memory>
 
@@ -30,6 +29,8 @@ public:
 
     QRectF boundingRect() const override;
 
+    ~VehicleGraphicsItem() override;
+
 signals:
     void selected(const fleetsim::core::VehicleId& id);
 
@@ -40,13 +41,12 @@ protected:
 
 private:
     void loadSvgOrFallback(const QString& svg_path);
-    void updateTransform();
     void drawFallback(QPainter* painter);
+    void drawSvg(QPainter* painter);
 
     core::VehicleId id_;
     core::Pose pose_;
     double vehicle_length_m_{1.0};
-    QGraphicsSvgItem* svg_item_{nullptr};
     std::unique_ptr<QSvgRenderer> svg_renderer_;
     bool use_svg_{false};
 };
