@@ -14,6 +14,8 @@ add_library(FleetSimDomain STATIC
     planning/AStarPlanner.h
     planning/HybridAStarPlanner.cpp
     planning/HybridAStarPlanner.h
+    planning/DubinsPath.cpp
+    planning/DubinsPath.h
     planning/DouglasPeuckerSmoother.cpp
     planning/DouglasPeuckerSmoother.h
     planning/IPathPlanner.h

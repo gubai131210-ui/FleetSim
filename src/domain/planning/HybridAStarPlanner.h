@@ -4,8 +4,8 @@
 
 namespace fleetsim::domain::planning {
 
-/// Hybrid A* planner (kinematic expansion in (x,y,θ)). Session 0 stub — Session 1 fills logic.
-/// Parameters are injected at construction (ADR-011); plan() keeps IPathPlanner signature.
+/// Hybrid A* planner: continuous state (x,y,θ) with bicycle steering expansion
+/// and periodic Dubins analytic connection (ADR-011). Forward-only MVP.
 class HybridAStarPlanner final : public IPathPlanner {
 public:
     explicit HybridAStarPlanner(double wheelbase_m = 0.8,

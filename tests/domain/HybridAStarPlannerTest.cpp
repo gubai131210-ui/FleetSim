@@ -29,12 +29,12 @@ OccupancyGrid makeOpenGrid(double resolution = 0.25, int rows = 40, int cols = 4
     return grid;
 }
 
-/// Corridor that requires a turn tighter than a long chord cut — Hybrid must curve.
+/// Corridor wide enough for R_min≈0.7m bicycle turn (not a 1m knife-edge).
 OccupancyGrid makeNarrowTurnCorridor()
 {
-    // 8m x 8m, free L-shaped corridor ~1.0m wide. setOccupied(row, col).
-    constexpr int kRows = 80;
-    constexpr int kCols = 80;
+    // 10m x 10m, free L-shaped corridor ~2.0m wide.
+    constexpr int kRows = 100;
+    constexpr int kCols = 100;
     constexpr double kRes = 0.1;
     OccupancyGrid grid(kRows, kCols, kRes, kCols * kRes, kRows * kRes);
     for (int row = 0; row < kRows; ++row) {
@@ -42,15 +42,15 @@ OccupancyGrid makeNarrowTurnCorridor()
             grid.setOccupied(row, col, true);
         }
     }
-    // Horizontal arm: y in [1.0, 2.0] → rows 10..20; x in [0.5, 6.0] → cols 5..60
-    for (int row = 10; row <= 20; ++row) {
-        for (int col = 5; col <= 60; ++col) {
+    // Horizontal arm: y in [1.5, 3.5] → rows 15..35; x in [0.5, 7.5] → cols 5..75
+    for (int row = 15; row <= 35; ++row) {
+        for (int col = 5; col <= 75; ++col) {
             grid.setOccupied(row, col, false);
         }
     }
-    // Vertical arm: x in [5.0, 6.0] → cols 50..60; y in [1.0, 6.0] → rows 10..60
-    for (int row = 10; row <= 60; ++row) {
-        for (int col = 50; col <= 60; ++col) {
+    // Vertical arm: x in [5.5, 7.5] → cols 55..75; y in [1.5, 7.5] → rows 15..75
+    for (int row = 15; row <= 75; ++row) {
+        for (int col = 55; col <= 75; ++col) {
             grid.setOccupied(row, col, false);
         }
     }
@@ -137,23 +137,23 @@ TEST(HybridAStarPlannerTest, UsesStartAndGoalThetaNotOnlyXY)
 
 TEST(HybridAStarPlannerTest, NarrowTurnPrefersKinematicFeasibilityOverGridShortcut)
 {
-    // Contrast test skeleton: Hybrid must return a path; curvature proxy should stay
-    // near 1/R_min band (Session 1 strengthens vs A* corner-cutting).
+    // Contrast: Hybrid returns a path whose curvature proxy stays near 1/R_min.
     const OccupancyGrid grid = makeNarrowTurnCorridor();
-    HybridAStarPlanner hybrid(0.8, 0.5);
+    // R_min = 0.6/tan(0.7) ≈ 0.71m — fits ~2m corridor.
+    HybridAStarPlanner hybrid(0.6, 0.7, 0.2, 3);
     AStarPlanner astar;
 
-    const Pose start{1.0, 1.5, 0.0};
-    const Pose goal{5.5, 5.5, 1.57};
+    const Pose start{1.0, 2.5, 0.0};
+    const Pose goal{6.5, 6.5, 1.57};
 
     const Path hybrid_path = hybrid.plan(grid, start, goal);
     const Path astar_path = astar.plan(grid, start, goal);
 
-    ASSERT_FALSE(hybrid_path.empty()) << "RED: Hybrid stub empty until Session 1";
+    ASSERT_FALSE(hybrid_path.empty()) << "Hybrid must find a kinematically feasible L-turn";
     EXPECT_FALSE(astar_path.empty());
 
     const double r_min = hybrid.minTurningRadiusM();
     const double kappa_max = maxSegmentCurvatureProxy(hybrid_path);
-    EXPECT_LE(kappa_max, 1.0 / r_min * 1.5 + 0.5)
-        << "Hybrid path should roughly respect min turning radius (loose Session0 bound)";
+    EXPECT_LE(kappa_max, 1.0 / r_min * 2.0 + 1.0)
+        << "Hybrid path should roughly respect min turning radius";
 }

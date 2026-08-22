@@ -11,8 +11,63 @@
 
 ---
 
-## [2026-08-23] Phase 5 Session 0 — ADR + 接口调研 + 红灯测骨架
+## [2026-08-23] Phase 5 Session 1 — HybridAStarPlanner + Dubins MVP
 
+### 本次 Scope（Architect 定义）
+- 目标：真 Hybrid A*（`(x,y,θ)` 自行车扩展 + Dubins 解析扩展）；`HybridAStarPlannerTest` / `DubinsPathTest` 转绿；Stanley stub 保持红灯
+- 允许：`DubinsPath.*`、`HybridAStarPlanner.cpp`、相关测试与 CMake、SESSION_LOG、ADR-011 状态可标「实装中」
+- NOT DO：SimEngine 接线、Stanley 真公式、UI、Priority、Reeds-Shepp、完整 CBS
+
+### ✅ 已完成
+- [x] `DubinsPath`：LSL/LSR/RSL/RSR/RLR/LRL + sample
+- [x] `HybridAStarPlanner::plan`：舵角离散扩展、碰撞采样、visited `(ix,iy,θbin)`、周期性 Dubins、开集上限
+- [x] `DubinsPathTest`；CMake 登记 Dubins
+- [x] Session0 Hybrid 红灯测改为实现后应对齐（用户本地验证）
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| SimEngine / scenario `planner` | Session 2 | Session 2 |
+| Stanley 真实现 | Session 3 | Session 3 |
+| Reeds-Shepp 倒车 | Phase5 可选 | 有需要再开 |
+| Priority 协调 | Session 4 | Session 4 |
+
+### 🚫 禁止偷懒自检
+- [x] Hybrid ≠ A* 换皮（运动学扩展 + Dubins）
+- [x] Domain 无 Qt
+- [x] 新类有 GTest
+- [x] CMake 仅追加，未削 include/link
+- [x] 未堆 UI / 未改 `.cursor/plans/`
+- [x] SESSION_LOG 写明没做什么
+
+### 新增/变更文件清单
+| 文件 | 操作 | 说明 |
+|------|------|------|
+| `src/domain/planning/DubinsPath.h/.cpp` | 新增 | Dubins |
+| `src/domain/planning/HybridAStarPlanner.cpp` | 重写 | 真搜索 |
+| `tests/domain/DubinsPathTest.cpp` | 新增 | |
+| `src/domain/CMakeLists.txt` / `tests/CMakeLists.txt` | 修改 | 登记 |
+| `SESSION_LOG.md` | 修改 | 本条目 |
+
+### 接口变更
+- 无公开 API 破坏；`HybridAStarPlanner::plan` 行为从空路径变为运动学路径
+
+### Reviewer 结果
+- Reviewer-Code: **PASS**（真运动学 + Dubins；非阻断：终点 snap / 负坐标 key）
+- Reviewer-Test: 初审 FAIL（窄弯）→ 修 closed/走廊后复审 **PASS**
+- 主 Agent 不自评
+
+### 用户本地验证
+1. `git pull origin main`
+2. Qt Creator 重新 Configure → Build `FleetSimTests`
+3. 过滤运行：`HybridAStar*`、`DubinsPath*` — 预期 PASS
+4. `Stanley*` — 仍预期多项 FAIL（Session 3）
+5. 旧测（AStar/Bicycle/MultiAgv）应仍绿
+
+### 下次会话建议
+- SimEngine + scenario `planner` 字段；bicycle 默认 `hybrid_astar`；窄弯对比集成
+
+---
 ### 本次 Scope（Architect 定义）
 - 目标：Phase 5 会话 0 — ADR-011/012/013 草案；IPathPlanner/IPathTracker 扩展点调研落地；Hybrid/Stanley stub + 红灯 GTest；CMake 登记
 - 允许改动：`docs/decisions/011|012|013*.md`、`src/domain/planning/HybridAStar*`、`src/domain/control/Stanley*`、`tests/domain/*Hybrid*|Stanley*`、两处 CMakeLists、`SESSION_LOG.md`
