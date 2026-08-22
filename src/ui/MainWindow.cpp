@@ -435,16 +435,4 @@ void MainWindow::handleEndPointRequested(double x_m, double y_m)
     handleGoalRequest(x_m, y_m);
 }
 
-QString MainWindow::resolveAssetPath(const QString& relative_path) const
-{
-    const QDir app_dir(QCoreApplication::applicationDirPath());
-    const QString candidate = app_dir.filePath(relative_path);
-    if (QFile::exists(candidate)) {
-        return candidate;
-    }
-
-    const QDir source_dir(QDir(QCoreApplication::applicationDirPath()).filePath(QStringLiteral("../..")));
-    return source_dir.filePath(relative_path);
-}
-
 }  // namespace fleetsim::ui

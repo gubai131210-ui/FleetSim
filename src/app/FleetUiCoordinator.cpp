@@ -32,7 +32,7 @@ void FleetUiCoordinator::clearFleetGraphics()
         return;
     }
 
-    for (VehicleGraphicsItem* item : vehicle_items_) {
+    for (ui::VehicleGraphicsItem* item : vehicle_items_) {
         map_view_->mapScene()->vehicleLayer()->removeFromGroup(item);
         delete item;
     }
