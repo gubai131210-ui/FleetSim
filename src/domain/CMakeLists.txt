@@ -44,3 +44,19 @@ add_library(FleetSimDomain STATIC
     collision/TimeWindowCollisionAvoidance.h
     collision/ICollisionAvoidance.h
 )
+
+target_include_directories(FleetSimDomain
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/..
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(FleetSimDomain
+    PUBLIC
+        FleetSimCore
+        nlohmann_json::nlohmann_json
+)
+
+target_compile_features(FleetSimDomain PUBLIC cxx_std_17)
+
+fleetsim_enable_coverage(FleetSimDomain)

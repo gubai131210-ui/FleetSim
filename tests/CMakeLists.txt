@@ -23,3 +23,16 @@ add_executable(FleetSimTests
     integration/DemoScenarioTest.cpp
     integration/MultiAgvScenarioTest.cpp
 )
+
+target_link_libraries(FleetSimTests
+    PRIVATE
+        FleetSimApp
+        FleetSimDomain
+        FleetSimCore
+        GTest::gtest_main
+)
+
+fleetsim_enable_coverage(FleetSimTests)
+
+include(GoogleTest)
+gtest_discover_tests(FleetSimTests)
