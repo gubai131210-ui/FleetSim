@@ -11,6 +11,75 @@
 
 ---
 
+## [2026-08-23] Phase 4 Session 0 — ADR + IVehicleModel / ControlCommand stub + 红灯测
+
+### 本次 Scope（Architect 定义）
+- 目标：固化 ADR-009/010；扩展 `ControlCommand.steering_angle`；`IVehicleModel` + `BicycleModel` stub（运动学未实装，单测 RED）；`DiffDriveModel` 实现接口且行为不变
+- 允许改动：`docs/decisions/009-*`、`010-*`、`src/core/types/ControlCommand.h`、`src/domain/vehicle/`、`src/domain/CMakeLists.txt`、`tests/`、`SESSION_LOG.md`
+- 明确不在本次范围：完整 Bicycle 方程、Vehicle 策略切换、舵角适配、scenario 资产、CMake export、ROS2 桥代码、SettingsDialog、Hungarian、Phase4 ✅
+
+### ✅ 已完成
+- [x] ADR-009 `docs/decisions/009-bicycle-control-command.md`
+- [x] ADR-010 `docs/decisions/010-ros2-bridge.md`
+- [x] `ControlCommand.steering_angle`（默认 0）
+- [x] `IVehicleModel.h`
+- [x] `DiffDriveModel : public IVehicleModel`（行为不变）
+- [x] `BicycleModel` stub（故意不积分，保持 RED）
+- [x] `BicycleModelTest.cpp` 红灯用例 + CMake 登记
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划在哪个 Phase/会话 |
+|------|------|----------------------|
+| Bicycle 后轴运动学实装 | Session 0 仅 stub+红灯 | Session 1 |
+| Vehicle unique_ptr 模型切换 | 依赖完整 Bicycle | Session 1 |
+| Pure Pursuit→舵角 / scenario bicycle | 后续 | Session 2 |
+| Domain 静态库 export | 后续 | Session 3 |
+| ROS2 桥代码 | 仅 ADR 草案 | Session 4 |
+| SettingsDialog / Hungarian | 后续 | Session 5 |
+
+### 🚫 禁止偷懒自检
+- [x] 没有把 Bicycle stub 冒充完整运动学绿测
+- [x] Domain 无 Qt / rclcpp
+- [x] 未堆 Settings 进 ControlPanel
+- [x] 未削掉 CMake target_include / link
+- [x] 新 Domain 类有 GTest（红灯预期）
+- [x] SESSION_LOG 已写「没做什么」
+
+### 新增/变更文件清单
+| 文件 | 操作 | 说明 |
+|------|------|------|
+| `docs/decisions/009-bicycle-control-command.md` | 新增 | ADR-009 |
+| `docs/decisions/010-ros2-bridge.md` | 新增 | ADR-010 |
+| `src/core/types/ControlCommand.h` | 修改 | +steering_angle |
+| `src/domain/vehicle/IVehicleModel.h` | 新增 | 策略接口 |
+| `src/domain/vehicle/BicycleModel.*` | 新增 | stub |
+| `src/domain/vehicle/DiffDriveModel.h` | 修改 | 实现接口 |
+| `src/domain/CMakeLists.txt` | 修改 | 登记 Bicycle |
+| `tests/domain/BicycleModelTest.cpp` | 新增 | 红灯 |
+| `tests/CMakeLists.txt` | 修改 | 登记测试 |
+
+### 接口变更
+- `ControlCommand` 新增 `steering_angle`（默认 0，兼容）
+- 新增 `IVehicleModel::integrate(pose, cmd, dt)`
+- `DiffDriveModel` / `BicycleModel` 实现该接口
+
+### Reviewer 结果
+- Reviewer-Code: PASS（Bicycle 真 stub、CMake include/link 保留、无 Qt/rclcpp）
+- Reviewer-Test: PASS（五类用例齐；运动学用例 Session0 预期 RED）
+- Reviewer-UI: N/A（本会话无 UI 改动）
+
+### 用户本地验证
+1. `git pull origin main`
+2. Qt Creator 重新 Configure → Build
+3. Run `FleetSimTests`：既有 DiffDrive/MultiAgv 应 PASS；`BicycleModelTest.*` **预期 FAIL**（Session 0 红灯）
+4. Session 1 实装后上述 Bicycle 用例应变绿
+
+### 下次会话建议
+- 第一条任务：实现 `BicycleModel` 后轴方程 + Vehicle 策略切换 + 绿测
+- 前置条件：本会话已 push；用户确认旧测仍绿、Bicycle 红灯可接受
+
+---
+
 ## [2026-08-22] Phase 1 — 核心仿真 MVP
 
 ### 本次 Scope

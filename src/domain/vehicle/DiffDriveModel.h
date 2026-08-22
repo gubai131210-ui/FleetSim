@@ -1,17 +1,16 @@
 #pragma once
 
-#include "core/types/ControlCommand.h"
-#include "core/types/Pose.h"
+#include "IVehicleModel.h"
 
 namespace fleetsim::domain::vehicle {
 
-class DiffDriveModel {
+class DiffDriveModel : public IVehicleModel {
 public:
     DiffDriveModel(double max_linear_velocity = 0.5, double max_angular_velocity = 1.0);
 
     core::Pose integrate(const core::Pose& current_pose,
                          const core::ControlCommand& command,
-                         double dt) const;
+                         double dt) const override;
 
 private:
     double max_linear_velocity_{0.5};

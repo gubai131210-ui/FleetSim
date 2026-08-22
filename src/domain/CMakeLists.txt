@@ -19,8 +19,11 @@ add_library(FleetSimDomain STATIC
     control/PurePursuitTracker.cpp
     control/PurePursuitTracker.h
     control/IPathTracker.h
+    vehicle/IVehicleModel.h
     vehicle/DiffDriveModel.cpp
     vehicle/DiffDriveModel.h
+    vehicle/BicycleModel.cpp
+    vehicle/BicycleModel.h
     vehicle/Vehicle.cpp
     vehicle/Vehicle.h
     vehicle/FleetManager.cpp
