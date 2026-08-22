@@ -11,6 +11,30 @@
 
 ---
 
+## [2026-08-23] Phase 4 Goal J — CMake export fix + full FleetSimTests green
+
+### ✅ 已完成
+- [x] 修复 install(EXPORT) 依赖未导出的 nlohmann_json（BUILD_INTERFACE + Config find_dependency）
+- [x] 现有 Kit 增量 Configure/Build FleetSimTests 成功
+- [x] fleet_domain_smoke 运行 OK
+- [x] ProjectManagerTest：改用 ASCII cwd 下 test_tmp（规避中文 Temp + MinGW ofstream）
+- [x] **FleetSimTests 全量 60/60 PASSED**（含 Bicycle*/Steering*/Hungarian*/MultiAgv*）
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 |
+|------|------|
+| Stanley / MPC | Phase4 范围外 |
+
+### 证据
+- FleetSimTests.exe LastWrite 2026-08-23；FULL=0；60 passed
+- domain_smoke: domain_smoke ok pose=(...)
+
+### Reviewer
+- Code: CMake export 修复必要；Test: 全绿
+
+
+---
+
 ## [2026-08-23] Phase 4 — 测试资产 cwd + 本地验证脚本（Goal J 前置）
 
 ### 本次 Scope

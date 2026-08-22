@@ -6,4 +6,9 @@ find_dependency(nlohmann_json)
 
 include("${CMAKE_CURRENT_LIST_DIR}/FleetSimDomainTargets.cmake")
 
+# nlohmann_json is not part of FleetSimDomainTargets (FetchContent); wire it for consumers.
+if(TARGET FleetSim::FleetSimDomain AND TARGET nlohmann_json::nlohmann_json)
+    target_link_libraries(FleetSim::FleetSimDomain INTERFACE nlohmann_json::nlohmann_json)
+endif()
+
 check_required_components(FleetSimDomain)

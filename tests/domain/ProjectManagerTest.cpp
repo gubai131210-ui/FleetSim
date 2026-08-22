@@ -2,15 +2,20 @@
 
 #include <gtest/gtest.h>
 
-#include <cstdlib>
+#include <chrono>
 #include <filesystem>
+#include <cstdlib>
 
 namespace {
 
+// Prefer ASCII cwd-relative dirs: system Temp often has non-ASCII user names on
+ // Chinese Windows, and MinGW ofstream cannot open those paths.
 std::filesystem::path tempScenarioDir()
 {
-    const auto dir = std::filesystem::temp_directory_path()
-        / ("fleetsim_project_test_" + std::to_string(std::rand()));
+    const auto stamp = std::chrono::steady_clock::now().time_since_epoch().count();
+    const auto dir = std::filesystem::current_path()
+        / "test_tmp"
+        / ("fleetsim_project_" + std::to_string(stamp) + "_" + std::to_string(std::rand()));
     std::filesystem::create_directories(dir);
     return dir;
 }
@@ -28,7 +33,7 @@ TEST(ProjectManagerTest, SaveAndLoadRoundTrip)
     obstacle.rect = {5.0, 5.0, 2.0, 2.0};
     manager.mapDocument().obstacles.push_back(obstacle);
 
-    ASSERT_TRUE(manager.save(dir.string()));
+    ASSERT_TRUE(manager.save(dir.string())) << "save failed for dir=" << dir.string();
 
     fleetsim::app::ProjectManager reloaded;
     ASSERT_TRUE(reloaded.load(dir.string()));
@@ -43,7 +48,7 @@ TEST(ProjectManagerTest, SaveWritesMapJson)
     const auto dir = tempScenarioDir();
     fleetsim::app::ProjectManager manager;
     manager.newProject(dir.string());
-    ASSERT_TRUE(manager.save(dir.string()));
+    ASSERT_TRUE(manager.save(dir.string())) << "save failed for dir=" << dir.string();
     EXPECT_TRUE(std::filesystem::exists(dir / "map.json"));
     EXPECT_TRUE(std::filesystem::exists(dir / "scenario.json"));
     std::filesystem::remove_all(dir);

@@ -66,7 +66,9 @@ target_include_directories(FleetSimDomain
 target_link_libraries(FleetSimDomain
     PUBLIC
         FleetSimCore
-        nlohmann_json::nlohmann_json
+        # FetchContent nlohmann is not in our export set; expose only at build time.
+        # Installed package re-attaches via find_dependency + INTERFACE in Config.cmake.in.
+        $<BUILD_INTERFACE:nlohmann_json::nlohmann_json>
 )
 
 target_compile_features(FleetSimDomain PUBLIC cxx_std_17)
