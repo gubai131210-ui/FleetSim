@@ -212,6 +212,25 @@ void SimEngine::setPredictionKind(const std::string& kind)
     prediction_kind_ = kind;
 }
 
+void SimEngine::setRoutingMode(const std::string& mode)
+{
+    if (mode.empty() || mode == "freespace") {
+        routing_mode_ = "freespace";
+        return;
+    }
+    routing_mode_ = mode;
+}
+
+void SimEngine::setLaneMap(const map::LaneMapData& lanes)
+{
+    lane_graph_.loadFromMap(lanes);
+}
+
+void SimEngine::setLaneSnapRadiusM(double radius_m)
+{
+    lane_snap_radius_m_ = radius_m > 0.0 ? radius_m : 1.0;
+}
+
 std::vector<planning::PeerTrajectory> SimEngine::collectPeersFor(
     const core::VehicleId& ego_id) const
 {
@@ -312,7 +331,171 @@ const vehicle::VehicleAgent* SimEngine::selectedAgent() const
 
 bool SimEngine::planPathForAgent(vehicle::VehicleAgent& agent)
 {
+    if (routing_mode_ == "lane_graph") {
+        return planLaneGraphPathForAgent(agent);
+    }
+    if (routing_mode_ == "hybrid") {
+        return planHybridPathForAgent(agent);
+    }
     return planPathForAgentOnGrid(agent, map_);
+}
+
+core::Path SimEngine::planFreespaceBetween(const map::OccupancyGrid& grid,
+                                            const vehicle::Vehicle& vehicle,
+                                            const core::Pose& start,
+                                            const core::Pose& goal) const
+{
+    const std::string kind = resolvedPlannerKind(vehicle);
+    if (kind == "hybrid_astar") {
+        const double wheelbase = vehicle.isBicycle() ? vehicle.wheelbaseM() : 0.8;
+        const double max_steer = vehicle.isBicycle() ? vehicle.maxSteeringRad() : 0.6;
+        planning::HybridAStarPlanner hybrid(wheelbase, max_steer);
+        return hybrid.plan(grid, start, goal);
+    }
+
+    const core::Path raw_path = astar_planner_.plan(grid, start, goal);
+    if (raw_path.empty()) {
+        return {};
+    }
+    return smoother_.smooth(raw_path);
+}
+
+core::Path SimEngine::concatenatePaths(const core::Path& prefix, const core::Path& suffix)
+{
+    if (prefix.empty()) {
+        return suffix;
+    }
+    if (suffix.empty()) {
+        return prefix;
+    }
+
+    std::vector<core::Waypoint> waypoints = prefix.waypoints();
+    const std::vector<core::Waypoint>& suffix_points = suffix.waypoints();
+    std::size_t start_index = 0;
+    if (!waypoints.empty() && !suffix_points.empty()) {
+        const core::Waypoint& last = waypoints.back();
+        const core::Waypoint& first = suffix_points.front();
+        const double dx = last.x - first.x;
+        const double dy = last.y - first.y;
+        if ((dx * dx + dy * dy) < 1e-8) {
+            start_index = 1;
+        }
+    }
+    for (std::size_t i = start_index; i < suffix_points.size(); ++i) {
+        waypoints.push_back(suffix_points[i]);
+    }
+    return core::Path(std::move(waypoints));
+}
+
+bool SimEngine::withinLaneSnap(double x, double y, const std::string& node_id) const
+{
+    const auto position = lane_graph_.nodePosition(node_id);
+    if (!position.has_value()) {
+        return false;
+    }
+    const double dx = x - position->first;
+    const double dy = y - position->second;
+    return (dx * dx + dy * dy) <= (lane_snap_radius_m_ * lane_snap_radius_m_);
+}
+
+bool SimEngine::assignReferencePath(vehicle::VehicleAgent& agent, core::Path path)
+{
+    if (agent.vehicle == nullptr) {
+        return false;
+    }
+    if (path.empty()) {
+        agent.reference_path.clear();
+        publishPathUpdate(agent.vehicle->id(), agent.reference_path);
+        return false;
+    }
+
+    agent.reference_path = std::move(path);
+    agent.goal_reached = false;
+    publishPathUpdate(agent.vehicle->id(), agent.reference_path);
+    collision_.reservePath(
+        agent.vehicle->id(), agent.reference_path, sim_time_s_, agent.task_priority, map_);
+    return !agent.reference_path.empty();
+}
+
+bool SimEngine::planLaneGraphPathForAgent(vehicle::VehicleAgent& agent)
+{
+    if (agent.vehicle == nullptr || lane_graph_.empty()) {
+        return false;
+    }
+
+    const core::Pose& start = agent.vehicle->pose();
+    const core::Pose& goal = agent.goal;
+    const std::string start_node = lane_graph_.nearestNodeId(start.x, start.y);
+    const std::string goal_node = lane_graph_.nearestNodeId(goal.x, goal.y);
+    if (start_node.empty() || goal_node.empty()) {
+        return false;
+    }
+    if (!withinLaneSnap(start.x, start.y, start_node) ||
+        !withinLaneSnap(goal.x, goal.y, goal_node)) {
+        return false;
+    }
+
+    planning::LaneRouter router(lane_graph_);
+    const auto lane_path = router.route(start_node, goal_node);
+    if (!lane_path.has_value() || lane_path->empty()) {
+        return false;
+    }
+
+    return assignReferencePath(agent, smoother_.smooth(*lane_path));
+}
+
+bool SimEngine::planHybridPathForAgent(vehicle::VehicleAgent& agent)
+{
+    if (agent.vehicle == nullptr || lane_graph_.empty()) {
+        return false;
+    }
+
+    const core::Pose& start = agent.vehicle->pose();
+    const core::Pose& goal = agent.goal;
+    const std::string entry_node = lane_graph_.nearestNodeId(start.x, start.y);
+    const std::string exit_node = lane_graph_.nearestNodeId(goal.x, goal.y);
+    if (entry_node.empty() || exit_node.empty()) {
+        return false;
+    }
+    if (!withinLaneSnap(start.x, start.y, entry_node) ||
+        !withinLaneSnap(goal.x, goal.y, exit_node)) {
+        return false;
+    }
+
+    const auto entry_pos = lane_graph_.nodePosition(entry_node);
+    const auto exit_pos = lane_graph_.nodePosition(exit_node);
+    if (!entry_pos.has_value() || !exit_pos.has_value()) {
+        return false;
+    }
+
+    core::Pose entry_pose;
+    entry_pose.x = entry_pos->first;
+    entry_pose.y = entry_pos->second;
+    entry_pose.theta = start.theta;
+
+    core::Pose exit_pose;
+    exit_pose.x = exit_pos->first;
+    exit_pose.y = exit_pos->second;
+    exit_pose.theta = goal.theta;
+
+    planning::LaneRouter router(lane_graph_);
+    const auto lane_segment = router.route(entry_node, exit_node);
+    if (!lane_segment.has_value() || lane_segment->empty()) {
+        return false;
+    }
+
+    core::Path combined;
+    const core::Path first_mile = planFreespaceBetween(map_, *agent.vehicle, start, entry_pose);
+    combined = concatenatePaths(combined, first_mile);
+    combined = concatenatePaths(combined, *lane_segment);
+
+    const core::Path last_mile = planFreespaceBetween(map_, *agent.vehicle, exit_pose, goal);
+    combined = concatenatePaths(combined, last_mile);
+
+    if (combined.empty()) {
+        return false;
+    }
+    return assignReferencePath(agent, smoother_.smooth(combined));
 }
 
 bool SimEngine::planPathForAgentOnGrid(vehicle::VehicleAgent& agent,
@@ -322,38 +505,15 @@ bool SimEngine::planPathForAgentOnGrid(vehicle::VehicleAgent& agent,
         return false;
     }
 
-    const std::string kind = resolvedPlannerKind(*agent.vehicle);
-    core::Path raw_path;
-    if (kind == "hybrid_astar") {
-        const double wheelbase = agent.vehicle->isBicycle()
-            ? agent.vehicle->wheelbaseM()
-            : 0.8;
-        const double max_steer = agent.vehicle->isBicycle()
-            ? agent.vehicle->maxSteeringRad()
-            : 0.6;
-        planning::HybridAStarPlanner hybrid(wheelbase, max_steer);
-        raw_path = hybrid.plan(planning_grid, agent.vehicle->pose(), agent.goal);
-        agent.reference_path = raw_path;
-    } else {
-        raw_path = astar_planner_.plan(planning_grid, agent.vehicle->pose(), agent.goal);
-        if (raw_path.empty()) {
-            agent.reference_path.clear();
-            publishPathUpdate(agent.vehicle->id(), agent.reference_path);
-            return false;
-        }
-        agent.reference_path = smoother_.smooth(raw_path);
-    }
-
-    if (agent.reference_path.empty()) {
+    const core::Path path =
+        planFreespaceBetween(planning_grid, *agent.vehicle, agent.vehicle->pose(), agent.goal);
+    if (path.empty()) {
+        agent.reference_path.clear();
         publishPathUpdate(agent.vehicle->id(), agent.reference_path);
         return false;
     }
 
-    agent.goal_reached = false;
-    publishPathUpdate(agent.vehicle->id(), agent.reference_path);
-    collision_.reservePath(
-        agent.vehicle->id(), agent.reference_path, sim_time_s_, agent.task_priority, map_);
-    return !agent.reference_path.empty();
+    return assignReferencePath(agent, path);
 }
 
 void SimEngine::replanFleetWithPriorityCoordination()

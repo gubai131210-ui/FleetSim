@@ -168,4 +168,14 @@ core::Path LaneGraph::centerlinePath(const std::vector<std::string>& node_ids) c
     return core::Path(std::move(waypoints));
 }
 
+std::optional<std::pair<double, double>> LaneGraph::nodePosition(const std::string& node_id) const
+{
+    const auto index = nodeIndex(node_id);
+    if (!index.has_value()) {
+        return std::nullopt;
+    }
+    const LaneNode& node = nodes_[*index];
+    return std::make_pair(node.x, node.y);
+}
+
 }  // namespace fleetsim::domain::map

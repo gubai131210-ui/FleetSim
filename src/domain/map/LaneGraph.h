@@ -21,6 +21,7 @@ public:
         const std::string& from_id, const std::string& to_id) const;
     std::string nearestNodeId(double x, double y) const;
     core::Path centerlinePath(const std::vector<std::string>& node_ids) const;
+    std::optional<std::pair<double, double>> nodePosition(const std::string& node_id) const;
 
     bool empty() const { return nodes_.empty(); }
     std::size_t nodeCount() const { return nodes_.size(); }

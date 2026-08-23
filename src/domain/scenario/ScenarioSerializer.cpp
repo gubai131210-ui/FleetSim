@@ -1,6 +1,7 @@
 #include "ScenarioSerializer.h"
 
 #include "domain/map/MapLoader.h"
+#include "domain/map/MapSerializer.h"
 
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -37,6 +38,7 @@ ScenarioData ScenarioSerializer::fromJson(const nlohmann::json& json,
     data.simulation.coordination = simulation.value("coordination", std::string{});
     data.simulation.speed_planner = simulation.value("speed_planner", std::string{});
     data.simulation.prediction = simulation.value("prediction", std::string{});
+    data.simulation.routing_mode = simulation.value("routing_mode", std::string{});
 
     for (const auto& vehicle_json : json.at("vehicles")) {
         VehicleConfig vehicle;
@@ -81,7 +83,9 @@ ScenarioData ScenarioSerializer::fromFile(const std::string& scenario_json_path,
 
     const std::filesystem::path map_path =
         std::filesystem::path(scenario_directory) / "map.json";
-    data.map = map::MapLoader::loadFromFile(map_path.string(), inflation_radius_m);
+    const map::MapDocument map_document = map::MapSerializer::fromFile(map_path.string());
+    data.map = map::MapSerializer::toOccupancyGrid(map_document, inflation_radius_m);
+    data.lanes = map_document.lanes;
     return data;
 }
 
@@ -107,6 +111,9 @@ nlohmann::json ScenarioSerializer::toJson(const ScenarioData& scenario)
     }
     if (!scenario.simulation.prediction.empty()) {
         json["simulation"]["prediction"] = scenario.simulation.prediction;
+    }
+    if (!scenario.simulation.routing_mode.empty()) {
+        json["simulation"]["routing_mode"] = scenario.simulation.routing_mode;
     }
 
     nlohmann::json tasks = nlohmann::json::array();

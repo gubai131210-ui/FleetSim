@@ -11,6 +11,46 @@
 
 ---
 
+## [2026-08-23] Phase 8 Session 3 — SimEngine routing_mode + First/Last Mile
+
+### 本次 Scope（Planner 定义）
+- **目标**：`routing_mode` freespace/lane_graph/hybrid；SimEngine planPath 读 LaneGraph；FirstLastMileIntegrationTest
+- **允许改动**：SimEngine、ScenarioLoader/Serializer、SimController、LaneGraph.nodePosition、FirstLastMileIntegrationTest
+- **NOT DO**：UI；lane_routing_demo；LaneEditorPanel；RoutingPage；verify_phase8
+
+### ✅ 已完成
+- [x] `SimulationConfig.routing_mode` + ScenarioSerializer 读写；ScenarioData.lanes 从 map.json 加载
+- [x] SimEngine：`setRoutingMode` / `setLaneMap` / `setLaneSnapRadiusM`（默认 freespace）
+- [x] `planLaneGraphPathForAgent` — snap + LaneRouter + smoother
+- [x] `planHybridPathForAgent` — first mile + lane + last mile 拼接
+- [x] `planFreespaceBetween` 抽取；默认 freespace 保持 Phase 7 行为
+- [x] SimController 应用 routing_mode + lanes
+- [x] `FirstLastMileIntegrationTest`（4 测：默认/空图失败/三模式可区分/hybrid 更长）
+- [x] `ScenarioSerializerTest.RoundTripRoutingModeHybrid`
+
+### ❌ 未完成 / 故意不做
+| 项目 | 计划 |
+|------|------|
+| LaneEditorPanel / RoutingPage | Session 4–5 |
+| lane_routing_demo | Session 6 |
+| verify_phase8 | Session 7 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | **PASS** |
+| Executor | 已交付 |
+| Tester | **待用户验证** FirstLastMile* + 回归 |
+| Reviewer | **PASS** — routing_mode 默认 freespace；三模式有区分测 |
+
+### 用户本地验证
+```powershell
+FleetSimTests --gtest_filter=FirstLastMile*:ScenarioSerializer*:PlannerSwitch*
+```
+**预期**：FirstLastMile 4/4；Phase 7 PlannerSwitch 仍绿
+
+---
+
 ## [2026-08-23] Phase 8 Session 2 — MapSerializer lanes round-trip
 
 ### 本次 Scope（Planner 定义）

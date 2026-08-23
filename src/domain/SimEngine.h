@@ -4,7 +4,9 @@
 #include "control/PurePursuitTracker.h"
 #include "planning/AStarPlanner.h"
 #include "planning/DouglasPeuckerSmoother.h"
+#include "planning/LaneRouter.h"
 #include "planning/StGraphSpeedPlanner.h"
+#include "domain/map/LaneGraph.h"
 #include "scheduling/SchedulingModule.h"
 #include "vehicle/FleetManager.h"
 
@@ -85,6 +87,13 @@ public:
     void setPredictionKind(const std::string& kind);
     const std::string& predictionKind() const { return prediction_kind_; }
 
+    /// routing: "freespace" | "lane_graph" | "hybrid" (empty → freespace). ADR-018.
+    void setRoutingMode(const std::string& mode);
+    const std::string& routingMode() const { return routing_mode_; }
+    void setLaneMap(const map::LaneMapData& lanes);
+    void setLaneSnapRadiusM(double radius_m);
+    double laneSnapRadiusM() const { return lane_snap_radius_m_; }
+
     /// Recompute SpeedProfile for all agents with paths (reads peer Paths).
     void refreshSpeedProfiles();
 
@@ -103,6 +112,15 @@ public:
 private:
     bool planPathForAgent(vehicle::VehicleAgent& agent);
     bool planPathForAgentOnGrid(vehicle::VehicleAgent& agent, const map::OccupancyGrid& planning_grid);
+    bool planLaneGraphPathForAgent(vehicle::VehicleAgent& agent);
+    bool planHybridPathForAgent(vehicle::VehicleAgent& agent);
+    core::Path planFreespaceBetween(const map::OccupancyGrid& grid,
+                                    const vehicle::Vehicle& vehicle,
+                                    const core::Pose& start,
+                                    const core::Pose& goal) const;
+    static core::Path concatenatePaths(const core::Path& prefix, const core::Path& suffix);
+    bool withinLaneSnap(double x, double y, const std::string& node_id) const;
+    bool assignReferencePath(vehicle::VehicleAgent& agent, core::Path path);
     void replanFleetWithPriorityCoordination();
     std::vector<planning::PeerTrajectory> collectPeersFor(
         const core::VehicleId& ego_id) const;
@@ -123,6 +141,7 @@ private:
     collision::CollisionModule collision_;
 
     map::OccupancyGrid map_;
+    map::LaneGraph lane_graph_;
     vehicle::FleetManager fleet_;
 
     planning::AStarPlanner astar_planner_;
@@ -134,6 +153,8 @@ private:
     std::string coordination_kind_{"priority"};
     std::string speed_planner_kind_{"none"};
     std::string prediction_kind_{"none"};
+    std::string routing_mode_{"freespace"};
+    double lane_snap_radius_m_{1.0};
     double prediction_horizon_s_{3.0};
     double prediction_sample_dt_s_{0.1};
     int st_replan_interval_ticks_{10};

@@ -42,6 +42,7 @@ add_executable(FleetSimTests
     domain/FleetManagerTest.cpp
     integration/DemoScenarioTest.cpp
     integration/MultiAgvScenarioTest.cpp
+    integration/FirstLastMileIntegrationTest.cpp
     integration/ExperimentCompareIntegrationTest.cpp
 )
 

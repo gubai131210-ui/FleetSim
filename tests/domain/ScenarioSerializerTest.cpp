@@ -79,6 +79,20 @@ TEST(ScenarioSerializerTest, RoundTripPredictionConstantVelocity)
     EXPECT_EQ(loaded.simulation.prediction, "constant_velocity");
 }
 
+TEST(ScenarioSerializerTest, RoundTripRoutingModeHybrid)
+{
+    ScenarioData scenario;
+    scenario.simulation.dt_s = 0.05;
+    scenario.simulation.realtime = false;
+    scenario.simulation.routing_mode = "hybrid";
+
+    const nlohmann::json json = ScenarioSerializer::toJson(scenario);
+    EXPECT_EQ(json["simulation"]["routing_mode"], "hybrid");
+
+    const ScenarioData loaded = ScenarioSerializer::fromJson(json, "/tmp/scenario");
+    EXPECT_EQ(loaded.simulation.routing_mode, "hybrid");
+}
+
 TEST(ScenarioSerializerTest, RoundTripVehicleConfig)
 {
     ScenarioData scenario;

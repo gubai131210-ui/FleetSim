@@ -36,6 +36,9 @@ void SimController::applyScenarioToEngine()
         scenario_.simulation.speed_planner.empty() ? "none" : scenario_.simulation.speed_planner);
     engine_.setPredictionKind(
         scenario_.simulation.prediction.empty() ? "none" : scenario_.simulation.prediction);
+    engine_.setRoutingMode(
+        scenario_.simulation.routing_mode.empty() ? "freespace" : scenario_.simulation.routing_mode);
+    engine_.setLaneMap(scenario_.lanes);
 
     for (const auto& vehicle_config : scenario_.vehicles) {
         auto model = domain::vehicle::createVehicleModel(

@@ -3,6 +3,7 @@
 #include "core/types/Pose.h"
 #include "core/types/Task.h"
 #include "core/types/VehicleId.h"
+#include "domain/map/LaneTypes.h"
 #include "domain/map/OccupancyGrid.h"
 
 #include <string>
@@ -23,6 +24,8 @@ struct SimulationConfig {
     std::string speed_planner;
     /// "none" | "constant_velocity" | empty → none (ADR-016).
     std::string prediction;
+    /// "freespace" | "lane_graph" | "hybrid" | empty → freespace (ADR-018).
+    std::string routing_mode;
 };
 
 struct VehicleConfig {
@@ -40,6 +43,7 @@ struct ScenarioData {
     std::vector<VehicleConfig> vehicles;
     std::vector<core::Task> tasks;
     map::OccupancyGrid map;
+    map::LaneMapData lanes;
     std::string scenario_directory;
 };
 
