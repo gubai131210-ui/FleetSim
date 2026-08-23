@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "root": {
+    "type": "Recovery",
+    "name": "NavigateRecovery",
+    "retries": 3,
+    "children": [
+      {
+        "type": "Sequence",
+        "name": "NavigateWithReplanning",
+        "children": [
+          {
+            "type": "Rate",
+            "name": "ReplanRate",
+            "hz": 1.0,
+            "child": { "type": "Action", "name": "PlanPath" }
+          },
+          { "type": "Action", "name": "FollowUntilGoal" }
+        ]
+      },
+      {
+        "type": "Sequence",
+        "name": "RecoveryWait",
+        "children": [
+          { "type": "Action", "name": "WaitRecovery" },
+          { "type": "Action", "name": "PlanPath" }
+        ]
+      }
+    ]
+  }
+}

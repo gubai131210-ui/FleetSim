@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <deque>
+#include <string>
 
 namespace fleetsim::domain::experiment {
 
@@ -32,6 +33,10 @@ public:
     void reset();
 
     std::size_t tickCount() const { return tick_count_; }
+    std::size_t storedSampleCount() const { return samples_.size(); }
+
+    /// CSV columns: tick,cross_track,heading_error,st_ref_v,mpc_ok (Phase 9-E).
+    bool exportCsv(const std::string& path) const;
 
 private:
     std::size_t max_samples_{500};

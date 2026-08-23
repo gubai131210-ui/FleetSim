@@ -23,6 +23,8 @@ public:
     void reset();
     void captureBaseline();
 
+    bool exportCurrentMetricsCsv(const std::string& path) const;
+
 signals:
     void sampleReady(double sim_time_s,
                      double cross_track_error_m,

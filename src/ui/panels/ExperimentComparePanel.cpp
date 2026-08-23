@@ -1,5 +1,6 @@
 #include "ExperimentComparePanel.h"
 
+#include <QFileDialog>
 #include <QHeaderView>
 #include <QLabel>
 #include <QPushButton>
@@ -28,6 +29,16 @@ ExperimentComparePanel::ExperimentComparePanel(QWidget* parent)
         emit captureBaselineRequested();
     });
     layout->addWidget(capture_button_);
+
+    auto* export_button = new QPushButton(tr("Export CSV"), this);
+    connect(export_button, &QPushButton::clicked, this, [this]() {
+        const QString path = QFileDialog::getSaveFileName(
+            this, tr("Export experiment metrics CSV"), QString(), tr("CSV (*.csv)"));
+        if (!path.isEmpty()) {
+            emit exportCsvRequested(path);
+        }
+    });
+    layout->addWidget(export_button);
 
     status_label_ = new QLabel(tr("Baseline: not captured"), this);
     layout->addWidget(status_label_);

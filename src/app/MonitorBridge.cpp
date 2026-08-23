@@ -155,6 +155,11 @@ void MonitorBridge::captureBaseline()
     }
 }
 
+bool MonitorBridge::exportCurrentMetricsCsv(const std::string& path) const
+{
+    return metrics_->current.exportCsv(path);
+}
+
 void MonitorBridge::emitSummary(const domain::experiment::RunSummary& summary)
 {
     emit experimentMetricsUpdated(summary.mean_abs_cross_track,

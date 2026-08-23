@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <cmath>
 #include <deque>
+#include <fstream>
 #include <limits>
 
 namespace fleetsim::domain::experiment {
@@ -58,6 +59,26 @@ void ExperimentMetrics::reset()
 {
     tick_count_ = 0;
     samples_.clear();
+}
+
+bool ExperimentMetrics::exportCsv(const std::string& path) const
+{
+    std::ofstream output(path);
+    if (!output.is_open()) {
+        return false;
+    }
+
+    output << "tick,cross_track,heading_error,st_ref_v,mpc_ok\n";
+    std::size_t tick_index = 0;
+    for (const TickSample& sample : samples_) {
+        ++tick_index;
+        output << tick_index << ','
+               << sample.cross_track_error << ','
+               << sample.heading_error << ','
+               << sample.st_ref_velocity << ','
+               << (sample.mpc_last_solve_ok ? 1 : 0) << '\n';
+    }
+    return output.good();
 }
 
 }  // namespace fleetsim::domain::experiment

@@ -300,6 +300,14 @@ void MainWindow::bindMonitorBridge()
             &BehaviorTreePanel::updateStatus);
     connect(experiment_compare_panel_, &ExperimentComparePanel::captureBaselineRequested, monitor_bridge_,
             &app::MonitorBridge::captureBaseline);
+    connect(experiment_compare_panel_, &ExperimentComparePanel::exportCsvRequested, this,
+            [this](const QString& path) {
+                if (monitor_bridge_->exportCurrentMetricsCsv(path.toStdString())) {
+                    statusBar()->showMessage(tr("Exported metrics CSV: %1").arg(path));
+                } else {
+                    statusBar()->showMessage(tr("Failed to export metrics CSV."));
+                }
+            });
     monitor_bridge_->bind();
 }
 

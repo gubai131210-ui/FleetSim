@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "simulation": {
+    "dt_s": 0.05,
+    "realtime": false,
+    "planner": "astar",
+    "tracker": "pure_pursuit",
+    "coordination": "none",
+    "behavior_mode": "bt",
+    "behavior_tree_path": "navigate_replan_recovery.json",
+    "replan_hz": 1.0,
+    "recovery_wait_ticks": 15
+  },
+  "vehicles": [
+    {
+      "id": "agv_0",
+      "model": "diff_drive",
+      "svg": "assets/vehicles/agv_diff.svg",
+      "length_m": 1.0,
+      "pose": { "x": 2.0, "y": 2.0, "theta": 0.0 }
+    }
+  ],
+  "tasks": []
+}

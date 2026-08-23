@@ -26,6 +26,7 @@ add_executable(FleetSimTests
     domain/ConstantVelocityPredictorTest.cpp
     domain/StGraphWithPredictionTest.cpp
     domain/ExperimentMetricsTest.cpp
+    domain/ExperimentMetricsExportTest.cpp
     domain/BehaviorTreeTest.cpp
     domain/BtTreeLoaderTest.cpp
     domain/BtFleetNodesTest.cpp
@@ -49,6 +50,7 @@ add_executable(FleetSimTests
     integration/LaneRoutingDemoScenarioTest.cpp
     integration/ExperimentCompareIntegrationTest.cpp
     integration/BtNavigationIntegrationTest.cpp
+    integration/BtNavigationDemoScenarioTest.cpp
 )
 
 target_link_libraries(FleetSimTests

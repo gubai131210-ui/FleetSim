@@ -11,6 +11,51 @@
 
 ---
 
+## [2026-08-23] Phase 9 Session 5 — bt_navigation_demo + CSV 导出 + 回归
+
+### 本次 Scope（Planner 定义）
+- 目标：bt_navigation_demo 场景、ExperimentMetrics::exportCsv、ComparePanel Export 按钮、集成/单测、Phase7/8 回归
+- 允许改动：experiment/*、ExperimentComparePanel、MonitorBridge、assets/scenarios/bt_navigation_demo、测例
+- 明确不在本次范围：verify_phase9、M40+、DEVELOPMENT_PLAN ✅
+
+### ✅ 已完成
+- [x] **ExperimentMetrics::exportCsv** — 列 tick,cross_track,heading_error,st_ref_v,mpc_ok
+- [x] **ExperimentComparePanel** — Export CSV 按钮 + `exportCsvRequested`（仅此面板）
+- [x] **MonitorBridge::exportCurrentMetricsCsv**
+- [x] **ExperimentMetricsExportTest**（3 TEST）
+- [x] **assets/scenarios/bt_navigation_demo/** — scenario + map + navigate_replan_recovery.json
+- [x] **BtNavigationDemoScenarioTest**（3 TEST）— 加载、规划推进、blocked goal recovery
+- [x] **FleetSimTests 171/171 PASSED**（含 LaneRouting / prediction_st 回归）
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| verify_phase9_evidence.py | Session 6 | Session 6 |
+| M40–M42 登记执行 | Session 6 | Session 6 |
+| DEVELOPMENT_PLAN Phase9 ✅ | Session 6 终审 | Session 6 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | CSV 仅 ComparePanel；demo 独立场景目录 |
+| Executor | Domain exportCsv + demo 资产 + 6 新 TEST |
+| Tester | **PASS**：171/171；Export 行数与 sample_count 一致 |
+| Reviewer | **PASS**：无 CSV 按钮在 Control/MainWindow/Workbench |
+
+### 证据
+- `D:\build\FleetSim_phase9_s0\FleetSimTests.exe` → **171 PASSED**
+
+### 用户本地验证
+1. `git pull origin main`
+2. Run `FleetSimTests`（171/171）
+3. Open `assets/scenarios/bt_navigation_demo` → Play → BT 规划/恢复
+4. Experiment Compare → Export CSV → 用 Excel 打开验证列
+
+### 下次会话建议
+- Session 6：verify_phase9 + M40+ + ADR 接受 + Phase9 ✅ + push 终审
+
+---
+
 ## [2026-08-23] Phase 9 Session 4 — BehaviorTreePanel + BehaviorPage (Workbench Tab 6)
 
 ### 本次 Scope（Planner 定义）

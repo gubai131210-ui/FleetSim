@@ -30,6 +30,7 @@ public slots:
 
 signals:
     void captureBaselineRequested();
+    void exportCsvRequested(const QString& path);
 
 private:
     void setRow(int row,
