@@ -86,6 +86,13 @@ add_library(FleetSimDomain STATIC
     behavior/BtNavigator.cpp
     behavior/BtTreeLoader.h
     behavior/BtTreeLoader.cpp
+    behavior/IBtSimContext.h
+    behavior/BtSimEngineContext.h
+    behavior/BtSimEngineContext.cpp
+    behavior/BtFleetActionNodes.h
+    behavior/BtFleetActionNodes.cpp
+    behavior/BtFleetConditionNodes.h
+    behavior/BtFleetConditionNodes.cpp
 )
 
 include(GNUInstallDirs)

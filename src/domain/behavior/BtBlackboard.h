@@ -1,5 +1,7 @@
 #pragma once
 
+#include "IBtSimContext.h"
+
 #include <optional>
 #include <string>
 #include <unordered_map>
@@ -11,6 +13,9 @@ namespace fleetsim::domain::behavior {
 class BtBlackboard {
 public:
     using Value = std::variant<std::monostate, bool, int, double, std::string>;
+
+    void setSimContext(IBtSimContext* context) { sim_context_ = context; }
+    IBtSimContext* simContext() const { return sim_context_; }
 
     void setBool(const std::string& key, bool value) { storage_[key] = value; }
     void setInt(const std::string& key, int value) { storage_[key] = value; }
@@ -29,6 +34,7 @@ public:
     std::size_t size() const { return storage_.size(); }
 
 private:
+    IBtSimContext* sim_context_{nullptr};
     std::unordered_map<std::string, Value> storage_;
 };
 

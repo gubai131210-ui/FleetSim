@@ -188,7 +188,7 @@ TEST(BehaviorTreeTest, RateDecoratorSkipsChildWithinInterval)
     EXPECT_EQ(tick_count, 1) << "Rate decorator should tick child at most once per interval";
 }
 
-TEST(BehaviorTreeTest, TreeLoaderNotYetImplementedReturnsNullopt)
+TEST(BehaviorTreeTest, TreeLoaderRejectsEmptyDocument)
 {
     BtTreeLoadError error;
     const auto tree = BtTreeLoader::loadFromJsonString("{}", &error);

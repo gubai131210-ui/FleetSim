@@ -1,13 +1,23 @@
 #include "BtNavigator.h"
 
+#include "BtTreeLoader.h"
+
 namespace fleetsim::domain::behavior {
 
-bool BtNavigator::loadFromJsonFile(const std::string& /*path*/)
+bool BtNavigator::loadFromJsonFile(const std::string& path)
 {
-    // Session 0 stub — Session 2 implements BtTreeLoader.
-    root_.reset();
-    tree_name_.clear();
-    return false;
+    BtTreeLoadError error;
+    auto loaded = BtTreeLoader::loadFromFile(path, &error);
+    if (!loaded.has_value()) {
+        root_.reset();
+        tree_name_.clear();
+        return false;
+    }
+
+    root_ = std::move(loaded.value());
+    tree_name_ = root_ ? root_->name() : std::string{};
+    last_status_ = NodeStatus::Failure;
+    return root_ != nullptr;
 }
 
 BtTickResult BtNavigator::tick(BtBlackboard& blackboard)

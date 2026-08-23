@@ -11,6 +11,50 @@
 
 ---
 
+## [2026-08-23] Phase 9 Session 2 — FleetSim 叶节点 + JSON 加载 + BtNavigator
+
+### 本次 Scope（Planner 定义）
+- 目标：IBtSimContext、FleetSim 叶节点、BtTreeLoader JSON、BtNavigator 加载、单元测
+- 允许改动：`src/domain/behavior/*`（叶节点/loader/context）、`assets/behavior_trees/`、测例、CMake
+- 明确不在本次范围：SimEngine behavior_mode 接线、UI、bt_navigation_demo 场景、CSV
+
+### ✅ 已完成
+- [x] **IBtSimContext** + **BtSimEngineContext**（桥接 `planPathFor` / goal / path / conflict）
+- [x] **叶节点**：PlanPath、FollowUntilGoal、WaitRecovery、ReplanIfTimer、IsGoalUpdated、IsPathValid、YieldIfBlocked
+- [x] **BtTreeLoader** ADR-020 JSON schema v1 解析（Sequence/Fallback/Recovery/Rate/Action/Condition）
+- [x] **BtNavigator::loadFromJsonFile** 真加载
+- [x] **assets/behavior_trees/navigate_replan_recovery.json**
+- [x] **BtTreeLoaderTest**（4 TEST）+ **BtFleetNodesTest**（6 TEST）
+- [x] **FleetSimTests 160/160 PASSED**
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| SimEngine behavior_mode 分支 | Session 3 | Session 3 |
+| BtNavigationIntegrationTest | Session 3 | Session 3 |
+| UI / demo scenario | Session 4–5 | Session 4–5 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | Session 2 = 叶节点 + JSON + 单测；NOT SimEngine/UI |
+| Executor | 8 个新源文件 + JSON 资产 + 10 新 TEST |
+| Tester | **PASS**：160/160；BtTreeLoader/BtFleet 专项绿 |
+| Reviewer | **PASS**：叶节点写 blackboard；loader 拒绝 unknown action；Domain 零 Qt |
+
+### 证据
+- `D:\build\FleetSim_phase9_s0\FleetSimTests.exe` → **160 PASSED**
+
+### 用户本地验证
+1. `git pull origin main`
+2. Rebuild + Run `FleetSimTests`（预期 160/160）
+3. 确认 `assets/behavior_trees/navigate_replan_recovery.json` 存在
+
+### 下次会话建议
+- Session 3：SimEngine `behavior_mode` + BtNavigationIntegrationTest
+
+---
+
 ## [2026-08-23] Phase 9 Session 1 — BT 控制节点 + Rate 装饰器 + BehaviorTreeTest 全绿
 
 ### 本次 Scope（Planner 定义）
