@@ -3,6 +3,7 @@
 #include "domain/scenario/ScenarioLoader.h"
 #include "domain/vehicle/Vehicle.h"
 #include "domain/vehicle/VehicleModelFactory.h"
+#include "app/SimController.h"
 
 #include <gtest/gtest.h>
 
@@ -19,6 +20,7 @@ using fleetsim::domain::experiment::ExperimentMetrics;
 using fleetsim::domain::experiment::TickSample;
 using fleetsim::domain::scenario::ScenarioLoader;
 using fleetsim::domain::vehicle::Vehicle;
+using fleetsim::app::SimController;
 
 namespace {
 
@@ -90,6 +92,17 @@ TEST(ExperimentCompareIntegrationTest, MetricsAggregateAfterSimTicks)
     const auto summary = metrics.summarize();
     EXPECT_GE(summary.sample_count, 10u);
     EXPECT_GT(summary.mean_abs_cross_track, 0.0);
+}
+
+TEST(ExperimentCompareIntegrationTest, SimControllerAppliesScenarioPrediction)
+{
+    auto scenario = ScenarioLoader::loadFromDirectory(predictionStDemoDir());
+    SimController controller;
+    ASSERT_TRUE(controller.loadScenarioData(std::move(scenario)));
+    EXPECT_EQ(controller.engine().predictionKind(), "constant_velocity");
+    EXPECT_EQ(controller.engine().speedPlannerKind(), "st_graph");
+    ASSERT_NE(controller.scenario(), nullptr);
+    EXPECT_EQ(controller.scenario()->vehicles.size(), 2u);
 }
 
 TEST(ExperimentCompareIntegrationTest, LoadedPredictionChangesStProfile)

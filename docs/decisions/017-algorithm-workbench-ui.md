@@ -2,7 +2,7 @@
 
 ## 状态
 
-草案（2026-08-23，Phase 7 Session 0）
+已接受（2026-08-23，Phase 7 Session 0 草案；Session 4–5 实装 Workbench + Compare Panel）
 
 ## 背景
 

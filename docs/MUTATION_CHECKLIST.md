@@ -38,6 +38,9 @@
 | M31 | `MpcLateralTracker.cpp` / A,B | 将预测矩阵 A 或 B 置零 | `MpcLateralTrackerTest.PredictionOrCostNonTrivial` |
 | M32 | `StGraphSpeedPlanner.cpp` / peers | `buildOccupancies` 忽略 peers（空列表） | `StGraphSpeedPlannerTest.ClearingPeerObstacles*` / `StGraphSimEngineWiringTest.WithPeers*` |
 | M33 | `MpcLateralTracker.cpp` / Q,R | 强制 `q_lat=q_heading=r_steer=0` | `MpcLateralTrackerTest.PredictionOrCostNonTrivial` / `lastCostNonTrivial` |
+| M34 | `ConstantVelocityPredictor.cpp` / horizon | 外推忽略 `horizon_s` 或零 horizon 仍长路径 | `ConstantVelocityPredictorTest.StraightLineExtrapolationLength` |
+| M35 | `ConstantVelocityPredictor.cpp` / extrapolation | 不沿 heading 外推（单点或静态复制） | `ConstantVelocityPredictorTest.TurningNominalSpeedUsesHeading` / `StGraphWithPredictionTest` |
+| M36 | `ExperimentMetrics.cpp` / recordTick | `recordTick` 空操作或 `summarize` 不聚合 | `ExperimentMetricsTest.RecordsSamplesAndAggregatesMeanAbsCrossTrack` |
 
 ## Phase 5 变异说明
 
@@ -50,6 +53,12 @@
 - M31：证明 MPC 使用非平凡预测矩阵，非 Stanley 换皮  
 - M32：证明 ST 消费他车 Path 占用，非距离停车 / 忽略 peers  
 - M33：证明代价权重非平凡（Q/R），权重全 0 须被测抓住  
+
+## Phase 7 变异说明
+
+- M34：`ConstantVelocityPredictor.cpp` / horizon — 强制 `horizon_s <= 0` 仍返回多点或长度 \(\gg v\cdot T\) | `ConstantVelocityPredictorTest.StraightLineExtrapolationLength` / `ZeroHorizon*`  
+- M35：`ConstantVelocityPredictor.cpp` — 忽略外推，仅返回 `{current.x, current.y}` 单点 | `ConstantVelocityPredictorTest.*` / `StGraphWithPredictionTest`  
+- M36：`ExperimentMetrics.cpp` — `recordTick` 不写入 deque / `summarize` 永远 sample_count=0 | `ExperimentMetricsTest.*`  
 
 ## 执行记录模板
 

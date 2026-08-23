@@ -11,6 +11,49 @@
 
 ---
 
+## [2026-08-23] Phase 7 Session 7 — MUTATION M34+ / verify_phase7 / 终审 / Phase7 ✅
+
+### ✅ 已完成
+- [x] MUTATION M34–M36 登记 + Phase 7 变异说明
+- [x] `tools/verify_phase7_evidence.py`（39 PASS）+ `run_phase7_verify.ps1`
+- [x] ADR-016/017 状态 → 已接受
+- [x] `DEVELOPMENT_PLAN` / `learning-path` Phase 7 ✅
+- [x] ASCII `D:\build\FleetSim_phase7_s0`：**FleetSimTests 118/118 PASSED**
+- [x] 四角色终审 PASS（见下）
+
+### 四角色终审
+| 角色 | 结论 |
+|------|------|
+| Planner | A–J 全部达成 Session 0–7 |
+| Executor | 代码/文档/测例/verify 齐 |
+| Tester | **PASS**：static 39 + runtime 118/118 |
+| Reviewer | **PASS**：§10 + UI_GUIDELINES + 无假 prediction |
+
+### 证据
+- static: `python tools/verify_phase7_evidence.py` → 39 PASS
+- runtime: `D:\build\FleetSim_phase7_s0\FleetSimTests.exe` → 118/118
+
+### 用户本地验证
+1. `git pull origin main`
+2. `pwsh -File tools/run_phase7_verify.ps1`
+3. Qt Build；Open `prediction_st_demo`；Algorithm Workbench + Experiment Compare
+
+---
+
+## [2026-08-23] Phase 7 Session 6 — 集成测补强 + Phase3–6 回归
+
+### ✅ 已完成
+- [x] `ExperimentCompareIntegrationTest.SimControllerAppliesScenarioPrediction`
+- [x] `assets/scenarios/experiment_compare_baseline`（prediction=none）
+- [x] 全量 **118/118 PASSED**（含 Phase 5–6 Mpc/StGraph/Priority/Hybrid/MultiAgv）
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 |
+|------|------|
+| verify_phase7 / MUTATION 执行记录 | Session 7 |
+
+---
+
 ## [2026-08-23] Phase 7 Session 5 — ExperimentComparePanel + MonitorBridge + prediction_st_demo
 
 ### 本次 Scope
