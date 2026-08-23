@@ -11,6 +11,42 @@
 
 ---
 
+## [2026-08-23] Phase 8 Session 8 — hybrid snap fix + FleetSimTests 139/139 green
+
+### ✅ 已完成
+- [x] **Bugfix**：`planHybridPathForAgent` 移除起终点 `withinLaneSnap` 检查（hybrid 应用 first/last mile 连接 off-lane 起终点，仅 `lane_graph` 需 snap）
+- [x] `LaneRoutingDemoScenarioTest`：`lane_graph` 使用 on-lane 起终点（n0→n4）；hybrid/freespace 仍用 off-lane goal `(14,0.5)`
+- [x] 删除孤儿 `src/ui/MonitorBridge.h`（与 `src/app/MonitorBridge.h` 重复）
+- [x] ASCII Build + **FleetSimTests 139/139 PASSED**（`D:\build\FleetSim_phase8_mgw`）
+- [x] `verify_phase8_evidence.py` **55/55 PASS**
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 |
+|------|------|
+| M37–M39 手工变异执行 | 登记已有；非 Goal 阻塞 |
+| Phase 9 BT / Lanelet2 | scope 外 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | hybrid vs lane_graph snap 语义对齐 ADR-018 §5 |
+| Executor | 最小修复 + 测例对齐 |
+| Tester | **PASS**：139/139 runtime + 55/55 static |
+| Reviewer | **PASS**（子 Agent `9dfc217a`；hybrid snap 语义对齐 ADR-018） |
+
+### 证据
+- exe: `D:\build\FleetSim_phase8_mgw\FleetSimTests.exe`
+- gtest: **139 tests, 0 failures**
+- static: `python tools/verify_phase8_evidence.py` → 55 PASS
+
+### 用户本地验证
+1. `git pull origin main`
+2. `pwsh -File tools/run_phase8_verify.ps1`
+3. Build + Run `FleetSimTests`（预期 139/139）
+4. Open `lane_routing_demo` → hybrid 规划 off-lane 起终点应成功
+
+---
+
 ## [2026-08-23] Phase 8 Session 7 — MUTATION M37+ / verify_phase8 / 终审 / Phase8 ✅
 
 ### ✅ 已完成

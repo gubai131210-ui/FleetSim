@@ -474,10 +474,6 @@ bool SimEngine::planHybridPathForAgent(vehicle::VehicleAgent& agent)
     if (entry_node.empty() || exit_node.empty()) {
         return false;
     }
-    if (!withinLaneSnap(start.x, start.y, entry_node) ||
-        !withinLaneSnap(goal.x, goal.y, exit_node)) {
-        return false;
-    }
 
     const auto entry_pos = lane_graph_.nodePosition(entry_node);
     const auto exit_pos = lane_graph_.nodePosition(exit_node);

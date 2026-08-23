@@ -66,6 +66,26 @@ void setupEngineFromScenario(SimEngine& engine, const fleetsim::domain::scenario
     engine.setSelectedVehicle(vehicle_config.id);
 }
 
+void setupLaneGraphEngineFromScenario(SimEngine& engine,
+                                      const fleetsim::domain::scenario::ScenarioData& scenario)
+{
+    engine.setMap(scenario.map);
+    engine.setLaneMap(scenario.lanes);
+    engine.setPlannerKind(scenario.simulation.planner.empty() ? "auto" : scenario.simulation.planner);
+    engine.setRoutingMode("lane_graph");
+    engine.setLaneSnapRadiusM(scenario.simulation.lane_snap_radius_m);
+
+    const auto& vehicle_config = scenario.vehicles.front();
+    auto vehicle = std::make_unique<Vehicle>(
+        vehicle_config.id,
+        vehicle_config.length_m,
+        Pose{1.0, 3.0, 0.0});
+    vehicle->setModelKind(vehicle_config.model);
+    engine.addVehicle(std::move(vehicle));
+    engine.setSelectedVehicle(vehicle_config.id);
+    engine.setGoal(Pose{13.0, 3.0, 0.0});
+}
+
 }  // namespace
 
 TEST(LaneRoutingDemoScenarioTest, LoadsForkLanesFromMapJson)
@@ -108,9 +128,7 @@ TEST(LaneRoutingDemoScenarioTest, HybridLaneGraphAndFreespaceAllPlan)
     ASSERT_FALSE(hybrid_path.empty());
 
     SimEngine lane_engine;
-    setupEngineFromScenario(lane_engine, scenario);
-    lane_engine.setRoutingMode("lane_graph");
-    lane_engine.setGoal(goal);
+    setupLaneGraphEngineFromScenario(lane_engine, scenario);
     ASSERT_TRUE(lane_engine.planPath());
     const auto lane_path = lane_engine.referencePath();
     ASSERT_FALSE(lane_path.empty());
