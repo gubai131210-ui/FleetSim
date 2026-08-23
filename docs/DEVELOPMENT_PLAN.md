@@ -13,14 +13,17 @@
 | **6** | 线性 MPC 横向跟踪 + ST-Graph 速度规划 | 3 周 ✅ |
 | **7** | 常速轨迹预测增强 ST + 算法实验工作台 UI 分层 + 对比指标 | 3 周 ✅ |
 | **8** | 车道级 LaneGraph + First/Last Mile 混合规划 + Lane 编辑 UI 分层 | 3 周 ✅ |
+| **9** | Behavior Tree MVP + ExperimentMetrics CSV + Behavior UI 分层 | 3 周 |
 
 > Phase 5 完整 Goal 提示词：`docs/PHASE5_GOAL_PROMPT.md`  
 > Phase 6 完整 Goal 提示词：`docs/PHASE6_GOAL_PROMPT.md`  
 > Phase 7 完整 Goal 提示词：`docs/PHASE7_GOAL_PROMPT.md`（复制 §0 给 Goal Agent）。  
 > Phase 8 完整 Goal 提示词：`docs/PHASE8_GOAL_PROMPT.md`（复制 §0 给 Goal Agent）。  
+> Phase 9 完整 Goal 提示词：`docs/PHASE9_GOAL_PROMPT.md`（复制 §0 给 Goal Agent）。  
 > Phase 6 验收：ASCII 外置 Build `D:\build\FleetSim_phase6*` + `FleetSimTests` 全绿（用户本地 Qt 再证）。  
 > Phase 7 验收：ASCII 外置 Build `D:\build\FleetSim_phase7*` + `FleetSimTests` 全绿 + `tools/verify_phase7_evidence.py`（会话 7 交付）。  
-> Phase 8 验收：ASCII 外置 Build `D:\build\FleetSim_phase8*` + `FleetSimTests` 全绿 + `tools/verify_phase8_evidence.py`（会话 7 交付）。
+> Phase 8 验收：ASCII 外置 Build `D:\build\FleetSim_phase8*` + `FleetSimTests` 全绿 + `tools/verify_phase8_evidence.py`（会话 7 交付）。  
+> Phase 9 验收：ASCII 外置 Build `D:\build\FleetSim_phase9*` + `FleetSimTests` 全绿 + `tools/verify_phase9_evidence.py`（会话 6 交付）。
 
 ## 禁止偷懒清单（Reviewer 必查）
 

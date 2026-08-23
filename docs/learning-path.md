@@ -10,5 +10,6 @@
 | Phase 6 | 线性 MPC + ST-Graph 速度规划 | 预测控制、时空速度规划 | 完整 Autoware、感知 |
 | Phase 7 | 常速预测 + ST 增强 + 实验工作台 UI | 动态障碍预测、仿真指标对比 | 神经网络预测、Behavior Tree ✅ |
 | Phase 8 | LaneGraph + First/Last Mile + Lane 编辑 UI | 车道级路由、Nav2 Route 思想 | 完整 Lanelet2、BT 引擎（→ Phase 9） ✅ |
+| Phase 9 | Behavior Tree MVP + CSV 导出 + Behavior UI 分层 | Nav2 BT 编排 plan/follow/replan/recovery | 完整 BT.CPP、Lanelet2 导入（→ Phase 10） |
 
-Domain 层保持无 Qt。Phase 7 ✅。Phase 8 ✅：LaneGraph + hybrid routing + **LaneEditorPanel / RoutingPage**；见 `docs/PHASE8_GOAL_PROMPT.md`。
+Domain 层保持无 Qt。Phase 7 ✅。Phase 8 ✅：LaneGraph + hybrid routing + **LaneEditorPanel / RoutingPage**；见 `docs/PHASE8_GOAL_PROMPT.md`。Phase 9 目标见 `docs/PHASE9_GOAL_PROMPT.md`。
