@@ -22,7 +22,7 @@ private:
     std::string name_;
     double hz_{1.0};
     BtNodePtr child_;
-    double elapsed_s_{0.0};
+    int cooldown_ticks_remaining_{0};
     NodeStatus last_status_{NodeStatus::Success};
 };
 

@@ -11,6 +11,49 @@
 
 ---
 
+## [2026-08-23] Phase 9 Session 1 — BT 控制节点 + Rate 装饰器 + BehaviorTreeTest 全绿
+
+### 本次 Scope（Planner 定义）
+- 目标：Nav2 对齐 Sequence/Fallback/Recovery + Rate 限频；BehaviorTreeTest 11/11 绿
+- 允许改动：`BtControlNodes.cpp`、`BtDecoratorNodes.*`
+- 明确不在本次范围：叶节点、JSON 加载、SimEngine、UI
+
+### ✅ 已完成
+- [x] **Sequence** — 遇 FAILURE/RUNNING 立即返回；全 SUCCESS → SUCCESS
+- [x] **Fallback** — 遇 SUCCESS/RUNNING 立即返回；全 FAILURE → FAILURE
+- [x] **Recovery** — 先 primary；FAILURE 才 recovery；recovery SUCCESS 消耗 retry 并重试 primary；写 `recovery_count`
+- [x] **Rate** — `cooldown_ticks_remaining_` 限频（hz=1.0 时连续两次 tick 子节点仅 1 次）
+- [x] **FleetSimTests 150/150 PASSED**（139 原有 + 11 BehaviorTreeTest）
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| BtFleet 叶节点 + JSON 加载 | Session 2 | Session 2 |
+| SimEngine behavior_mode | Session 3 | Session 3 |
+| UI / demo / CSV / verify_phase9 | 后续 | Session 4–6 |
+| M40 突变登记 | Session 6 | Session 6 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | Session 1 = 控制流实现 only |
+| Executor | BtControlNodes + BtDecoratorNodes 真实现 |
+| Tester | **PASS**：BehaviorTreeTest 11/11；FleetSimTests 150/150 |
+| Reviewer | **PASS**（子 Agent `77adf086`）：Recovery 先 primary、零 Qt、scope 未扩 |
+
+### 证据
+- `D:\build\FleetSim_phase9_s0\FleetSimTests.exe` → **150 PASSED**
+
+### 用户本地验证
+1. `git pull origin main`
+2. Rebuild + Run `FleetSimTests`（预期 150/150）
+3. `FleetSimTests.exe --gtest_filter=BehaviorTreeTest.*`（预期 11/11）
+
+### 下次会话建议
+- Session 2：BtFleet 叶节点 + BtTreeLoader JSON 解析 + 单元测
+
+---
+
 ## [2026-08-23] Phase 9 Session 0 — ADR-020/021 + BT 接口 + 红灯测骨架
 
 ### 本次 Scope（Planner 定义）

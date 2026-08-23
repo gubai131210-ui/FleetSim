@@ -15,15 +15,36 @@ NodeStatus tickChildrenSequence(const std::vector<BtNodePtr>& children,
         return NodeStatus::Success;
     }
 
-    // Session 0 stub — Session 1 implements Nav2-aligned sequence semantics.
     for (const auto& child : children) {
         active_child_name = child->name();
         const NodeStatus status = child->tick(blackboard);
         if (status != NodeStatus::Success) {
-            return NodeStatus::Success;  // intentional stub bug for red tests
+            return status;
         }
     }
     return NodeStatus::Success;
+}
+
+NodeStatus tickChildrenFallback(const std::vector<BtNodePtr>& children,
+                                BtBlackboard& blackboard,
+                                std::string& active_child_name)
+{
+    active_child_name.clear();
+    if (children.empty()) {
+        return NodeStatus::Failure;
+    }
+
+    for (const auto& child : children) {
+        active_child_name = child->name();
+        const NodeStatus status = child->tick(blackboard);
+        if (status == NodeStatus::Success) {
+            return NodeStatus::Success;
+        }
+        if (status == NodeStatus::Running) {
+            return NodeStatus::Running;
+        }
+    }
+    return NodeStatus::Failure;
 }
 
 }  // namespace
@@ -49,18 +70,7 @@ BtFallbackNode::BtFallbackNode(std::string name, std::vector<BtNodePtr> children
 NodeStatus BtFallbackNode::tick(BtBlackboard& blackboard)
 {
     blackboard.setString(BbKey::kActiveNodeName, name_);
-    active_child_name_.clear();
-    if (children_.empty()) {
-        return NodeStatus::Failure;
-    }
-
-    // Session 0 stub — always returns last child status without early SUCCESS exit.
-    NodeStatus last = NodeStatus::Failure;
-    for (const auto& child : children_) {
-        active_child_name_ = child->name();
-        last = child->tick(blackboard);
-    }
-    return last;
+    return tickChildrenFallback(children_, blackboard, active_child_name_);
 }
 
 BtRecoveryNode::BtRecoveryNode(std::string name,
@@ -80,12 +90,43 @@ NodeStatus BtRecoveryNode::tick(BtBlackboard& blackboard)
     blackboard.setString(BbKey::kActiveNodeName, name_);
     active_child_name_.clear();
 
-    // Session 0 stub — not yet Nav2-aligned (M40 will target this).
-    if (primary_) {
-        active_child_name_ = primary_->name();
-        return primary_->tick(blackboard);
+    if (!primary_) {
+        return NodeStatus::Failure;
     }
-    return NodeStatus::Failure;
+
+    // Nav2 RecoveryNode: primary first; on FAILURE run recovery then retry primary.
+    while (true) {
+        active_child_name_ = primary_->name();
+        const NodeStatus primary_status = primary_->tick(blackboard);
+        if (primary_status == NodeStatus::Success) {
+            return NodeStatus::Success;
+        }
+        if (primary_status == NodeStatus::Running) {
+            return NodeStatus::Running;
+        }
+
+        if (retries_remaining_ <= 0) {
+            return NodeStatus::Failure;
+        }
+
+        if (!recovery_) {
+            return NodeStatus::Failure;
+        }
+
+        active_child_name_ = recovery_->name();
+        const NodeStatus recovery_status = recovery_->tick(blackboard);
+        if (recovery_status == NodeStatus::Running) {
+            return NodeStatus::Running;
+        }
+        if (recovery_status == NodeStatus::Failure) {
+            return NodeStatus::Failure;
+        }
+
+        --retries_remaining_;
+        const int recovery_count =
+            blackboard.getInt(BbKey::kRecoveryCount).value_or(0) + 1;
+        blackboard.setInt(BbKey::kRecoveryCount, recovery_count);
+    }
 }
 
 }  // namespace fleetsim::domain::behavior
