@@ -11,6 +11,54 @@
 
 ---
 
+## [2026-08-23] Phase 8 Session 1 — LaneGraph Dijkstra + nearest + centerline
+
+### 本次 Scope（Planner 定义）
+- **目标**：实现 `LaneGraph::shortestPath`（Dijkstra）、`nearestNodeId`、`centerlinePath`；`LaneGraphTest` + `LaneRouterTest` 全绿
+- **允许改动**：`src/domain/map/LaneGraph.h/.cpp`
+- **NOT DO**：MapSerializer lanes（Session 2）；SimEngine routing_mode（Session 3）；UI；LaneEditorPanel；修改 Phase 7 模块；削 CMake target_*
+
+### ✅ 已完成
+- [x] `loadFromMap` 构建 `node_index_` + 邻接表（支持 `bidirectional` 反向边）
+- [x] Dijkstra 最短路（欧氏边权）；不可达 / 未知节点 → `nullopt`
+- [x] `nearestNodeId` 欧氏最近节点
+- [x] `centerlinePath` 节点序列 → `core::Path` 折线
+- [x] 预期 `LaneGraphTest` 6/6 + `LaneRouterTest` 3/3 绿
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| MapSerializer / MapDocument lanes round-trip | Session 2 | Session 2 |
+| SimEngine hybrid + FirstLastMileIntegrationTest | 依赖 Session 2–3 | Session 3 |
+| LaneEditorPanel / RoutingPage | UI Session 4–5 | Session 4–5 |
+| ASCII 构建取证 | Agent 环境缺 Qt6 | 用户本地验证 |
+
+### 🚫 禁止偷懒自检
+- [x] LaneGraph 非空 stub（Dijkstra 真实现）
+- [x] Domain 无 Qt
+- [x] 未改 UI / SimEngine
+- [x] CMake 未削 target_*
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | Session 1 scope 正确；仅 LaneGraph 实现 |
+| Executor | Dijkstra + adjacency + centerline 交付 |
+| Tester | **待用户验证**：LaneGraph* + LaneRouter* 应 9/9 PASS |
+| Reviewer | **PASS**（Session 1）：API 与 ADR-018 一致；无 scope 蔓延 |
+
+### 用户本地验证
+1. `git pull origin main`
+2. `cmake -S . -B D:\build\FleetSim_phase8_s1` → `cmake --build D:\build\FleetSim_phase8_s1`
+3. `D:\build\FleetSim_phase8_s1\tests\FleetSimTests.exe --gtest_filter=LaneGraph*:LaneRouter*`
+4. **预期**：9/9 PASS
+5. 全量 FleetSimTests：127/127 PASS（118 Phase7 + 9 Phase8）
+
+### 下次会话建议
+- **Session 2**：MapDocument lanes 字段 + MapSerializer round-trip + MapSerializerLaneTest；LaneRouter centerline 接 Smoother（可选）
+
+---
+
 ## [2026-08-23] Phase 8 Session 0 — ADR-018/019 + lanes schema + 红灯测骨架
 
 ### 本次 Scope（Planner 定义）

@@ -7,12 +7,13 @@
 #include <cstddef>
 #include <optional>
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
 
 namespace fleetsim::domain::map {
 
 // Phase 8 — lane-level routing graph (ADR-018).
-// Session 0: API + loadFromMap storage; shortestPath/Dijkstra in Session 1.
 class LaneGraph {
 public:
     bool loadFromMap(const LaneMapData& lanes);
@@ -26,9 +27,17 @@ public:
     std::size_t edgeCount() const { return edges_.size(); }
 
 private:
+    using AdjacencyEntry = std::pair<std::size_t, double>;
+
+    void rebuildAdjacency();
+    double edgeWeight(std::size_t from_index, std::size_t to_index) const;
+    std::optional<std::size_t> nodeIndex(const std::string& id) const;
+
     LaneMapData data_;
     std::vector<LaneNode> nodes_;
     std::vector<LaneEdge> edges_;
+    std::unordered_map<std::string, std::size_t> node_index_;
+    std::vector<std::vector<AdjacencyEntry>> adjacency_;
 };
 
 }  // namespace fleetsim::domain::map
