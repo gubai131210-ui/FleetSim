@@ -11,6 +11,71 @@
 
 ---
 
+## [2026-08-23] Phase 9 Session 0 — ADR-020/021 + BT 接口 + 红灯测骨架
+
+### 本次 Scope（Planner 定义）
+- 目标：ADR 草案、Domain behavior/ 类型与接口、BehaviorTreeTest 红灯骨架（控制流预期 FAIL）
+- 允许改动：`docs/decisions/020-*.md`、`021-*.md`、`src/domain/behavior/*`、`tests/domain/BehaviorTreeTest.cpp`、`src/domain/CMakeLists.txt`、`tests/CMakeLists.txt`
+- 明确不在本次范围：SimEngine 接线、FleetSim 叶节点、UI（BehaviorTreePanel/BehaviorPage）、scenario、verify_phase9、CSV 导出
+
+### ✅ 已完成
+- [x] **ADR-020** `docs/decisions/020-behavior-tree-mvp.md` — BT MVP、JSON schema、Recovery Nav2 语义、simulation 字段
+- [x] **ADR-021** `docs/decisions/021-behavior-ui-ia.md` — BehaviorTreePanel + BehaviorPage Tab 6 + Compare CSV 边界
+- [x] **Domain 接口** `src/domain/behavior/` — BtTypes、BtBlackboard、BtNode、BtControlNodes、BtDecoratorNodes、BtNavigator、BtTreeLoader（Session 0 存根）
+- [x] **CMake** FleetSimDomain + FleetSimTests 登记 behavior 源文件
+- [x] **BehaviorTreeTest** 11 TEST — 6 PASS / 5 FAIL（控制流红灯，Session 1 实现后应变绿）
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| Sequence/Fallback/Recovery/Rate 真实现 | Session 0 仅红灯 stub | Session 1 |
+| BtFleet 叶节点 + JSON 加载 | 依赖控制节点 | Session 2 |
+| SimEngine behavior_mode | 依赖 BtNavigator | Session 3 |
+| BehaviorTreePanel / BehaviorPage | UI Session 4 | Session 4 |
+| bt_navigation_demo / CSV / verify_phase9 | 后续会话 | Session 5–6 |
+| M40–M42 登记 | Session 6 | Session 6 |
+
+### 🚫 禁止偷懒自检
+- [x] 没有把多个类挤进同一文件（control/decorator/navigator 分文件）
+- [x] 没有在 MainWindow 堆业务按钮/控件
+- [x] Domain 层无 Qt include
+- [x] 新 Domain 模块有 BehaviorTreeTest
+- [x] 未跨 Phase 实现 UI/SimEngine 接线
+- [x] SESSION_LOG 本节已完整填写
+
+### 新增/变更文件清单
+| 文件 | 操作 | 说明 |
+|------|------|------|
+| `docs/decisions/020-behavior-tree-mvp.md` | 新增 | ADR-020 草案 |
+| `docs/decisions/021-behavior-ui-ia.md` | 新增 | ADR-021 草案 |
+| `src/domain/behavior/*` | 新增 | BT 类型/接口/存根 |
+| `tests/domain/BehaviorTreeTest.cpp` | 新增 | 红灯测骨架 |
+| `src/domain/CMakeLists.txt` | 修改 | 登记 behavior 源 |
+| `tests/CMakeLists.txt` | 修改 | 登记 BehaviorTreeTest |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | Session 0 mini-plan：ADR + 接口 + 红灯测；NOT DO ≥5（无 UI/SimEngine/叶节点/CSV/demo） |
+| Executor | 按 mini-plan 交付 12 个 behavior 源文件 + 2 ADR + 测例 |
+| Tester | **PASS（Session 0）**：`BehaviorTreeTest.*` 6 PASS / 5 FAIL（预期红灯）；domain/behavior 零 Qt |
+| Reviewer | **PASS**（子 Agent `38ccefe7`）：scope 合规、Recovery ADR 语义正确、CMake target_* 未削 |
+
+### 证据
+- build: `D:\build\FleetSim_phase9_s0\FleetSimTests.exe`
+- gtest: `BehaviorTreeTest.*` → **6 PASSED, 5 FAILED**（Session 0 预期）
+
+### 用户本地验证
+1. `git pull origin main`
+2. ASCII Build：`cmake -S . -B D:\build\FleetSim_phase9_s0 ...` + `cmake --build ... --target FleetSimTests`
+3. Run `FleetSimTests.exe --gtest_filter=BehaviorTreeTest.*`（预期 5 FAIL）
+4. 全量 `FleetSimTests` 仍应 ~139+ 绿（5 个 BT 红灯除外）
+
+### 下次会话建议
+- Session 1：实现 Sequence/Fallback/Recovery/Rate + Blackboard 完善 → BehaviorTreeTest 全绿
+
+---
+
 ## [2026-08-23] Phase 8 Session 8 — hybrid snap fix + FleetSimTests 139/139 green
 
 ### ✅ 已完成

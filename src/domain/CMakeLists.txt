@@ -74,6 +74,18 @@ add_library(FleetSimDomain STATIC
     collision/PriorityPathCoordinator.cpp
     collision/PriorityPathCoordinator.h
     collision/ICollisionAvoidance.h
+    behavior/BtTypes.h
+    behavior/BtBlackboard.h
+    behavior/BtBlackboard.cpp
+    behavior/BtNode.h
+    behavior/BtControlNodes.h
+    behavior/BtControlNodes.cpp
+    behavior/BtDecoratorNodes.h
+    behavior/BtDecoratorNodes.cpp
+    behavior/BtNavigator.h
+    behavior/BtNavigator.cpp
+    behavior/BtTreeLoader.h
+    behavior/BtTreeLoader.cpp
 )
 
 include(GNUInstallDirs)

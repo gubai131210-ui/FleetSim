@@ -26,6 +26,7 @@ add_executable(FleetSimTests
     domain/ConstantVelocityPredictorTest.cpp
     domain/StGraphWithPredictionTest.cpp
     domain/ExperimentMetricsTest.cpp
+    domain/BehaviorTreeTest.cpp
     domain/SteeringAdapterTest.cpp
     domain/VehicleTest.cpp
     domain/BicycleModelTest.cpp
