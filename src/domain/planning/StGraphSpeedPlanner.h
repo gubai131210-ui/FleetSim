@@ -7,10 +7,11 @@
 
 namespace fleetsim::domain::planning {
 
-/// Known peer along a geometric path (ADR-015).
+/// Known peer along a geometric path (ADR-015; ADR-016 from_prediction).
 struct PeerTrajectory {
     core::Path path;
     double nominal_speed{0.5};  // m/s along peer path
+    bool from_prediction{false};
 };
 
 /// ST-Graph speed planner (ADR-015): project peers into (s,t) blocks and

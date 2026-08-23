@@ -20,6 +20,11 @@ add_library(FleetSimDomain STATIC
     planning/DouglasPeuckerSmoother.h
     planning/StGraphSpeedPlanner.cpp
     planning/StGraphSpeedPlanner.h
+    prediction/ConstantVelocityPredictor.cpp
+    prediction/ConstantVelocityPredictor.h
+    prediction/IPeerPredictor.h
+    experiment/ExperimentMetrics.cpp
+    experiment/ExperimentMetrics.h
     planning/IPathPlanner.h
     planning/IPathSmoother.h
     control/PurePursuitTracker.cpp

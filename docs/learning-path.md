@@ -8,5 +8,6 @@
 | Phase 4 | Bicycle + ROS2 桥接 | 乘用车控制、中间件 | nav2, Autoware |
 | Phase 5 | Hybrid A* + Stanley + Priority/CBS-lite | 非完整约束规划、横向控制、MAPF | MPC、ST-Graph、EECBS |
 | Phase 6 | 线性 MPC + ST-Graph 速度规划 | 预测控制、时空速度规划 | 完整 Autoware、感知 |
+| Phase 7 | 常速预测 + ST 增强 + 实验工作台 UI | 动态障碍预测、仿真指标对比 | 神经网络预测、Behavior Tree |
 
-Domain 层保持无 Qt。Phase 5 已交付 Hybrid/Stanley/Priority；Phase 6 在 Domain 内增强控制与纵向规划（仍零 Qt）。完整执行提示：`docs/PHASE6_GOAL_PROMPT.md`。
+Domain 层保持无 Qt。Phase 6 已交付 MPC/ST；Phase 7 补 **prediction→ST** 教学闭环，并把 **PlannerTrackerDialog 拆为分层 Workbench + ExperimentComparePanel**（UI 按 Planning/Control/Speed/Coordination 分页，禁止堆控件）。完整执行提示：`docs/PHASE7_GOAL_PROMPT.md`。

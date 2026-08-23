@@ -11,10 +11,13 @@
 | **4** | Bicycle 模型 + Domain 静态库 + ROS2 桥接 | 3 周 ✅ |
 | **5** | Hybrid A* + Stanley 跟踪 + Priority/CBS-lite 多车协调 | 3 周 ✅ |
 | **6** | 线性 MPC 横向跟踪 + ST-Graph 速度规划 | 3 周 ✅ |
+| **7** | 常速轨迹预测增强 ST + 算法实验工作台 UI 分层 + 对比指标 | 3 周 |
 
 > Phase 5 完整 Goal 提示词：`docs/PHASE5_GOAL_PROMPT.md`  
-> Phase 6 完整 Goal 提示词：`docs/PHASE6_GOAL_PROMPT.md`（复制 §0 给 Goal Agent）。  
-> Phase 6 验收：ASCII 外置 Build `D:\build\FleetSim_phase6*` + `FleetSimTests` 全绿（用户本地 Qt 再证）。
+> Phase 6 完整 Goal 提示词：`docs/PHASE6_GOAL_PROMPT.md`  
+> Phase 7 完整 Goal 提示词：`docs/PHASE7_GOAL_PROMPT.md`（复制 §0 给 Goal Agent）。  
+> Phase 6 验收：ASCII 外置 Build `D:\build\FleetSim_phase6*` + `FleetSimTests` 全绿（用户本地 Qt 再证）。  
+> Phase 7 验收：ASCII 外置 Build `D:\build\FleetSim_phase7*` + `FleetSimTests` 全绿 + `tools/verify_phase7_evidence.py`（会话 7 交付）。
 
 ## 禁止偷懒清单（Reviewer 必查）
 

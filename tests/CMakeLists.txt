@@ -20,6 +20,9 @@ add_executable(FleetSimTests
     domain/MpcVsStanleyCompareTest.cpp
     domain/StGraphSpeedPlannerTest.cpp
     domain/StGraphSimEngineWiringTest.cpp
+    domain/ConstantVelocityPredictorTest.cpp
+    domain/StGraphWithPredictionTest.cpp
+    domain/ExperimentMetricsTest.cpp
     domain/SteeringAdapterTest.cpp
     domain/VehicleTest.cpp
     domain/BicycleModelTest.cpp

@@ -11,6 +11,69 @@
 
 ---
 
+## [2026-08-23] Phase 7 Session 0 — ADR-016/017 + prediction/experiment stub + red tests
+
+### 本次 Scope（Planner mini-plan）
+- **目标**：ADR 草案 + 接口调研 + 红灯 GTest 骨架（Predictor*/ExperimentMetrics*）
+- **允许改动**：`docs/decisions/016-*`、`017-*`；`src/domain/prediction/`、`experiment/`；`PeerTrajectory.from_prediction`；`tests/domain/*Predictor*`、`*Experiment*`、`*WithPrediction*`；CMake 登记
+- **NOT DO**：CV 外推实装（S1）；SimEngine `prediction` 接线（S2）；ExperimentMetrics 聚合（S3）；AlgorithmWorkbenchDialog / ExperimentComparePanel（S4–5）；scenario 资产 / MUTATION M34+（S6–7）；UI 堆控件；假 prediction（静态 Path 换名）
+
+### ✅ 已完成
+- [x] ADR-016 常速预测 + ST 增强草案；ADR-017 算法实验工作台 IA 草案
+- [x] `IPeerPredictor`、`ConstantVelocityPredictor`（Session 0 stub 返回空 Path）
+- [x] `ExperimentMetrics` / `TickSample` / `RunSummary`（Session 0 stub 仅计数）
+- [x] `PeerTrajectory.from_prediction` 字段（默认 false，Phase 6 兼容）
+- [x] 红灯测：`ConstantVelocityPredictorTest`（3）、`ExperimentMetricsTest`（3）、`StGraphWithPredictionTest`（1）
+- [x] `src/domain/CMakeLists.txt`、`tests/CMakeLists.txt` 登记
+- [x] ASCII Build `D:\build\FleetSim_phase7_s0` 编译通过
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| ConstantVelocityPredictor CV 外推 | Session 0 仅 stub | Session 1 |
+| SimEngine `prediction=none\|constant_velocity` | 未接线 | Session 2 |
+| ExperimentMetrics 滚动窗口聚合 | stub 未实现 mean/rate | Session 3 |
+| AlgorithmWorkbenchDialog 四页 | UI 重构 | Session 4 |
+| ExperimentComparePanel | 独立 dock | Session 5 |
+| scenario `prediction_st_demo` | 依赖接线 | Session 5 |
+| MUTATION M34+ / verify_phase7 | 终审 | Session 7 |
+| Phase 7 ✅ | 未完成 A–J | Session 7 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | mini-plan 范围 Session 0 仅 ADR+接口+红灯；NOT DO ≥5 条 |
+| Executor | 按 plan 交付 ADR/stub/测/CMake；无 UI/SimEngine 扩 scope |
+| Tester | **PASS**：新测 6 FAIL / 1 PASS（ResetClearsState）；Phase6 回归 104/104（排除新套件）；无 Qt Domain |
+| Reviewer | **PASS**（补 SESSION_LOG 后）：§10 无偷懒；PeerTrajectory 向后兼容 |
+
+### 证据
+- Build: `D:\build\FleetSim_phase7_s0\FleetSimTests.exe`
+- 新测：`ConstantVelocityPredictorTest.*` 3 FAIL；`ExperimentMetricsTest.*` 2 FAIL + 1 PASS；`StGraphWithPredictionTest.*` 1 FAIL
+- Phase6 回归：`--gtest_filter=-ConstantVelocityPredictorTest.*:-ExperimentMetricsTest.*:-StGraphWithPredictionTest.*` → 104/104
+
+### 新增/变更文件清单
+| 文件 | 操作 |
+|------|------|
+| `docs/decisions/016-constant-velocity-prediction.md` | 新增 |
+| `docs/decisions/017-algorithm-workbench-ui.md` | 新增 |
+| `src/domain/prediction/*` | 新增 |
+| `src/domain/experiment/*` | 新增 |
+| `src/domain/planning/StGraphSpeedPlanner.h` | 修改 |
+| `tests/domain/ConstantVelocityPredictorTest.cpp` 等 3 文件 | 新增 |
+| `src/domain/CMakeLists.txt`、`tests/CMakeLists.txt` | 修改 |
+
+### 用户本地验证
+1. `git pull origin main`
+2. Qt Creator Configure → Build；或 ASCII：`cmake -S . -B D:\build\FleetSim_phase7_s0 -DCMAKE_PREFIX_PATH=D:/QT/6.11.1/mingw_64 -G "MinGW Makefiles"`
+3. 跑 `FleetSimTests --gtest_filter=ConstantVelocityPredictorTest.*:ExperimentMetricsTest.*:StGraphWithPredictionTest.*` → **预期 6 FAIL**（红灯）
+4. 跑全量（或排除新测）→ Phase 6 104 测仍绿
+
+### 下次会话建议
+- Session 1：实现 `ConstantVelocityPredictor::predictPath` CV 外推 → `ConstantVelocityPredictorTest` 转绿
+
+---
+
 ## [2026-08-23] Phase 6 Session 6 — E2E / MUTATION / 终审 / Phase6 ✅
 
 ### ✅ 已完成
