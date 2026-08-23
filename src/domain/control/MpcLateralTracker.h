@@ -5,8 +5,8 @@
 
 namespace fleetsim::domain::control {
 
-/// Linear MPC lateral tracker stub (ADR-014). Session 0: honest empty control
-/// (zero steer). Real prediction + Eigen dense QP lands in Session 1.
+/// Linear MPC lateral tracker (ADR-014): error state [e, θe], finite-horizon
+/// Eigen dense box QP on steering. Not a Stanley/PP skin.
 class MpcLateralTracker final : public IPathTracker {
 public:
     explicit MpcLateralTracker(int horizon = 10,
@@ -22,10 +22,12 @@ public:
                                  const core::Path& reference_path,
                                  double dt) const override;
 
-    /// Inject ST / cruise profile; nullptr clears. Index by nearest waypoint.
     void setSpeedProfile(const core::SpeedProfile* profile);
 
     bool lastSolveOk() const { return last_solve_ok_; }
+    /// Frobenius ||A|| + ||B|| from last successful linearization (anti-skinning).
+    double lastPredictionNorm() const { return last_prediction_norm_; }
+    bool lastCostNonTrivial() const { return last_cost_nontrivial_; }
 
     int horizon() const { return horizon_; }
     double mpcDt() const { return mpc_dt_; }
@@ -50,6 +52,8 @@ private:
     double cruise_speed_;
     const core::SpeedProfile* speed_profile_{nullptr};
     mutable bool last_solve_ok_{false};
+    mutable double last_prediction_norm_{0.0};
+    mutable bool last_cost_nontrivial_{false};
 };
 
 }  // namespace fleetsim::domain::control

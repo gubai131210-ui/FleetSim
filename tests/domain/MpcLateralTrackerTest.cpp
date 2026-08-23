@@ -105,18 +105,16 @@ TEST(MpcLateralTrackerTest, CrossTrackErrorDecreasesOnStraightPath)
 
 TEST(MpcLateralTrackerTest, PredictionOrCostNonTrivial)
 {
-    // Session 1 must expose non-zero prediction / cost structure.
-    // Stub has no A/B or cost → this anchors anti-skinning (M31/M33).
     MpcLateralTracker tracker(10, 0.1, 2.0, 2.0, 0.5, 0.6, 0.8, 0.5);
     const Path path = makeStraightPath(0.0, 8.0, 0.0);
     Pose pose{1.0, 0.4, 0.0};
 
     const ControlCommand cmd = tracker.compute(pose, path, 0.1);
-    // Non-trivial MPC: nonzero steer under lateral error OR lastSolveOk after real QP.
     const bool nontrivial =
-        (std::abs(cmd.steering_angle) > 1e-6) || tracker.lastSolveOk();
+        ((std::abs(cmd.steering_angle) > 1e-6) || tracker.lastSolveOk()) &&
+        (tracker.lastPredictionNorm() > 1e-6) && tracker.lastCostNonTrivial();
     EXPECT_TRUE(nontrivial)
-        << "Expected prediction/QP activity; Session0 stub has neither (red light)";
+        << "Expected prediction/QP activity with non-trivial A/B and Q/R";
 }
 
 TEST(MpcLateralTrackerTest, QpFailureReturnsZeroSteer)

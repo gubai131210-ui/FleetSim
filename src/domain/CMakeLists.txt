@@ -28,6 +28,8 @@ add_library(FleetSimDomain STATIC
     control/StanleyTracker.h
     control/MpcLateralTracker.cpp
     control/MpcLateralTracker.h
+    control/DenseQpSolver.cpp
+    control/DenseQpSolver.h
     control/SteeringAdapter.cpp
     control/SteeringAdapter.h
     control/IPathTracker.h

@@ -11,6 +11,54 @@
 
 ---
 
+## [2026-08-23] Phase 6 Session 1 — MpcLateralTracker 线性化 + Eigen 稠密 QP
+
+### 本次 Scope（Planner）
+- 目标：真 MPC（误差状态 + 有限时域箱约束 QP），`MpcLateralTrackerTest` 全绿
+- 允许：`MpcLateralTracker.*`、`DenseQpSolver.*`、相关 CMake/测例、ADR-014 状态、SESSION_LOG
+- NOT DO：SimEngine/UI/ST、OSQP、改 IPathTracker、Stanley 换皮、削 CMake
+
+### ✅ 已完成
+- [x] `DenseQpSolver`：循环坐标下降 + 箱约束精确 1D（非单次投影梯度）
+- [x] `MpcLateralTracker`：`[e,θe]` LTI + 凝缩 H/g + receding `u0*`；`lastPredictionNorm` / `lastCostNonTrivial`
+- [x] `MpcLateralTrackerTest` 6/6 PASS；`DenseQpSolverTest` 边界测
+- [x] ADR-014 → 已接受；CMake 登记 DenseQp
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| SimEngine `tracker=mpc` | Session 2 | Session 2 |
+| MpcVsStanleyCompare | Session 2 | Session 2 |
+| ST 真实现 / 接线 | Session 3–4 | Session 3–4 |
+| UI/Monitor | Session 5 | Session 5 |
+| κ 时变弯道线性化强化 | MVP 冻结 κ=0 够直道测 | 后续可选 |
+
+### 🚫 禁止偷懒自检
+- [x] 非 Stanley/PP 换皮（有 A/B + QP + 非平凡代价断言）
+- [x] Domain 无 Qt；未削 `target_*`；未引 OSQP
+- [x] horizon 非法 → 零舵 + `lastSolveOk==false`
+- [x] SESSION_LOG 含没做什么 + 四角色
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | mini-plan：`(e,θe)` + 凝缩箱约束 QP + debug 访问器 |
+| Executor | 按 plan 实装 DenseQp + MPC |
+| Tester | **PASS**（agent `eef42316`） |
+| Reviewer | 初审 FAIL（缺 SESSION_LOG / DenseQp 独立测）→ 补齐后复审 **PASS**（agent `fa24a349`） |
+
+### 构建取证
+- `D:\build\FleetSim_phase6_s0`：`MpcLateralTrackerTest.*` **6/6 PASSED**
+
+### 用户本地验证
+1. `git pull`；Configure → Build（或 `D:\build\FleetSim_phase6`）
+2. 过滤 `MpcLateral*` / `DenseQp*` 预期全绿；`StGraph*` 红灯仍在（Session 3）
+
+### 下次会话
+- Session 2：SimEngine/scenario/Dialog `tracker=mpc` + vs Stanley 对比测
+
+---
+
 ## [2026-08-23] Phase 6 Session 0 — ADR-014/015 + MPC/ST stub 红灯骨架
 
 ### 本次 Scope（Planner 定义）
