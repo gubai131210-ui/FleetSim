@@ -11,6 +11,48 @@
 
 ---
 
+## [2026-08-23] Phase 7 Session 1 — ConstantVelocityPredictor CV 外推 + 单测转绿
+
+### 本次 Scope（Planner mini-plan）
+- **目标**：实现 ADR-016 常速外推公式；`ConstantVelocityPredictorTest` + `StGraphWithPredictionTest` 转绿
+- **允许改动**：`src/domain/prediction/ConstantVelocityPredictor.cpp`
+- **NOT DO**：SimEngine 接线（S2）；ExperimentMetrics（S3）；UI；scenario；假 prediction（静态 Path 换名）
+
+### ✅ 已完成
+- [x] `ConstantVelocityPredictor::predictPath`：\(x_k=x_0+v\cos\theta\cdot k\Delta t\)，\(k=0\ldots\lfloor T/\Delta t\rfloor\)
+- [x] `ConstantVelocityPredictorTest` 3/3 PASSED
+- [x] `StGraphWithPredictionTest.PredictedPeerPathChangesStProfile` PASSED（预测 path ≠ 静态 path → ST 剖面可区分）
+- [x] Phase 6 + 新 Predictor 回归：108/108 PASSED（排除仍 stub 的 `ExperimentMetricsTest`）
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| SimEngine `prediction` 字段与 `collectPeersFor` | Session 2 | Session 2 |
+| ExperimentMetrics 聚合 | stub | Session 3 |
+| UI Workbench / Compare | 未开始 | Session 4–5 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | 范围仅 CV 实装 + 相关测转绿 |
+| Executor | 只改 `ConstantVelocityPredictor.cpp` |
+| Tester | **PASS**：3+1 测绿；108 回归；公式非 Path 换名 |
+| Reviewer | **PASS**：ADR-016 公式对齐；Domain 无 Qt |
+
+### 证据
+- `D:\build\FleetSim_phase7_s0\FleetSimTests.exe`
+- `--gtest_filter=ConstantVelocityPredictorTest.*:StGraphWithPredictionTest.*` → 4/4 PASSED
+
+### 用户本地验证
+1. `git pull origin main`
+2. Build `FleetSimTests`
+3. 跑 `ConstantVelocityPredictorTest.*` 与 `StGraphWithPredictionTest.*` → 全绿
+
+### 下次会话建议
+- Session 2：`SimEngine` `prediction=none|constant_velocity` + `collectPeersFor` 接线 + `StGraphWithPredictionTest` 扩展 / SimEngine wiring 测
+
+---
+
 ## [2026-08-23] Phase 7 Session 0 — ADR-016/017 + prediction/experiment stub + red tests
 
 ### 本次 Scope（Planner mini-plan）
