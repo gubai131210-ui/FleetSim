@@ -1,5 +1,7 @@
 #pragma once
 
+#include "LaneTypes.h"
+
 #include <string>
 #include <utility>
 #include <vector>
@@ -34,6 +36,7 @@ struct MapDocument {
     double height_m{15.0};
     double grid_resolution_m{0.1};
     std::vector<Obstacle> obstacles;
+    LaneMapData lanes;
 };
 
 }  // namespace fleetsim::domain::map

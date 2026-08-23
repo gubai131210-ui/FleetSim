@@ -11,6 +11,45 @@
 
 ---
 
+## [2026-08-23] Phase 8 Session 2 — MapSerializer lanes round-trip
+
+### 本次 Scope（Planner 定义）
+- **目标**：`MapDocument.lanes` + MapSerializer `lanes` 对象序列化；`MapSerializerLaneTest`；legacy `"lanes": []` 兼容
+- **允许改动**：`MapData.h`、`MapSerializer.cpp`、`tests/domain/MapSerializerLaneTest.cpp`、`tests/CMakeLists.txt`
+- **NOT DO**：SimEngine routing_mode（Session 3）；UI；改 scenario 资产；LaneEditorPanel
+
+### ✅ 已完成
+- [x] `MapDocument` 增加 `LaneMapData lanes`
+- [x] `fromJson` 解析 ADR-018 对象格式 + legacy 空数组 `[]`
+- [x] `toJson` 输出 `{nodes, edges}` 对象
+- [x] `MapSerializerLaneTest`（4 测：round-trip、legacy、graph+route、bidirectional）
+- [x] CMake 登记
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| SimEngine hybrid + FirstLastMileIntegrationTest | Session 3 | Session 3 |
+| lane_routing_demo scenario | Session 6 | Session 6 |
+| LaneEditorPanel / RoutingPage | Session 4–5 | Session 4–5 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | Session 2 scope 正确 |
+| Executor | MapSerializer + MapDocument + 测例交付 |
+| Tester | **待用户验证**：MapSerializerLane* 4/4 + 既有 MapSerializer* 仍绿 |
+| Reviewer | **PASS**：legacy `[]` 兼容；验收 E 部分达成 |
+
+### 用户本地验证
+1. `git pull origin main`
+2. Build + `FleetSimTests --gtest_filter=MapSerializerLane*:MapSerializer*:LaneGraph*:LaneRouter*`
+3. **预期**：MapSerializerLane 4/4；Lane 相关共 13/13 PASS
+
+### 下次会话建议
+- **Session 3**：SimEngine `routing_mode` + first/last mile + FirstLastMileIntegrationTest
+
+---
+
 ## [2026-08-23] Phase 8 Session 1 — LaneGraph Dijkstra + nearest + centerline
 
 ### 本次 Scope（Planner 定义）

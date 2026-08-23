@@ -91,6 +91,65 @@ void markPolygon(OccupancyGrid& grid, const PolygonObstacle& polygon)
     }
 }
 
+LaneMapData parseLanesJson(const nlohmann::json& lanes_json)
+{
+    LaneMapData lanes;
+    if (lanes_json.is_array()) {
+        return lanes;
+    }
+    if (!lanes_json.is_object()) {
+        return lanes;
+    }
+
+    if (lanes_json.contains("nodes")) {
+        for (const auto& node_json : lanes_json.at("nodes")) {
+            LaneNode node;
+            node.id = node_json.at("id").get<std::string>();
+            node.x = node_json.at("x").get<double>();
+            node.y = node_json.at("y").get<double>();
+            lanes.nodes.push_back(std::move(node));
+        }
+    }
+
+    if (lanes_json.contains("edges")) {
+        for (const auto& edge_json : lanes_json.at("edges")) {
+            LaneEdge edge;
+            edge.from = edge_json.at("from").get<std::string>();
+            edge.to = edge_json.at("to").get<std::string>();
+            edge.bidirectional = edge_json.value("bidirectional", false);
+            lanes.edges.push_back(std::move(edge));
+        }
+    }
+
+    return lanes;
+}
+
+nlohmann::json lanesToJson(const LaneMapData& lanes)
+{
+    nlohmann::json nodes = nlohmann::json::array();
+    for (const LaneNode& node : lanes.nodes) {
+        nodes.push_back({
+            {"id", node.id},
+            {"x", node.x},
+            {"y", node.y},
+        });
+    }
+
+    nlohmann::json edges = nlohmann::json::array();
+    for (const LaneEdge& edge : lanes.edges) {
+        edges.push_back({
+            {"from", edge.from},
+            {"to", edge.to},
+            {"bidirectional", edge.bidirectional},
+        });
+    }
+
+    return {
+        {"nodes", nodes},
+        {"edges", edges},
+    };
+}
+
 }  // namespace
 
 bool MapSerializer::isValidRect(const RectObstacle& rect)
@@ -139,6 +198,10 @@ MapDocument MapSerializer::fromJson(const nlohmann::json& json)
         }
     }
 
+    if (json.contains("lanes")) {
+        document.lanes = parseLanesJson(json.at("lanes"));
+    }
+
     return document;
 }
 
@@ -161,7 +224,7 @@ nlohmann::json MapSerializer::toJson(const MapDocument& document)
     json["width_m"] = document.width_m;
     json["height_m"] = document.height_m;
     json["grid_resolution_m"] = document.grid_resolution_m;
-    json["lanes"] = nlohmann::json::array();
+    json["lanes"] = lanesToJson(document.lanes);
 
     nlohmann::json obstacles = nlohmann::json::array();
     for (const Obstacle& obstacle : document.obstacles) {

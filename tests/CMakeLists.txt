@@ -12,6 +12,7 @@ add_executable(FleetSimTests
     domain/MapSerializerTest.cpp
     domain/LaneGraphTest.cpp
     domain/LaneRouterTest.cpp
+    domain/MapSerializerLaneTest.cpp
     domain/AStarPlannerTest.cpp
     domain/HybridAStarPlannerTest.cpp
     domain/DubinsPathTest.cpp
