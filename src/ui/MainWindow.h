@@ -22,6 +22,7 @@ class LaneEditorPanel;
 class MapView;
 class MonitorPanel;
 class ExperimentComparePanel;
+class BehaviorTreePanel;
 class TaskPanel;
 class VehicleInfoPanel;
 }
@@ -80,6 +81,7 @@ private:
     LaneEditorPanel* lane_editor_panel_{nullptr};
     MonitorPanel* monitor_panel_{nullptr};
     ExperimentComparePanel* experiment_compare_panel_{nullptr};
+    BehaviorTreePanel* behavior_tree_panel_{nullptr};
     TaskPanel* task_panel_{nullptr};
     VehicleInfoPanel* vehicle_info_panel_{nullptr};
 

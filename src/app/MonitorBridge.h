@@ -3,6 +3,7 @@
 #include "SimController.h"
 
 #include <QObject>
+#include <QString>
 
 namespace fleetsim::domain::experiment {
 struct RunSummary;
@@ -39,8 +40,17 @@ signals:
                                    double mpc_solve_rate,
                                    quint64 sample_count);
 
+    void behaviorTreeStatusUpdated(const QString& behavior_mode,
+                                   const QString& tree_name,
+                                   const QString& active_node,
+                                   const QString& node_status,
+                                   bool path_valid,
+                                   bool replan_requested,
+                                   int recovery_count);
+
 private:
     void emitSummary(const domain::experiment::RunSummary& summary);
+    void emitBehaviorTreeStatus();
     void computePathErrors(double x_m,
                            double y_m,
                            double theta_rad,
@@ -49,6 +59,7 @@ private:
 
     SimController* controller_{nullptr};
     int pose_subscription_id_{0};
+    int tick_subscription_id_{0};
     double sim_time_s_{0.0};
     class ExperimentMetricsHolder;
     ExperimentMetricsHolder* metrics_{nullptr};

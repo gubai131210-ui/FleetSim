@@ -11,6 +11,48 @@
 
 ---
 
+## [2026-08-23] Phase 9 Session 4 — BehaviorTreePanel + BehaviorPage (Workbench Tab 6)
+
+### 本次 Scope（Planner 定义）
+- 目标：独立 BT 监控 dock + Workbench 第 6 页 Behavior；MonitorBridge 推送状态
+- 允许改动：`BehaviorTreePanel.*`、`BehaviorPage.*`、`AlgorithmWorkbenchDialog.*`、`MonitorBridge.*`、`MainWindow` 挂载（≤15 行增量）
+- 明确不在本次范围：CSV 导出、bt_navigation_demo、verify_phase9
+
+### ✅ 已完成
+- [x] **BehaviorPage**（Tab 6）：behavior_mode、tree 路径、replan_hz、recovery 开关/ ticks；无 routing/planner 控件
+- [x] **BehaviorTreePanel**（独立 dock）：mode、tree、active 节点、status、blackboard 摘要（只读）
+- [x] **AlgorithmWorkbenchSettings** 扩展 behavior 字段 + Workbench Tab 6
+- [x] **MonitorBridge** — `sim/tick` 订阅 → `behaviorTreeStatusUpdated`
+- [x] **MainWindow** — BehaviorTree dock + View 菜单 + Workbench 应用 behavior 到 SimEngine/scenario
+- [x] **FleetSimTests 165/165**；**FleetSim.exe** ASCII 构建成功
+- [x] 修复 **LaneEditorPanel.h** Qt 前向声明污染（`fleetsim::ui::QCheckBox` 阻塞 UI 全量编译）
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| ExperimentMetrics CSV + Compare Export | Session 5 | Session 5 |
+| bt_navigation_demo 场景 | Session 5 | Session 5 |
+| verify_phase9 / M40+ | Session 6 | Session 6 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | UI 分层 ADR-021：Behavior 独立页 + dock；RoutingPage 无 behavior 关键词 |
+| Executor | 4 个新 UI 文件 + MonitorBridge 信号 + MainWindow 挂载 |
+| Tester | **PASS**：165/165；RoutingPage 无 behavior；BehaviorPage 无 routing_mode |
+| Reviewer | **PASS**：无 BT 表单进 Control/Monitor/Routing |
+
+### 用户本地验证
+1. `git pull origin main`
+2. Qt Creator Build **FleetSim** + Run `FleetSimTests`（165/165）
+3. View → **Behavior Tree Panel**；Algorithm Workbench → **Behavior** 页（第 6 Tab）
+4. 加载 demo → behavior_mode=bt + tree JSON → Play → 观察 Behavior Tree 面板 active 节点
+
+### 下次会话建议
+- Session 5：bt_navigation_demo + CSV 导出 + Phase7/8 回归
+
+---
+
 ## [2026-08-23] Phase 9 Session 3 — SimEngine behavior_mode 接线 + BtNavigationIntegrationTest
 
 ### 本次 Scope（Planner 定义）

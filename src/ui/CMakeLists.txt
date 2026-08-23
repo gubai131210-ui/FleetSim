@@ -26,6 +26,8 @@ qt_add_library(FleetSimUI STATIC
     panels/MonitorPanel.h
     panels/ExperimentComparePanel.cpp
     panels/ExperimentComparePanel.h
+    panels/BehaviorTreePanel.cpp
+    panels/BehaviorTreePanel.h
     panels/TaskPanel.cpp
     panels/TaskPanel.h
     panels/VehicleInfoPanel.cpp
@@ -48,6 +50,8 @@ qt_add_library(FleetSimUI STATIC
     dialogs/pages/CoordinationPage.h
     dialogs/pages/RoutingPage.cpp
     dialogs/pages/RoutingPage.h
+    dialogs/pages/BehaviorPage.cpp
+    dialogs/pages/BehaviorPage.h
 )
 
 target_include_directories(FleetSimUI

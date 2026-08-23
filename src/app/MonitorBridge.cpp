@@ -1,5 +1,6 @@
 #include "MonitorBridge.h"
 
+#include "domain/behavior/BtTypes.h"
 #include "domain/experiment/ExperimentMetrics.h"
 #include "core/types/Waypoint.h"
 #include "domain/vehicle/FleetManager.h"
@@ -117,6 +118,10 @@ void MonitorBridge::bind()
 
         emit sampleReady(sim_time_s_, cross_track, heading_error, linear_velocity, st_ref_speed);
     });
+
+    tick_subscription_id_ = bus.subscribe("sim/tick", [this](const std::string&) {
+        emitBehaviorTreeStatus();
+    });
 }
 
 void MonitorBridge::unbind()
@@ -126,6 +131,10 @@ void MonitorBridge::unbind()
     }
     controller_->engine().eventBus().unsubscribe("sim/pose_updated", pose_subscription_id_);
     pose_subscription_id_ = 0;
+    if (tick_subscription_id_ != 0) {
+        controller_->engine().eventBus().unsubscribe("sim/tick", tick_subscription_id_);
+        tick_subscription_id_ = 0;
+    }
 }
 
 void MonitorBridge::reset()
@@ -153,6 +162,43 @@ void MonitorBridge::emitSummary(const domain::experiment::RunSummary& summary)
                                   summary.min_st_ref_velocity,
                                   summary.mpc_solve_rate,
                                   static_cast<quint64>(summary.sample_count));
+}
+
+void MonitorBridge::emitBehaviorTreeStatus()
+{
+    if (controller_ == nullptr) {
+        return;
+    }
+
+    const domain::SimEngine& engine = controller_->engine();
+    const QString mode = QString::fromStdString(engine.behaviorMode());
+    if (engine.behaviorMode() != "bt") {
+        emit behaviorTreeStatusUpdated(mode, {}, {}, {}, false, false, 0);
+        return;
+    }
+
+    const domain::behavior::BtNavigator* navigator = engine.btNavigator();
+    if (navigator == nullptr || !navigator->hasTree()) {
+        emit behaviorTreeStatusUpdated(mode, {}, {}, {}, false, false, 0);
+        return;
+    }
+
+    const domain::behavior::BtTickResult& tick_result = engine.lastBtTickResult();
+    const domain::behavior::BtBlackboard& blackboard = navigator->blackboard();
+    const bool path_valid = blackboard.getBool(domain::behavior::BbKey::kPathValid).value_or(false);
+    const bool replan_requested =
+        blackboard.getBool(domain::behavior::BbKey::kReplanRequested).value_or(false);
+    const int recovery_count =
+        blackboard.getInt(domain::behavior::BbKey::kRecoveryCount).value_or(0);
+
+    emit behaviorTreeStatusUpdated(
+        mode,
+        QString::fromStdString(navigator->treeName()),
+        QString::fromStdString(tick_result.active_node_name),
+        QString::fromUtf8(domain::behavior::nodeStatusToString(tick_result.status)),
+        path_valid,
+        replan_requested,
+        recovery_count);
 }
 
 void MonitorBridge::computePathErrors(double x_m,

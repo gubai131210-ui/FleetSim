@@ -1,5 +1,6 @@
 #include "AlgorithmWorkbenchDialog.h"
 
+#include "BehaviorPage.h"
 #include "ControlPage.h"
 #include "CoordinationPage.h"
 #include "PlanningPage.h"
@@ -25,12 +26,14 @@ AlgorithmWorkbenchDialog::AlgorithmWorkbenchDialog(QWidget* parent)
     speed_page_ = new SpeedPage(tabs_);
     coordination_page_ = new CoordinationPage(tabs_);
     routing_page_ = new RoutingPage(tabs_);
+    behavior_page_ = new BehaviorPage(tabs_);
 
     tabs_->addTab(planning_page_, tr("Planning"));
     tabs_->addTab(control_page_, tr("Control"));
     tabs_->addTab(speed_page_, tr("Speed"));
     tabs_->addTab(coordination_page_, tr("Coordination"));
     tabs_->addTab(routing_page_, tr("Routing"));
+    tabs_->addTab(behavior_page_, tr("Behavior"));
     layout->addWidget(tabs_);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
@@ -50,6 +53,11 @@ AlgorithmWorkbenchSettings AlgorithmWorkbenchDialog::settings() const
     out.routing_mode = routing_page_->routingMode();
     out.lane_snap_radius_m = routing_page_->laneSnapRadiusM();
     out.first_last_planner = routing_page_->firstLastPlanner();
+    out.behavior_mode = behavior_page_->behaviorMode();
+    out.behavior_tree_path = behavior_page_->behaviorTreePath();
+    out.replan_hz = behavior_page_->replanHz();
+    out.recovery_wait_ticks = behavior_page_->recoveryWaitTicks();
+    out.recovery_enabled = behavior_page_->recoveryEnabled();
     return out;
 }
 
@@ -63,6 +71,11 @@ void AlgorithmWorkbenchDialog::setSettings(const AlgorithmWorkbenchSettings& set
     routing_page_->setRoutingMode(settings.routing_mode);
     routing_page_->setLaneSnapRadiusM(settings.lane_snap_radius_m);
     routing_page_->setFirstLastPlanner(settings.first_last_planner);
+    behavior_page_->setBehaviorMode(settings.behavior_mode);
+    behavior_page_->setBehaviorTreePath(settings.behavior_tree_path);
+    behavior_page_->setReplanHz(settings.replan_hz);
+    behavior_page_->setRecoveryWaitTicks(settings.recovery_wait_ticks);
+    behavior_page_->setRecoveryEnabled(settings.recovery_enabled);
 }
 
 }  // namespace fleetsim::ui

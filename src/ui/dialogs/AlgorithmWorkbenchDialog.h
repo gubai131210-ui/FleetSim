@@ -7,6 +7,7 @@ class QTabWidget;
 
 namespace fleetsim::ui {
 
+class BehaviorPage;
 class ControlPage;
 class CoordinationPage;
 class PlanningPage;
@@ -22,6 +23,11 @@ struct AlgorithmWorkbenchSettings {
     QString routing_mode{"freespace"}; // freespace | lane_graph | hybrid
     double lane_snap_radius_m{1.0};
     QString first_last_planner;        // empty = same as Planning page
+    QString behavior_mode{"legacy"};   // legacy | bt
+    QString behavior_tree_path;
+    double replan_hz{1.0};
+    int recovery_wait_ticks{20};
+    bool recovery_enabled{true};
 };
 
 class AlgorithmWorkbenchDialog : public QDialog {
@@ -39,6 +45,7 @@ private:
     SpeedPage* speed_page_{nullptr};
     CoordinationPage* coordination_page_{nullptr};
     RoutingPage* routing_page_{nullptr};
+    BehaviorPage* behavior_page_{nullptr};
     QTabWidget* tabs_{nullptr};
 };
 

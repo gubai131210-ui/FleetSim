@@ -4,6 +4,10 @@
 
 #include <QWidget>
 
+class QCheckBox;
+class QComboBox;
+class QListWidget;
+
 namespace fleetsim::ui {
 
 enum class LaneEditorTool {
@@ -38,12 +42,12 @@ private:
     void rebuildEdgeCombos(const domain::map::LaneMapData& lanes);
 
     LaneEditorTool current_tool_{LaneEditorTool::Select};
-    class QCheckBox* edit_mode_{nullptr};
-    class QListWidget* node_list_{nullptr};
-    class QListWidget* edge_list_{nullptr};
-    class QComboBox* edge_from_combo_{nullptr};
-    class QComboBox* edge_to_combo_{nullptr};
-    class QCheckBox* bidirectional_check_{nullptr};
+    QCheckBox* edit_mode_{nullptr};
+    QListWidget* node_list_{nullptr};
+    QListWidget* edge_list_{nullptr};
+    QComboBox* edge_from_combo_{nullptr};
+    QComboBox* edge_to_combo_{nullptr};
+    QCheckBox* bidirectional_check_{nullptr};
 };
 
 }  // namespace fleetsim::ui

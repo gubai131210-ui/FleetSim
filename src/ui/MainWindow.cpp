@@ -15,6 +15,7 @@
 
 #include "domain/scheduling/GreedyAssigner.h"
 #include "domain/scheduling/HungarianAssigner.h"
+#include "graphics/LaneGraphicsItem.h"
 #include "graphics/ObstacleGraphicsItem.h"
 #include "graphics/ObstacleOverlayItem.h"
 #include "graphics/PathGraphicsItem.h"
@@ -26,6 +27,7 @@
 #include "panels/MapEditorPanel.h"
 #include "panels/MonitorPanel.h"
 #include "panels/ExperimentComparePanel.h"
+#include "panels/BehaviorTreePanel.h"
 #include "panels/TaskPanel.h"
 #include "panels/VehicleInfoPanel.h"
 
@@ -40,9 +42,39 @@
 #include <QStatusBar>
 
 #include <algorithm>
+#include <filesystem>
 #include <nlohmann/json.hpp>
 
 namespace fleetsim::ui {
+
+namespace {
+
+std::string resolveBehaviorTreePathForUi(const QString& configured_path,
+                                         const QString& scenario_directory)
+{
+    if (configured_path.isEmpty()) {
+        return {};
+    }
+    const std::filesystem::path configured(configured_path.toStdString());
+    if (configured.is_absolute()) {
+        return configured.string();
+    }
+    if (!scenario_directory.isEmpty()) {
+        const std::filesystem::path in_scenario =
+            std::filesystem::path(scenario_directory.toStdString()) / configured;
+        if (std::filesystem::exists(in_scenario)) {
+            return in_scenario.string();
+        }
+    }
+    const std::filesystem::path in_assets =
+        std::filesystem::path("assets") / "behavior_trees" / configured.filename();
+    if (std::filesystem::exists(in_assets)) {
+        return in_assets.string();
+    }
+    return configured.string();
+}
+
+}  // namespace
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
@@ -159,6 +191,12 @@ void MainWindow::setupDockPanels()
     experiment_compare_panel_ = new ExperimentComparePanel(compare_dock);
     compare_dock->setWidget(experiment_compare_panel_);
     addDockWidget(Qt::RightDockWidgetArea, compare_dock);
+
+    auto* behavior_dock = new QDockWidget(tr("Behavior Tree"), this);
+    behavior_dock->setObjectName(QStringLiteral("BehaviorTreeDock"));
+    behavior_tree_panel_ = new BehaviorTreePanel(behavior_dock);
+    behavior_dock->setWidget(behavior_tree_panel_);
+    addDockWidget(Qt::RightDockWidgetArea, behavior_dock);
 }
 
 void MainWindow::setupViewMenu()
@@ -196,6 +234,11 @@ void MainWindow::setupViewMenu()
     });
     view_menu->addAction(tr("Experiment Compare Panel"), this, [this]() {
         if (auto* dock = findChild<QDockWidget*>(QStringLiteral("ExperimentCompareDock"))) {
+            dock->setVisible(!dock->isVisible());
+        }
+    });
+    view_menu->addAction(tr("Behavior Tree Panel"), this, [this]() {
+        if (auto* dock = findChild<QDockWidget*>(QStringLiteral("BehaviorTreeDock"))) {
             dock->setVisible(!dock->isVisible());
         }
     });
@@ -253,6 +296,8 @@ void MainWindow::bindMonitorBridge()
             &ExperimentComparePanel::updateCurrentRun);
     connect(monitor_bridge_, &app::MonitorBridge::experimentBaselineUpdated, experiment_compare_panel_,
             &ExperimentComparePanel::updateBaseline);
+    connect(monitor_bridge_, &app::MonitorBridge::behaviorTreeStatusUpdated, behavior_tree_panel_,
+            &BehaviorTreePanel::updateStatus);
     connect(experiment_compare_panel_, &ExperimentComparePanel::captureBaselineRequested, monitor_bridge_,
             &app::MonitorBridge::captureBaseline);
     monitor_bridge_->bind();
@@ -422,6 +467,23 @@ void MainWindow::handlePlannerTracker()
     sim_controller_->engine().setLaneSnapRadiusM(planner_tracker_settings_.lane_snap_radius_m);
     sim_controller_->engine().setFirstLastPlannerKind(
         planner_tracker_settings_.first_last_planner.toStdString());
+    sim_controller_->engine().setBehaviorMode(
+        planner_tracker_settings_.behavior_mode.toStdString());
+    sim_controller_->engine().setReplanHz(planner_tracker_settings_.replan_hz);
+    sim_controller_->engine().setRecoveryWaitTicks(
+        planner_tracker_settings_.recovery_wait_ticks);
+
+    if (sim_controller_->engine().behaviorMode() == "bt") {
+        const QString scenario_dir =
+            project_manager_->hasProject()
+                ? QString::fromStdString(project_manager_->scenarioData().scenario_directory)
+                : QString();
+        const std::string tree_path = resolveBehaviorTreePathForUi(
+            planner_tracker_settings_.behavior_tree_path, scenario_dir);
+        if (!tree_path.empty()) {
+            sim_controller_->engine().loadBehaviorTree(tree_path);
+        }
+    }
 
     if (project_manager_->hasProject()) {
         auto& scenario = project_manager_->scenarioData();
@@ -435,13 +497,20 @@ void MainWindow::handlePlannerTracker()
         scenario.simulation.lane_snap_radius_m = planner_tracker_settings_.lane_snap_radius_m;
         scenario.simulation.first_last_planner =
             planner_tracker_settings_.first_last_planner.toStdString();
+        scenario.simulation.behavior_mode =
+            planner_tracker_settings_.behavior_mode.toStdString();
+        scenario.simulation.behavior_tree_path =
+            planner_tracker_settings_.behavior_tree_path.toStdString();
+        scenario.simulation.replan_hz = planner_tracker_settings_.replan_hz;
+        scenario.simulation.recovery_wait_ticks =
+            planner_tracker_settings_.recovery_wait_ticks;
     }
 
     statusBar()->showMessage(
-        tr("Algorithm workbench applied (planner=%1, tracker=%2, routing=%3).")
+        tr("Algorithm workbench applied (planner=%1, tracker=%2, behavior=%3).")
             .arg(planner_tracker_settings_.planner,
                  planner_tracker_settings_.tracker,
-                 planner_tracker_settings_.routing_mode));
+                 planner_tracker_settings_.behavior_mode));
 }
 
 void MainWindow::syncSettingsFromScenario()
@@ -485,6 +554,13 @@ void MainWindow::syncSettingsFromScenario()
     planner_tracker_settings_.lane_snap_radius_m = scenario.simulation.lane_snap_radius_m;
     planner_tracker_settings_.first_last_planner =
         QString::fromStdString(scenario.simulation.first_last_planner);
+    planner_tracker_settings_.behavior_mode =
+        QString::fromStdString(scenario.simulation.behavior_mode);
+    planner_tracker_settings_.behavior_tree_path =
+        QString::fromStdString(scenario.simulation.behavior_tree_path);
+    planner_tracker_settings_.replan_hz = scenario.simulation.replan_hz;
+    planner_tracker_settings_.recovery_wait_ticks = scenario.simulation.recovery_wait_ticks;
+    planner_tracker_settings_.recovery_enabled = scenario.simulation.recovery_wait_ticks > 0;
 }
 
 void MainWindow::applyProjectToSimulation()
