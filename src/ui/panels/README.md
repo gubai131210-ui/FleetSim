@@ -19,7 +19,8 @@
 | 面板 | 计划文件 | Phase | 禁止 |
 |------|---------|-------|------|
 | SettingsDialog | `SettingsDialog.*` | 4 ✅ | 禁止堆在 ControlPanel |
-| PlannerTrackerDialog | `PlannerTrackerDialog.*` | 5 ✅ | 禁止堆在 ControlPanel；禁止塞进 MainWindow |
+| PlannerTrackerDialog | `PlannerTrackerDialog.*` | 5 ✅ | 禁止堆在 ControlPanel |
+| MpcStGraphDialog（或扩展 PlannerTrackerDialog） | `dialogs/*` | 6 | 禁止堆 ControlPanel/MainWindow；MPC/ST 开关独立 |
 
 ## 新增面板流程
 
