@@ -536,6 +536,7 @@ void SimEngine::tick(double dt)
             agent.vehicle->pose(), agent.reference_path, agent.speed_profile, 0.5);
 
         if (tracker_kind == "stanley") {
+            agent.last_mpc_solve_ok = true;
             control::StanleyTracker stanley(1.5, 0.1, max_steer, wheelbase, profile_v);
             command = stanley.compute(agent.vehicle->pose(), agent.reference_path, dt);
             if (st_enabled && !agent.speed_profile.speeds.empty()) {
@@ -549,7 +550,9 @@ void SimEngine::tick(double dt)
                 mpc.setSpeedProfile(&agent.speed_profile);
             }
             command = mpc.compute(agent.vehicle->pose(), agent.reference_path, dt);
+            agent.last_mpc_solve_ok = mpc.lastSolveOk();
         } else if (agent.vehicle->isBicycle()) {
+            agent.last_mpc_solve_ok = true;
             command = pure_pursuit_tracker_.compute(agent.vehicle->pose(),
                                                     agent.reference_path,
                                                     dt,
@@ -559,6 +562,7 @@ void SimEngine::tick(double dt)
                 command.linear_velocity = profile_v;
             }
         } else {
+            agent.last_mpc_solve_ok = true;
             command = pure_pursuit_tracker_.compute(
                 agent.vehicle->pose(), agent.reference_path, dt);
             if (st_enabled && !agent.speed_profile.speeds.empty()) {

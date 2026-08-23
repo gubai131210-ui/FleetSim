@@ -20,6 +20,7 @@ namespace fleetsim::ui {
 class MapEditorPanel;
 class MapView;
 class MonitorPanel;
+class ExperimentComparePanel;
 class TaskPanel;
 class VehicleInfoPanel;
 }
@@ -69,6 +70,7 @@ private:
     MapView* map_view_{nullptr};
     MapEditorPanel* editor_panel_{nullptr};
     MonitorPanel* monitor_panel_{nullptr};
+    ExperimentComparePanel* experiment_compare_panel_{nullptr};
     TaskPanel* task_panel_{nullptr};
     VehicleInfoPanel* vehicle_info_panel_{nullptr};
 

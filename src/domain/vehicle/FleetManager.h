@@ -30,6 +30,7 @@ struct VehicleAgent {
     bool needs_replan{false};
     double linear_velocity{0.0};
     double speed_scale{1.0};
+    bool last_mpc_solve_ok{true};
     core::Pose dropoff_pose;
 };
 

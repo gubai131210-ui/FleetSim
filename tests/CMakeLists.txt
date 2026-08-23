@@ -39,6 +39,7 @@ add_executable(FleetSimTests
     domain/FleetManagerTest.cpp
     integration/DemoScenarioTest.cpp
     integration/MultiAgvScenarioTest.cpp
+    integration/ExperimentCompareIntegrationTest.cpp
 )
 
 target_link_libraries(FleetSimTests

@@ -24,6 +24,7 @@
 #include "panels/ControlPanel.h"
 #include "panels/MapEditorPanel.h"
 #include "panels/MonitorPanel.h"
+#include "panels/ExperimentComparePanel.h"
 #include "panels/TaskPanel.h"
 #include "panels/VehicleInfoPanel.h"
 
@@ -141,6 +142,12 @@ void MainWindow::setupDockPanels()
     vehicle_dock->setWidget(vehicle_info_panel_);
     addDockWidget(Qt::RightDockWidgetArea, vehicle_dock);
     tabifyDockWidget(task_dock, vehicle_dock);
+
+    auto* compare_dock = new QDockWidget(tr("Experiment Compare"), this);
+    compare_dock->setObjectName(QStringLiteral("ExperimentCompareDock"));
+    experiment_compare_panel_ = new ExperimentComparePanel(compare_dock);
+    compare_dock->setWidget(experiment_compare_panel_);
+    addDockWidget(Qt::RightDockWidgetArea, compare_dock);
 }
 
 void MainWindow::setupViewMenu()
@@ -171,6 +178,11 @@ void MainWindow::setupViewMenu()
             dock->setVisible(!dock->isVisible());
         }
     });
+    view_menu->addAction(tr("Experiment Compare Panel"), this, [this]() {
+        if (auto* dock = findChild<QDockWidget*>(QStringLiteral("ExperimentCompareDock"))) {
+            dock->setVisible(!dock->isVisible());
+        }
+    });
 }
 
 void MainWindow::setupSimulationLoop()
@@ -194,6 +206,12 @@ void MainWindow::bindEditorSignals()
 void MainWindow::bindMonitorBridge()
 {
     connect(monitor_bridge_, &app::MonitorBridge::sampleReady, monitor_panel_, &MonitorPanel::appendSample);
+    connect(monitor_bridge_, &app::MonitorBridge::experimentMetricsUpdated, experiment_compare_panel_,
+            &ExperimentComparePanel::updateCurrentRun);
+    connect(monitor_bridge_, &app::MonitorBridge::experimentBaselineUpdated, experiment_compare_panel_,
+            &ExperimentComparePanel::updateBaseline);
+    connect(experiment_compare_panel_, &ExperimentComparePanel::captureBaselineRequested, monitor_bridge_,
+            &app::MonitorBridge::captureBaseline);
     monitor_bridge_->bind();
 }
 
@@ -429,6 +447,9 @@ void MainWindow::applyProjectToSimulation()
 
     monitor_bridge_->reset();
     monitor_panel_->clearSamples();
+    if (experiment_compare_panel_ != nullptr) {
+        experiment_compare_panel_->clearBaseline();
+    }
 
     const auto& map_doc = project_manager_->mapDocument();
     map_view_->setMapSizeM(map_doc.width_m, map_doc.height_m);

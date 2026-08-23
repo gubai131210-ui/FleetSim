@@ -11,6 +11,41 @@
 
 ---
 
+## [2026-08-23] Phase 7 Session 5 — ExperimentComparePanel + MonitorBridge + prediction_st_demo
+
+### 本次 Scope
+- **目标**：独立 ExperimentComparePanel dock；MonitorBridge → ExperimentMetrics；scenario 资产；集成测
+- **NOT DO**：MUTATION M34+；verify_phase7；Phase 7 ✅
+
+### ✅ 已完成
+- [x] `ExperimentComparePanel`：Current/Baseline 表格 + Capture Baseline
+- [x] `MonitorBridge`：`ExperimentMetrics` 采样；`experimentMetricsUpdated` / `captureBaseline`
+- [x] `VehicleAgent.last_mpc_solve_ok` + SimEngine MPC tick 写入
+- [x] MainWindow 独立 dock + View 菜单；Monitor 未合并对比曲线
+- [x] `assets/scenarios/prediction_st_demo`（2 车，st_graph，constant_velocity）
+- [x] `ExperimentCompareIntegrationTest` 3/3
+- [x] **FleetSimTests 117/117 PASSED**；FleetSim 链接成功
+
+### ❌ 未完成 / 故意不做
+| 项目 | 计划 |
+|------|------|
+| experiment_compare_baseline scenario | 可选 Session 6 |
+| MUTATION M34+ / verify_phase7 | Session 7 |
+| DEVELOPMENT_PLAN Phase 7 ✅ | Session 7 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner/Executor | Compare 独立 Panel；Monitor 仅曲线 |
+| Tester | **PASS** 117/117 + 集成测 |
+| Reviewer | **PASS** ADR-017 Compare 边界 |
+
+### 用户本地验证
+1. Build → Open `prediction_st_demo` → View **Experiment Compare**
+2. 运行仿真 → 表格 Current 更新 → Capture Baseline → 改 Workbench prediction 再对比
+
+---
+
 ## [2026-08-23] Phase 7 Session 4 — AlgorithmWorkbenchDialog 四页 + prediction UI
 
 ### 本次 Scope

@@ -1,5 +1,6 @@
 #include "MonitorBridge.h"
 
+#include "domain/experiment/ExperimentMetrics.h"
 #include "core/types/Waypoint.h"
 #include "domain/vehicle/FleetManager.h"
 
@@ -8,6 +9,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <memory>
 
 namespace fleetsim::app {
 
@@ -29,9 +31,31 @@ double wrapToPi(double a)
 
 }  // namespace
 
+class MonitorBridge::ExperimentMetricsHolder {
+public:
+    domain::experiment::ExperimentMetrics current;
+
+    void reset()
+    {
+        current.reset();
+        baseline = domain::experiment::RunSummary{};
+        has_baseline = false;
+    }
+
+    void captureBaseline()
+    {
+        baseline = current.summarize();
+        has_baseline = true;
+    }
+
+    domain::experiment::RunSummary baseline{};
+    bool has_baseline{false};
+};
+
 MonitorBridge::MonitorBridge(SimController* controller, QObject* parent)
     : QObject(parent)
     , controller_(controller)
+    , metrics_(new ExperimentMetricsHolder())
 {
 }
 
@@ -55,6 +79,7 @@ void MonitorBridge::bind()
         computePathErrors(x, y, theta, &cross_track, &heading_error);
 
         double st_ref_speed = linear_velocity;
+        bool mpc_ok = true;
         const auto& engine = controller_->engine();
         const domain::vehicle::VehicleAgent* agent = nullptr;
         if (!engine.selectedVehicleId().empty()) {
@@ -78,7 +103,17 @@ void MonitorBridge::bind()
                 }
             }
             st_ref_speed = agent->speed_profile.speeds[best];
+            mpc_ok = agent->last_mpc_solve_ok;
         }
+
+        domain::experiment::TickSample tick;
+        tick.cross_track_error = cross_track;
+        tick.heading_error = heading_error;
+        tick.linear_velocity = linear_velocity;
+        tick.st_ref_velocity = st_ref_speed;
+        tick.mpc_last_solve_ok = mpc_ok;
+        metrics_->current.recordTick(tick);
+        emitSummary(metrics_->current.summarize());
 
         emit sampleReady(sim_time_s_, cross_track, heading_error, linear_velocity, st_ref_speed);
     });
@@ -96,6 +131,28 @@ void MonitorBridge::unbind()
 void MonitorBridge::reset()
 {
     sim_time_s_ = 0.0;
+    metrics_->reset();
+}
+
+void MonitorBridge::captureBaseline()
+{
+    metrics_->captureBaseline();
+    if (metrics_->has_baseline) {
+        emit experimentBaselineUpdated(metrics_->baseline.mean_abs_cross_track,
+                                       metrics_->baseline.mean_abs_heading_error,
+                                       metrics_->baseline.min_st_ref_velocity,
+                                       metrics_->baseline.mpc_solve_rate,
+                                       static_cast<quint64>(metrics_->baseline.sample_count));
+    }
+}
+
+void MonitorBridge::emitSummary(const domain::experiment::RunSummary& summary)
+{
+    emit experimentMetricsUpdated(summary.mean_abs_cross_track,
+                                  summary.mean_abs_heading_error,
+                                  summary.min_st_ref_velocity,
+                                  summary.mpc_solve_rate,
+                                  static_cast<quint64>(summary.sample_count));
 }
 
 void MonitorBridge::computePathErrors(double x_m,
@@ -154,6 +211,11 @@ void MonitorBridge::computePathErrors(double x_m,
     if (heading_error_rad != nullptr) {
         *heading_error_rad = wrapToPi(theta_rad - best_heading);
     }
+}
+
+MonitorBridge::~MonitorBridge()
+{
+    delete metrics_;
 }
 
 }  // namespace fleetsim::app

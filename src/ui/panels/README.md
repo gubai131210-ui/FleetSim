@@ -23,7 +23,7 @@
 | PlannerTrackerDialog | `PlannerTrackerDialog.*` | 5–6 ✅ | 禁止堆在 ControlPanel；含 mpc / st_graph |
 | PlannerTrackerDialog（deprecated） | `PlannerTrackerDialog.*` | 已并入 Workbench | 不做 |
 | AlgorithmWorkbenchDialog | `dialogs/AlgorithmWorkbenchDialog.*` + `pages/*` | 四页分页 | Session 4 ✅ |
-| ExperimentComparePanel | `panels/ExperimentComparePanel.*` | 对比指标 dock | Session 5 |
+| ExperimentComparePanel | `ExperimentComparePanel.*` | 对比指标 Current/Baseline | Phase 7 ✅ |
 
 ## 新增面板流程
 

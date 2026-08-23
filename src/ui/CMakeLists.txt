@@ -20,6 +20,8 @@ qt_add_library(FleetSimUI STATIC
     panels/MapEditorPanel.h
     panels/MonitorPanel.cpp
     panels/MonitorPanel.h
+    panels/ExperimentComparePanel.cpp
+    panels/ExperimentComparePanel.h
     panels/TaskPanel.cpp
     panels/TaskPanel.h
     panels/VehicleInfoPanel.cpp
