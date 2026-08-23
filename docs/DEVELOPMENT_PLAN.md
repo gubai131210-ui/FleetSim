@@ -12,7 +12,7 @@
 | **5** | Hybrid A* + Stanley 跟踪 + Priority/CBS-lite 多车协调 | 3 周 ✅ |
 | **6** | 线性 MPC 横向跟踪 + ST-Graph 速度规划 | 3 周 ✅ |
 | **7** | 常速轨迹预测增强 ST + 算法实验工作台 UI 分层 + 对比指标 | 3 周 ✅ |
-| **8** | 车道级 LaneGraph + First/Last Mile 混合规划 + Lane 编辑 UI 分层 | 3 周 |
+| **8** | 车道级 LaneGraph + First/Last Mile 混合规划 + Lane 编辑 UI 分层 | 3 周 ✅ |
 
 > Phase 5 完整 Goal 提示词：`docs/PHASE5_GOAL_PROMPT.md`  
 > Phase 6 完整 Goal 提示词：`docs/PHASE6_GOAL_PROMPT.md`  

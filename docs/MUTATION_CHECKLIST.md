@@ -41,6 +41,9 @@
 | M34 | `ConstantVelocityPredictor.cpp` / horizon | 外推忽略 `horizon_s` 或零 horizon 仍长路径 | `ConstantVelocityPredictorTest.StraightLineExtrapolationLength` |
 | M35 | `ConstantVelocityPredictor.cpp` / extrapolation | 不沿 heading 外推（单点或静态复制） | `ConstantVelocityPredictorTest.TurningNominalSpeedUsesHeading` / `StGraphWithPredictionTest` |
 | M36 | `ExperimentMetrics.cpp` / recordTick | `recordTick` 空操作或 `summarize` 不聚合 | `ExperimentMetricsTest.RecordsSamplesAndAggregatesMeanAbsCrossTrack` |
+| M37 | `LaneGraph.cpp` / rebuildAdjacency | 删除某条 `edges` 或忽略 `bidirectional` 反向边 | `LaneGraphTest.ShortestPathForkChoosesShorterRoute` / `MapSerializerLaneTest.BidirectionalEdge*` |
+| M38 | `LaneGraph.cpp` / nearestNodeId | 恒返回第一个节点 id | `LaneGraphTest.NearestNodeIdPicksClosest` |
+| M39 | `SimEngine.cpp` / planHybridPathForAgent | 跳过 lane 段，仅 first+last freespace | `FirstLastMileIntegrationTest.HybridPathIsLongerThanLaneGraphSegment` / `LaneRoutingDemoScenarioTest.HybridLaneGraphAndFreespaceAllPlan` |
 
 ## Phase 5 变异说明
 
@@ -59,6 +62,12 @@
 - M34：`ConstantVelocityPredictor.cpp` / horizon — 强制 `horizon_s <= 0` 仍返回多点或长度 \(\gg v\cdot T\) | `ConstantVelocityPredictorTest.StraightLineExtrapolationLength` / `ZeroHorizon*`  
 - M35：`ConstantVelocityPredictor.cpp` — 忽略外推，仅返回 `{current.x, current.y}` 单点 | `ConstantVelocityPredictorTest.*` / `StGraphWithPredictionTest`  
 - M36：`ExperimentMetrics.cpp` — `recordTick` 不写入 deque / `summarize` 永远 sample_count=0 | `ExperimentMetricsTest.*`  
+
+## Phase 8 变异说明
+
+- M37：`LaneGraph.cpp` — 建图时丢弃边或 `shortestPath` 恒 `nullopt` | `LaneGraphTest.*` / `LaneRouterTest.*`  
+- M38：`LaneGraph.cpp` — `nearestNodeId` 忽略坐标 | `LaneGraphTest.NearestNodeIdPicksClosest`  
+- M39：`SimEngine.cpp` — `hybrid` 不调用 `LaneRouter` / lane 段为空 | `FirstLastMileIntegrationTest.*` / `LaneRoutingDemoScenarioTest.*`  
 
 ## 执行记录模板
 

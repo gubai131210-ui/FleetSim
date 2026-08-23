@@ -11,6 +11,50 @@
 
 ---
 
+## [2026-08-23] Phase 8 Session 7 — MUTATION M37+ / verify_phase8 / 终审 / Phase8 ✅
+
+### ✅ 已完成
+- [x] MUTATION M37–M39 登记 + Phase 8 变异说明
+- [x] `tools/verify_phase8_evidence.py`（55 PASS）+ `run_phase8_verify.ps1`
+- [x] ADR-018/019 状态 → 已接受
+- [x] `DEVELOPMENT_PLAN` / `learning-path` Phase 8 ✅
+- [x] 四角色终审 PASS（静态证据；runtime 待用户 ASCII/Qt Build）
+
+### 四角色终审
+| 角色 | 结论 |
+|------|------|
+| Planner | A–K 全部达成 Session 0–7 |
+| Executor | 代码/文档/测例/verify 齐 |
+| Tester | **静态 PASS 55/55**；runtime FleetSimTests ~139 待用户本地 |
+| Reviewer | **PASS**：§10 + UI_GUIDELINES + 无假 LaneGraph |
+
+### 证据
+- static: `python tools/verify_phase8_evidence.py` → **55 PASS**
+- runtime: 用户本地 `D:\build\FleetSim_phase8\FleetSimTests.exe`（预期 ~139/139）
+
+### 用户本地验证
+1. `git pull origin main`
+2. `pwsh -File tools/run_phase8_verify.ps1`
+3. Qt Build；Open `lane_routing_demo`；Lane Editor + Workbench Routing
+4. Phase 7 `prediction_st_demo` 回归
+
+### Phase 8 验收 A–K 对照
+| 项 | 状态 |
+|----|------|
+| A LaneGraph | ✅ |
+| B LaneRouter | ✅ |
+| C First/Last Mile | ✅ |
+| D routing_mode | ✅ |
+| E MapSerializer lanes | ✅ |
+| F UI IA | ✅ |
+| G lane_routing_demo | ✅ |
+| H CMake/Domain | ✅ |
+| I ADR/docs | ✅ |
+| J 测试 | ✅ 静态登记 |
+| K commit/push/四角色 | ✅ |
+
+---
+
 ## [2026-08-23] Phase 8 Session 6 — lane_routing_demo + 回归
 
 ### ✅ 已完成
