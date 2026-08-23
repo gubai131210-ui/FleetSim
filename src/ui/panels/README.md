@@ -13,9 +13,10 @@
 | VehicleInfoPanel | `VehicleInfoPanel.*` | 选中车辆详情 | Phase 3 |
 | SettingsDialog | `dialogs/SettingsDialog.*` | 模型/轴距/分配器 | Phase 4 |
 | PlannerTrackerDialog | `dialogs/PlannerTrackerDialog.*` | deprecated → Algorithm Workbench | Phase 7 |
-| AlgorithmWorkbenchDialog | `dialogs/AlgorithmWorkbenchDialog.*` + `dialogs/pages/*Page.*` | Planning/Control/Speed/Coordination/**Routing** 五页 | Phase 7+8 |
-| ExperimentComparePanel | `ExperimentComparePanel.*` | 实验对比 Current/Baseline | Phase 7 |
+| AlgorithmWorkbenchDialog | `dialogs/AlgorithmWorkbenchDialog.*` + `dialogs/pages/*Page.*` | Planning/Control/Speed/Coordination/Routing/**Behavior** 六页 | Phase 7+8+9 |
+| ExperimentComparePanel | `ExperimentComparePanel.*` | 实验对比 Current/Baseline + Export CSV | Phase 7+9 |
 | LaneEditorPanel | `LaneEditorPanel.*` | lane 节点/边 CRUD（独立 dock） | Phase 8 Session 5 |
+| BehaviorTreePanel | `BehaviorTreePanel.*` | BT 状态监控（只读 dock） | Phase 9 Session 4 |
 
 ## 已有图元（MapView 层）
 
@@ -23,11 +24,16 @@
 |------|------|------|
 | LaneGraphicsItem | `graphics/LaneGraphicsItem.*` | lane 节点/边叠加（独立 lane 层） | Phase 8 Session 4 |
 
-## 计划面板
+## Workbench 页面（`dialogs/pages/`）
 
-| 面板 | 计划文件 | Phase | 禁止 |
-|------|---------|-------|------|
-| （Phase 8 UI 已完成 LaneEditor + RoutingPage） | — | — | — |
+| 页面 | Tab | 职责 |
+|------|-----|------|
+| PlanningPage | 1 | planner 选择 |
+| ControlPage | 2 | tracker 选择 |
+| SpeedPage | 3 | ST / speed planner |
+| CoordinationPage | 4 | 多车协调 |
+| RoutingPage | 5 | routing_mode |
+| BehaviorPage | 6 | behavior_mode / tree / replan_hz / recovery |
 
 ## 新增面板流程
 

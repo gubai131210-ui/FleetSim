@@ -44,6 +44,9 @@
 | M37 | `LaneGraph.cpp` / rebuildAdjacency | 删除某条 `edges` 或忽略 `bidirectional` 反向边 | `LaneGraphTest.ShortestPathForkChoosesShorterRoute` / `MapSerializerLaneTest.BidirectionalEdge*` |
 | M38 | `LaneGraph.cpp` / nearestNodeId | 恒返回第一个节点 id | `LaneGraphTest.NearestNodeIdPicksClosest` |
 | M39 | `SimEngine.cpp` / planHybridPathForAgent | 跳过 lane 段，仅 first+last freespace | `FirstLastMileIntegrationTest.HybridPathIsLongerThanLaneGraphSegment` / `LaneRoutingDemoScenarioTest.HybridLaneGraphAndFreespaceAllPlan` |
+| M40 | `BtControlNodes.cpp` / BtRecoveryNode | 先 tick recovery 再 tick primary（与 Nav2 相反） | `BehaviorTreeTest.RecoveryPrimaryFailThenRecoverySuccessRetriesPrimary` / `BtNavigationIntegrationTest.RecoveryAllowsReplanAfterBlockedGoal` |
+| M41 | `BtControlNodes.cpp` / BtSequenceNode | 子节点 FAILURE 仍返回 SUCCESS | `BehaviorTreeTest.SequenceStopsOnFirstFailure` / `BtFleetNodesTest.PlanPathFailureClearsPathValid` |
+| M42 | `SimEngine.cpp` / behavior_mode | `behavior_mode_ == "bt"` 分支恒 false，始终 legacy | `BtNavigationIntegrationTest.BtModePlansPathViaBehaviorTree` / `BtNavigationDemoScenarioTest.PlansAndAdvancesUnderBtMode` |
 
 ## Phase 5 变异说明
 
@@ -68,6 +71,12 @@
 - M37：`LaneGraph.cpp` — 建图时丢弃边或 `shortestPath` 恒 `nullopt` | `LaneGraphTest.*` / `LaneRouterTest.*`  
 - M38：`LaneGraph.cpp` — `nearestNodeId` 忽略坐标 | `LaneGraphTest.NearestNodeIdPicksClosest`  
 - M39：`SimEngine.cpp` — `hybrid` 不调用 `LaneRouter` / lane 段为空 | `FirstLastMileIntegrationTest.*` / `LaneRoutingDemoScenarioTest.*`  
+
+## Phase 9 变异说明
+
+- M40：`BtControlNodes.cpp` — Recovery 先跑 recovery 子节点再跑 primary | `BehaviorTreeTest.Recovery*` / `BtNavigationIntegrationTest.Recovery*`  
+- M41：`BtControlNodes.cpp` — Sequence 在子 FAILURE 时仍 SUCCESS | `BehaviorTreeTest.SequenceStopsOnFirstFailure`  
+- M42：`SimEngine.cpp` — BT 模式分支禁用，`tickBehaviorTreeForAgent` 永不调用 | `BtNavigationIntegrationTest.*` / `BtNavigationDemoScenarioTest.*`  
 
 ## 执行记录模板
 

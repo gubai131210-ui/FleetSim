@@ -11,6 +11,66 @@
 
 ---
 
+## [2026-08-23] Phase 9 Session 6 — verify_phase9 + M40+ + 终审 ✅
+
+### 本次 Scope（Planner 定义）
+- 目标：`verify_phase9_evidence.py`（≥50 静态检查）、`run_phase9_verify.ps1`、M40–M42、ADR-020/021 已接受、DEVELOPMENT_PLAN Phase 9 ✅
+- 允许改动：`tools/*`、`docs/*`、`src/ui/panels/README.md`、`SESSION_LOG.md`
+- 明确不在本次范围：新 Domain 功能、UI 控件堆叠
+
+### ✅ 已完成
+- [x] **tools/verify_phase9_evidence.py** — **85 PASS / 0 FAIL**（A–K + P7/P8 回归静态）
+- [x] **tools/run_phase9_verify.ps1**
+- [x] **M40–M42** 登记于 `docs/MUTATION_CHECKLIST.md`
+- [x] **ADR-020/021** 状态 → 已接受
+- [x] **DEVELOPMENT_PLAN** Phase 9 ✅
+- [x] **panels/README.md** — BehaviorTreePanel + BehaviorPage + Export CSV 说明
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| 本地 M40–M42 手工变异执行 | 需用户/Tester 在源码做微小改动后跑测 | 用户可选执行并填 MUTATION 执行记录 |
+| ASCII Build 本机重跑 | Agent 环境无 `D:\build\FleetSim_phase9_s0` 可执行文件 | 用户本地 `FleetSimTests` 171/171 复验 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | Session 6 仅文档/验证脚本；无新功能 scope |
+| Executor | verify 85 项；ADR/Plan/Mutation 更新 |
+| Tester | **PASS**（静态）；runtime 依赖用户 ASCII build（Session 5 已 171/171） |
+| Reviewer | **PASS**：§1.2 A–K 静态证据齐全；legacy 默认、UI 分层、CSV 触点合规 |
+
+### 证据
+- `python tools/verify_phase9_evidence.py` → **85 PASS**
+- Session 5 commit `9c1ff32` → FleetSimTests **171/171**（ASCII build 取证）
+
+### Phase 9 完成定义（§1.2 A–K 终审）
+| 项 | 状态 |
+|----|------|
+| A BT 核心（Sequence/Fallback/Recovery/Rate + Blackboard） | ✅ |
+| B FleetSim 叶节点接 SimEngine | ✅ |
+| C BtNavigator JSON 加载 + tick | ✅ |
+| D behavior_mode legacy\|bt + scenario 字段 | ✅ |
+| E exportCsv + ComparePanel Export | ✅ |
+| F BehaviorTreePanel + BehaviorPage Tab 6 | ✅ |
+| G bt_navigation_demo | ✅ |
+| H CMake + Domain 零 Qt | ✅ |
+| I ADR-020/021 + M40+ + Plan ✅ | ✅ |
+| J GTest 171/171（Session 5 取证） | ✅ |
+| K verify_phase9 PASS + commit/push | ✅ |
+
+### 用户本地验证
+1. `git pull origin main`
+2. `python tools/verify_phase9_evidence.py` → 85 PASS
+3. ASCII build + `FleetSimTests.exe` → 171/171
+4. 打开 `bt_navigation_demo` → Play → BehaviorTreePanel 有状态
+5. Experiment Compare → Export CSV
+6. 加载 `lane_routing_demo` / `prediction_st_demo` 回归
+
+### Phase 9 状态：**✅ 完成**
+
+---
+
 ## [2026-08-23] Phase 9 Session 5 — bt_navigation_demo + CSV 导出 + 回归
 
 ### 本次 Scope（Planner 定义）

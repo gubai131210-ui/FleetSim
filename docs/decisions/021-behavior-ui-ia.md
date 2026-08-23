@@ -2,7 +2,7 @@
 
 ## 状态
 
-草案（2026-08-23，Phase 9 Session 0）
+已接受（2026-08-23，Phase 9 Session 0 草案；Session 4 实装 BehaviorTreePanel + BehaviorPage；Session 6 终审）
 
 ## 背景
 
