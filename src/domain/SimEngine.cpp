@@ -555,7 +555,11 @@ void SimEngine::replanFleetWithPriorityCoordination()
 
         if (agent.needs_replan) {
             agent.needs_replan = false;
-            planPathForAgentOnGrid(agent, working);
+            if (routing_mode_ == "freespace") {
+                planPathForAgentOnGrid(agent, working);
+            } else {
+                planPathForAgent(agent);
+            }
         } else if (!agent.reference_path.empty()) {
             // Keep committed path; re-register reservation under cleared table.
             collision_.reservePath(

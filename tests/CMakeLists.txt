@@ -43,6 +43,7 @@ add_executable(FleetSimTests
     integration/DemoScenarioTest.cpp
     integration/MultiAgvScenarioTest.cpp
     integration/FirstLastMileIntegrationTest.cpp
+    integration/LaneRoutingDemoScenarioTest.cpp
     integration/ExperimentCompareIntegrationTest.cpp
 )
 

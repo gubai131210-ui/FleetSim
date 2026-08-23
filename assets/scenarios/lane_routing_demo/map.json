@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "width_m": 20.0,
+  "height_m": 15.0,
+  "grid_resolution_m": 0.1,
+  "obstacles": [
+    {
+      "type": "rect",
+      "x": 12.0,
+      "y": 6.0,
+      "width": 1.5,
+      "height": 2.0
+    }
+  ],
+  "lanes": {
+    "nodes": [
+      { "id": "n0", "x": 1.0, "y": 3.0 },
+      { "id": "n1", "x": 5.0, "y": 3.0 },
+      { "id": "n2", "x": 5.0, "y": 8.0 },
+      { "id": "n3", "x": 10.0, "y": 3.0 },
+      { "id": "n4", "x": 13.0, "y": 3.0 }
+    ],
+    "edges": [
+      { "from": "n0", "to": "n1", "bidirectional": false },
+      { "from": "n1", "to": "n2", "bidirectional": false },
+      { "from": "n1", "to": "n3", "bidirectional": false },
+      { "from": "n2", "to": "n3", "bidirectional": false },
+      { "from": "n3", "to": "n4", "bidirectional": false }
+    ]
+  }
+}

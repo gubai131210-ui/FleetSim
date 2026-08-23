@@ -11,6 +11,17 @@
 
 ---
 
+## [2026-08-23] Phase 8 Session 6 — lane_routing_demo + 回归
+
+### ✅ 已完成
+- [x] `assets/scenarios/lane_routing_demo` — 分叉 lanes + hybrid routing + 小障碍物
+- [x] `LaneRoutingDemoScenarioTest`（3 测：fork 加载 / 三模式可规划且可区分 / demo freespace 回归）
+- [x] Priority replan：freespace 仍用 working 栅格；lane/hybrid 走 planPathForAgent
+
+### 下次：Session 7 — verify_phase8 + MUTATION M37+ + Phase8 ✅
+
+---
+
 ## [2026-08-23] Phase 8 Session 5 — LaneEditorPanel + RoutingPage
 
 ### 本次 Scope
