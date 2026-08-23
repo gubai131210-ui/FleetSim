@@ -353,19 +353,24 @@ void MainWindow::handlePlannerTracker()
     sim_controller_->engine().setTrackerKind(planner_tracker_settings_.tracker.toStdString());
     sim_controller_->engine().setCoordinationKind(
         planner_tracker_settings_.coordination.toStdString());
+    sim_controller_->engine().setSpeedPlannerKind(
+        planner_tracker_settings_.speed_planner.toStdString());
 
     if (project_manager_->hasProject()) {
         auto& scenario = project_manager_->scenarioData();
         scenario.simulation.planner = planner_tracker_settings_.planner.toStdString();
         scenario.simulation.tracker = planner_tracker_settings_.tracker.toStdString();
         scenario.simulation.coordination = planner_tracker_settings_.coordination.toStdString();
+        scenario.simulation.speed_planner =
+            planner_tracker_settings_.speed_planner.toStdString();
     }
 
     statusBar()->showMessage(
-        tr("Planner/Tracker applied (planner=%1, tracker=%2, coordination=%3).")
+        tr("Planner/Tracker applied (planner=%1, tracker=%2, coordination=%3, speed=%4).")
             .arg(planner_tracker_settings_.planner,
                  planner_tracker_settings_.tracker,
-                 planner_tracker_settings_.coordination));
+                 planner_tracker_settings_.coordination,
+                 planner_tracker_settings_.speed_planner));
 }
 
 void MainWindow::syncSettingsFromScenario()

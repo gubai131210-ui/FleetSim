@@ -11,6 +11,7 @@ struct PlannerTrackerSettings {
     QString planner{"auto"};          // auto | astar | hybrid_astar
     QString tracker{"auto"};          // auto | pure_pursuit | stanley | mpc
     QString coordination{"priority"}; // priority | none
+    QString speed_planner{"none"};    // none | st_graph
 };
 
 class PlannerTrackerDialog : public QDialog {
@@ -26,6 +27,7 @@ private:
     QComboBox* planner_combo_{nullptr};
     QComboBox* tracker_combo_{nullptr};
     QComboBox* coordination_combo_{nullptr};
+    QComboBox* speed_planner_combo_{nullptr};
 };
 
 }  // namespace fleetsim::ui

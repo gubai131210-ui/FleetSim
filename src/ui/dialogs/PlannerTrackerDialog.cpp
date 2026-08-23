@@ -12,11 +12,11 @@ PlannerTrackerDialog::PlannerTrackerDialog(QWidget* parent)
     : QDialog(parent)
 {
     setWindowTitle(tr("Planner / Tracker"));
-    resize(400, 240);
+    resize(400, 280);
 
     auto* layout = new QVBoxLayout(this);
     layout->addWidget(new QLabel(
-        tr("Path planner, path tracker, and multi-vehicle coordination."), this));
+        tr("Path planner, path tracker, coordination, and ST speed planner."), this));
 
     auto* form = new QFormLayout();
 
@@ -38,6 +38,11 @@ PlannerTrackerDialog::PlannerTrackerDialog(QWidget* parent)
     coordination_combo_->addItem(tr("None (independent plans)"), QStringLiteral("none"));
     form->addRow(tr("Coordination"), coordination_combo_);
 
+    speed_planner_combo_ = new QComboBox(this);
+    speed_planner_combo_->addItem(tr("None"), QStringLiteral("none"));
+    speed_planner_combo_->addItem(tr("ST-Graph"), QStringLiteral("st_graph"));
+    form->addRow(tr("Speed planner"), speed_planner_combo_);
+
     layout->addLayout(form);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
@@ -52,6 +57,7 @@ PlannerTrackerSettings PlannerTrackerDialog::settings() const
     out.planner = planner_combo_->currentData().toString();
     out.tracker = tracker_combo_->currentData().toString();
     out.coordination = coordination_combo_->currentData().toString();
+    out.speed_planner = speed_planner_combo_->currentData().toString();
     return out;
 }
 
@@ -68,6 +74,10 @@ void PlannerTrackerDialog::setSettings(const PlannerTrackerSettings& settings)
     const int coordination_index = coordination_combo_->findData(settings.coordination);
     if (coordination_index >= 0) {
         coordination_combo_->setCurrentIndex(coordination_index);
+    }
+    const int speed_index = speed_planner_combo_->findData(settings.speed_planner);
+    if (speed_index >= 0) {
+        speed_planner_combo_->setCurrentIndex(speed_index);
     }
 }
 

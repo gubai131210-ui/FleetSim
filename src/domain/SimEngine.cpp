@@ -7,7 +7,11 @@
 
 #include <nlohmann/json.hpp>
 
+#include <algorithm>
 #include <cmath>
+#include <limits>
+#include <utility>
+#include <vector>
 
 namespace fleetsim::domain {
 
@@ -189,6 +193,79 @@ bool SimEngine::usesPriorityCoordination() const
     return coordination_kind_ != "none";
 }
 
+void SimEngine::setSpeedPlannerKind(const std::string& kind)
+{
+    if (kind.empty() || kind == "auto" || kind == "none") {
+        speed_planner_kind_ = "none";
+        return;
+    }
+    speed_planner_kind_ = kind;
+}
+
+std::vector<planning::PeerTrajectory> SimEngine::collectPeersFor(
+    const core::VehicleId& ego_id) const
+{
+    std::vector<planning::PeerTrajectory> peers;
+    for (std::size_t i = 0; i < fleet_.count(); ++i) {
+        const vehicle::VehicleAgent& other = fleet_.agent(i);
+        if (other.vehicle == nullptr || other.vehicle->id() == ego_id) {
+            continue;
+        }
+        if (other.reference_path.empty()) {
+            continue;
+        }
+        planning::PeerTrajectory peer;
+        peer.path = other.reference_path;
+        peer.nominal_speed = 0.5;
+        peers.push_back(std::move(peer));
+    }
+    return peers;
+}
+
+void SimEngine::refreshSpeedProfileFor(vehicle::VehicleAgent& agent)
+{
+    if (agent.vehicle == nullptr) {
+        return;
+    }
+    if (speed_planner_kind_ != "st_graph" || agent.reference_path.empty()) {
+        agent.speed_profile = core::SpeedProfile{};
+        return;
+    }
+    planning::StGraphSpeedPlanner planner(0.5, 0.8, 0.1);
+    agent.speed_profile =
+        planner.plan(agent.reference_path, collectPeersFor(agent.vehicle->id()));
+}
+
+void SimEngine::refreshSpeedProfiles()
+{
+    for (std::size_t i = 0; i < fleet_.count(); ++i) {
+        refreshSpeedProfileFor(fleet_.agent(i));
+    }
+}
+
+double SimEngine::speedFromProfile(const core::Pose& pose,
+                                   const core::Path& path,
+                                   const core::SpeedProfile& profile,
+                                   double fallback)
+{
+    if (path.empty() || profile.speeds.size() != path.size()) {
+        return fallback;
+    }
+    std::size_t best = 0;
+    double best_d2 = std::numeric_limits<double>::infinity();
+    const auto& w = path.waypoints();
+    for (std::size_t i = 0; i < w.size(); ++i) {
+        const double dx = pose.x - w[i].x;
+        const double dy = pose.y - w[i].y;
+        const double d2 = dx * dx + dy * dy;
+        if (d2 < best_d2) {
+            best_d2 = d2;
+            best = i;
+        }
+    }
+    return profile.speeds[best];
+}
+
 const core::Pose& SimEngine::goal() const
 {
     const vehicle::VehicleAgent* agent = selectedAgent();
@@ -284,6 +361,7 @@ void SimEngine::replanFleetWithPriorityCoordination()
             collision::PriorityPathCoordinator::paintPathOccupied(working, agent.reference_path, 1);
         }
     }
+    refreshSpeedProfiles();
 }
 
 bool SimEngine::planPath()
@@ -298,7 +376,11 @@ bool SimEngine::planPath()
         return !agent->reference_path.empty();
     }
     agent->needs_replan = false;
-    return planPathForAgent(*agent);
+    const bool ok = planPathForAgent(*agent);
+    if (ok) {
+        refreshSpeedProfiles();
+    }
+    return ok;
 }
 
 bool SimEngine::planPathFor(const core::VehicleId& vehicle_id)
@@ -313,7 +395,11 @@ bool SimEngine::planPathFor(const core::VehicleId& vehicle_id)
         return !agent->reference_path.empty();
     }
     agent->needs_replan = false;
-    return planPathForAgent(*agent);
+    const bool ok = planPathForAgent(*agent);
+    if (ok) {
+        refreshSpeedProfiles();
+    }
+    return ok;
 }
 
 const core::Path& SimEngine::referencePath() const
@@ -399,14 +485,24 @@ void SimEngine::tick(double dt)
                 planPathForAgent(agent);
             }
         }
+        refreshSpeedProfiles();
     }
 
     collision_.tick(dt, fleet_, sim_time_s_, map_);
+
+    const bool st_enabled = (speed_planner_kind_ == "st_graph");
+    const bool st_replan_now =
+        st_enabled && (tick_count_ % std::max(1, st_replan_interval_ticks_) == 0);
 
     for (std::size_t i = 0; i < fleet_.count(); ++i) {
         vehicle::VehicleAgent& agent = fleet_.agent(i);
         if (agent.vehicle == nullptr || agent.reference_path.empty() || agent.goal_reached) {
             continue;
+        }
+
+        if (st_enabled &&
+            (st_replan_now || agent.speed_profile.speeds.size() != agent.reference_path.size())) {
+            refreshSpeedProfileFor(agent);
         }
 
         core::ControlCommand command;
@@ -415,15 +511,22 @@ void SimEngine::tick(double dt)
             agent.vehicle->isBicycle() ? agent.vehicle->maxSteeringRad() : 0.6;
         const double wheelbase =
             agent.vehicle->isBicycle() ? agent.vehicle->wheelbaseM() : 0.8;
+        const double profile_v = speedFromProfile(
+            agent.vehicle->pose(), agent.reference_path, agent.speed_profile, 0.5);
+
         if (tracker_kind == "stanley") {
-            // Rebuild with vehicle geometry so δ limits / wheelbase match the agent.
-            control::StanleyTracker stanley(1.5, 0.1, max_steer, wheelbase, 0.5);
+            control::StanleyTracker stanley(1.5, 0.1, max_steer, wheelbase, profile_v);
             command = stanley.compute(agent.vehicle->pose(), agent.reference_path, dt);
+            if (st_enabled && !agent.speed_profile.speeds.empty()) {
+                command.linear_velocity = profile_v;
+            }
         } else if (tracker_kind == "mpc") {
-            // Explicit mpc only (ADR-014); cruise until Session 4 wires SpeedProfile.
             const double mpc_dt = (dt > 1e-6) ? dt : 0.05;
             control::MpcLateralTracker mpc(
                 10, mpc_dt, 2.0, 2.0, 0.5, max_steer, wheelbase, 0.5);
+            if (st_enabled && !agent.speed_profile.speeds.empty()) {
+                mpc.setSpeedProfile(&agent.speed_profile);
+            }
             command = mpc.compute(agent.vehicle->pose(), agent.reference_path, dt);
         } else if (agent.vehicle->isBicycle()) {
             command = pure_pursuit_tracker_.compute(agent.vehicle->pose(),
@@ -431,10 +534,17 @@ void SimEngine::tick(double dt)
                                                     dt,
                                                     agent.vehicle->wheelbaseM(),
                                                     agent.vehicle->maxSteeringRad());
+            if (st_enabled && !agent.speed_profile.speeds.empty()) {
+                command.linear_velocity = profile_v;
+            }
         } else {
             command = pure_pursuit_tracker_.compute(
                 agent.vehicle->pose(), agent.reference_path, dt);
+            if (st_enabled && !agent.speed_profile.speeds.empty()) {
+                command.linear_velocity = profile_v;
+            }
         }
+        // TimeWindow scale stacks on ST / tracker velocity (ADR-015).
         command.linear_velocity *= agent.speed_scale;
         agent.linear_velocity = command.linear_velocity;
         last_linear_velocity_ = command.linear_velocity;

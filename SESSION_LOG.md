@@ -11,6 +11,45 @@
 
 ---
 
+## [2026-08-23] Phase 6 Session 4 — SimEngine ST 强制接线 + 多车合同
+
+### 本次 Scope（Planner）
+- 目标：`speed_planner=st_graph` plan/tick 读他车 Path 填 ST；`setSpeedProfile`；TimeWindow 叠加；多车有 peer ≠ 无 peer
+- NOT DO：Monitor 曲线（S5）、假 ST、削 CMake
+
+### ✅ 已完成
+- [x] `VehicleAgent::speed_profile`；`setSpeedPlannerKind` / `refreshSpeedProfiles` / `collectPeersFor`
+- [x] plan/replan 后 + 每 N tick 重算；MPC `setSpeedProfile`；PP/Stanley 覆盖纵向 v；`*= speed_scale` 保留
+- [x] scenario `speed_planner`；Dialog Speed planner；SimController/MainWindow 应用
+- [x] `StGraphSimEngineWiringTest` 5/5；`RoundTripSpeedPlannerStGraph`
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| Monitor MPC/ST 曲线 | Session 5 | Session 5 |
+| MUTATION M31+ / Phase6 ✅ | Session 6 | Session 6 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | mini-plan：接线时机 + 多车合同测 |
+| Executor | 按 plan 接线 |
+| Tester | **PASS**（agent `56cc640a`；Wiring 5/5；读他车 Path） |
+| Reviewer | **PASS**（agent `56cc640a`；§10 Session4） |
+
+### 构建取证
+- `D:\build\FleetSim_phase6_s0`：`StGraphSimEngineWiringTest.*` **5/5 PASSED**
+
+### 用户本地验证
+1. `git pull`；Build
+2. Dialog 开 ST-Graph；两车交叉路径应见减速
+3. 过滤 `StGraph*` 应全绿
+
+### 下次会话
+- Session 5：Monitor 曲线 + 场景资产
+
+---
+
 ## [2026-08-23] Phase 6 Session 3 — StGraphSpeedPlanner 真 ST-Graph MVP
 
 ### 本次 Scope（Planner）

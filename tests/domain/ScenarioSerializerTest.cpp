@@ -50,6 +50,20 @@ TEST(ScenarioSerializerTest, RoundTripTrackerMpc)
     EXPECT_EQ(loaded.simulation.tracker, "mpc");
 }
 
+TEST(ScenarioSerializerTest, RoundTripSpeedPlannerStGraph)
+{
+    ScenarioData scenario;
+    scenario.simulation.dt_s = 0.05;
+    scenario.simulation.realtime = false;
+    scenario.simulation.speed_planner = "st_graph";
+
+    const nlohmann::json json = ScenarioSerializer::toJson(scenario);
+    EXPECT_EQ(json["simulation"]["speed_planner"], "st_graph");
+
+    const ScenarioData loaded = ScenarioSerializer::fromJson(json, "/tmp/scenario");
+    EXPECT_EQ(loaded.simulation.speed_planner, "st_graph");
+}
+
 TEST(ScenarioSerializerTest, RoundTripVehicleConfig)
 {
     ScenarioData scenario;

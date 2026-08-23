@@ -4,6 +4,7 @@
 #include "control/PurePursuitTracker.h"
 #include "planning/AStarPlanner.h"
 #include "planning/DouglasPeuckerSmoother.h"
+#include "planning/StGraphSpeedPlanner.h"
 #include "scheduling/SchedulingModule.h"
 #include "vehicle/FleetManager.h"
 
@@ -76,6 +77,13 @@ public:
     const std::string& coordinationKind() const { return coordination_kind_; }
     bool usesPriorityCoordination() const;
 
+    /// speed_planner: "st_graph" | "none" (empty → none). ADR-015.
+    void setSpeedPlannerKind(const std::string& kind);
+    const std::string& speedPlannerKind() const { return speed_planner_kind_; }
+
+    /// Recompute SpeedProfile for all agents with paths (reads peer Paths).
+    void refreshSpeedProfiles();
+
     bool planPath();
     bool planPathFor(const core::VehicleId& vehicle_id);
     const core::Path& referencePath() const;
@@ -92,6 +100,13 @@ private:
     bool planPathForAgent(vehicle::VehicleAgent& agent);
     bool planPathForAgentOnGrid(vehicle::VehicleAgent& agent, const map::OccupancyGrid& planning_grid);
     void replanFleetWithPriorityCoordination();
+    std::vector<planning::PeerTrajectory> collectPeersFor(
+        const core::VehicleId& ego_id) const;
+    void refreshSpeedProfileFor(vehicle::VehicleAgent& agent);
+    static double speedFromProfile(const core::Pose& pose,
+                                   const core::Path& path,
+                                   const core::SpeedProfile& profile,
+                                   double fallback);
     void publishPoseUpdate(const vehicle::VehicleAgent& agent);
     void publishPathUpdate(const core::VehicleId& vehicle_id, const core::Path& path);
     void handleAgentGoalReached(vehicle::VehicleAgent& agent);
@@ -113,6 +128,8 @@ private:
     std::string planner_kind_{"auto"};
     std::string tracker_kind_{"auto"};
     std::string coordination_kind_{"priority"};
+    std::string speed_planner_kind_{"none"};
+    int st_replan_interval_ticks_{10};
 
     core::VehicleId selected_vehicle_id_;
     core::Pose manual_goal_;

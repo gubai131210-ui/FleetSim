@@ -2,6 +2,7 @@
 
 #include "core/types/Path.h"
 #include "core/types/Pose.h"
+#include "core/types/SpeedProfile.h"
 #include "core/types/Task.h"
 #include "core/types/VehicleState.h"
 #include "vehicle/Vehicle.h"
@@ -20,6 +21,7 @@ enum class AgentPhase {
 struct VehicleAgent {
     std::unique_ptr<Vehicle> vehicle;
     core::Path reference_path;
+    core::SpeedProfile speed_profile;
     core::Pose goal;
     core::TaskId task_id;
     int task_priority{0};
