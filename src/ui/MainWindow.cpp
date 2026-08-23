@@ -100,7 +100,7 @@ void MainWindow::setupMenuBar()
     file_menu->addAction(tr("Save Project"), this, &MainWindow::handleSaveProject);
     file_menu->addSeparator();
     file_menu->addAction(tr("Settings..."), this, &MainWindow::handleSettings);
-    file_menu->addAction(tr("Planner / Tracker..."), this, &MainWindow::handlePlannerTracker);
+    file_menu->addAction(tr("Algorithm Workbench..."), this, &MainWindow::handlePlannerTracker);
     file_menu->addSeparator();
     file_menu->addAction(tr("Exit"), this, &QWidget::close);
 }
@@ -355,6 +355,8 @@ void MainWindow::handlePlannerTracker()
         planner_tracker_settings_.coordination.toStdString());
     sim_controller_->engine().setSpeedPlannerKind(
         planner_tracker_settings_.speed_planner.toStdString());
+    sim_controller_->engine().setPredictionKind(
+        planner_tracker_settings_.prediction.toStdString());
 
     if (project_manager_->hasProject()) {
         auto& scenario = project_manager_->scenarioData();
@@ -363,14 +365,16 @@ void MainWindow::handlePlannerTracker()
         scenario.simulation.coordination = planner_tracker_settings_.coordination.toStdString();
         scenario.simulation.speed_planner =
             planner_tracker_settings_.speed_planner.toStdString();
+        scenario.simulation.prediction = planner_tracker_settings_.prediction.toStdString();
     }
 
     statusBar()->showMessage(
-        tr("Planner/Tracker applied (planner=%1, tracker=%2, coordination=%3, speed=%4).")
+        tr("Algorithm workbench applied (planner=%1, tracker=%2, coordination=%3, speed=%4, prediction=%5).")
             .arg(planner_tracker_settings_.planner,
                  planner_tracker_settings_.tracker,
                  planner_tracker_settings_.coordination,
-                 planner_tracker_settings_.speed_planner));
+                 planner_tracker_settings_.speed_planner,
+                 planner_tracker_settings_.prediction));
 }
 
 void MainWindow::syncSettingsFromScenario()
@@ -398,6 +402,14 @@ void MainWindow::syncSettingsFromScenario()
     if (!scenario.simulation.coordination.empty()) {
         planner_tracker_settings_.coordination =
             QString::fromStdString(scenario.simulation.coordination);
+    }
+    if (!scenario.simulation.speed_planner.empty()) {
+        planner_tracker_settings_.speed_planner =
+            QString::fromStdString(scenario.simulation.speed_planner);
+    }
+    if (!scenario.simulation.prediction.empty()) {
+        planner_tracker_settings_.prediction =
+            QString::fromStdString(scenario.simulation.prediction);
     }
 }
 

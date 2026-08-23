@@ -30,12 +30,23 @@ qt_add_library(FleetSimUI STATIC
     dialogs/SettingsDialog.h
     dialogs/PlannerTrackerDialog.cpp
     dialogs/PlannerTrackerDialog.h
+    dialogs/AlgorithmWorkbenchDialog.cpp
+    dialogs/AlgorithmWorkbenchDialog.h
+    dialogs/pages/PlanningPage.cpp
+    dialogs/pages/PlanningPage.h
+    dialogs/pages/ControlPage.cpp
+    dialogs/pages/ControlPage.h
+    dialogs/pages/SpeedPage.cpp
+    dialogs/pages/SpeedPage.h
+    dialogs/pages/CoordinationPage.cpp
+    dialogs/pages/CoordinationPage.h
 )
 
 target_include_directories(FleetSimUI
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/..
         ${CMAKE_CURRENT_SOURCE_DIR}
+        ${CMAKE_CURRENT_SOURCE_DIR}/dialogs/pages
 )
 
 target_link_libraries(FleetSimUI

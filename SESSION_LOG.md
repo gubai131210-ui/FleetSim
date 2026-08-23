@@ -11,6 +11,43 @@
 
 ---
 
+## [2026-08-23] Phase 7 Session 4 — AlgorithmWorkbenchDialog 四页 + prediction UI
+
+### 本次 Scope
+- **目标**：ADR-017 UI 分层；Planning/Control/Speed/Coordination 独立 Page；Speed 页含 prediction；PlannerTracker 薄封装
+- **NOT DO**：ExperimentComparePanel（S5）；scenario 资产；MonitorBridge 指标扩展
+
+### ✅ 已完成
+- [x] `AlgorithmWorkbenchDialog` + `QTabWidget` 四页
+- [x] `dialogs/pages/PlanningPage|ControlPage|SpeedPage|CoordinationPage`
+- [x] `AlgorithmWorkbenchSettings`（含 `prediction`）
+- [x] `PlannerTrackerDialog` deprecated 薄封装（继承 Workbench，≤15 行）
+- [x] `MainWindow`：菜单 **Algorithm Workbench...**；应用 `setPredictionKind` + scenario.prediction
+- [x] `syncSettingsFromScenario` 读取 speed_planner / prediction
+- [x] CMake + `panels/README.md` 更新
+- [x] ASCII Build `FleetSim` + `FleetSimTests` 114/114
+
+### ❌ 未完成 / 故意不做
+| 项目 | 计划 |
+|------|------|
+| ExperimentComparePanel | Session 5 |
+| prediction_st_demo scenario | Session 5 |
+| ExperimentCompareIntegrationTest | Session 6 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner/Executor | 四页独立文件；未堆 PlannerTrackerDialog 表单 |
+| Tester | **PASS** 114 回归；FleetSim 链接成功 |
+| Reviewer | **PASS** ADR-017 IA |
+
+### 用户本地验证
+1. `git pull` → Qt Build
+2. File → **Algorithm Workbench...** → 四 Tab；Speed 页设 prediction=Constant velocity → OK
+3. 确认 PlannerTrackerDialog 不再单页堆四类控件
+
+---
+
 ## [2026-08-23] Phase 7 Session 3 — ExperimentMetrics 聚合 + 单测转绿
 
 ### 本次 Scope

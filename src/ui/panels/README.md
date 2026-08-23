@@ -12,7 +12,8 @@
 | TaskPanel | `TaskPanel.*` | 任务列表与 Add Task | Phase 3 |
 | VehicleInfoPanel | `VehicleInfoPanel.*` | 选中车辆详情 | Phase 3 |
 | SettingsDialog | `dialogs/SettingsDialog.*` | 模型/轴距/分配器 | Phase 4 |
-| PlannerTrackerDialog | `dialogs/PlannerTrackerDialog.*` | planner/tracker/coordination/ST | Phase 5–6 |
+| PlannerTrackerDialog | `dialogs/PlannerTrackerDialog.*` | deprecated → Algorithm Workbench | Phase 7 |
+| AlgorithmWorkbenchDialog | `dialogs/AlgorithmWorkbenchDialog.*` + `dialogs/pages/*Page.*` | Planning/Control/Speed/Coordination 分页 | Phase 7 |
 
 ## 计划面板
 
@@ -20,7 +21,9 @@
 |------|---------|-------|------|
 | SettingsDialog | `SettingsDialog.*` | 4 ✅ | 禁止堆在 ControlPanel |
 | PlannerTrackerDialog | `PlannerTrackerDialog.*` | 5–6 ✅ | 禁止堆在 ControlPanel；含 mpc / st_graph |
-| MpcStGraphDialog（可选扩展） | `dialogs/*` | 6 ✅（已并入 PlannerTrackerDialog） | 禁止堆 ControlPanel/MainWindow |
+| PlannerTrackerDialog（deprecated） | `PlannerTrackerDialog.*` | 已并入 Workbench | 不做 |
+| AlgorithmWorkbenchDialog | `dialogs/AlgorithmWorkbenchDialog.*` + `pages/*` | 四页分页 | Session 4 ✅ |
+| ExperimentComparePanel | `panels/ExperimentComparePanel.*` | 对比指标 dock | Session 5 |
 
 ## 新增面板流程
 
