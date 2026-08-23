@@ -58,6 +58,8 @@ addToolBar(...)->addAction("Play", this, [this]{ ... });
 | 2 | `MonitorPanel`, `MapEditorPanel`, `ProjectDialog` |
 | 3 | `TaskPanel`, `VehicleInfoPanel` |
 | 4 | `SettingsDialog`（模型切换） |
+| 7 | `AlgorithmWorkbenchDialog` + `ExperimentComparePanel` |
+| 8 | **`LaneEditorPanel`**（车道拓扑）、**`RoutingPage`**（Workbench 第 5 页）；禁止堆进 MapEditor/Monitor |
 
 ## SVG 车辆
 

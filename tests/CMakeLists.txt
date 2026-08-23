@@ -10,6 +10,8 @@ add_executable(FleetSimTests
     domain/OccupancyGridTest.cpp
     domain/MapLoaderTest.cpp
     domain/MapSerializerTest.cpp
+    domain/LaneGraphTest.cpp
+    domain/LaneRouterTest.cpp
     domain/AStarPlannerTest.cpp
     domain/HybridAStarPlannerTest.cpp
     domain/DubinsPathTest.cpp

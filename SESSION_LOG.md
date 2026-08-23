@@ -11,6 +11,74 @@
 
 ---
 
+## [2026-08-23] Phase 8 Session 0 — ADR-018/019 + lanes schema + 红灯测骨架
+
+### 本次 Scope（Planner 定义）
+- **目标**：ADR-018/019 草案；`LaneTypes.h` lanes[] schema；`LaneGraph`/`LaneRouter` API 替换 Phase 2 stub；红灯 GTest 骨架
+- **允许改动**：`docs/decisions/018-*.md`、`019-*.md`；`src/domain/map/LaneTypes.h`、`LaneGraph.*`；`src/domain/planning/LaneRouter.*`；`tests/domain/LaneGraphTest.cpp`、`LaneRouterTest.cpp`；Domain/tests CMakeLists
+- **NOT DO**：Dijkstra 实现（Session 1）；MapSerializer lanes round-trip（Session 2）；SimEngine routing_mode（Session 3）；LaneEditorPanel / RoutingPage / LaneGraphicsItem（Session 4–5）；lane_routing_demo；UI 任何改动；破坏 Phase 7 118 测
+
+### ✅ 已完成
+- [x] ADR-018 `docs/decisions/018-lane-graph-routing.md`（草案：lanes schema、LaneGraph API、routing_mode）
+- [x] ADR-019 `docs/decisions/019-lane-editor-ui.md`（草案：LaneEditorPanel + RoutingPage 分层）
+- [x] `src/domain/map/LaneTypes.h` — `LaneNode` / `LaneEdge` / `LaneMapData` / `LanePath`
+- [x] `LaneGraph.h/.cpp` — 替换 inline stub；`loadFromMap` 存节点/边；`shortestPath`/`nearestNodeId`/`centerlinePath` 待 Session 1
+- [x] `LaneRouter.h/.cpp` — graph → Path 管线骨架
+- [x] `LaneGraphTest`（6 测：1 绿 load + 5 红路径/nearest/centerline）
+- [x] `LaneRouterTest`（3 测：1 绿 empty fail + 2 红 route）
+- [x] `src/domain/CMakeLists.txt` + `tests/CMakeLists.txt` 登记新源文件
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| Dijkstra / nearest / centerline 实现 | Session 0 仅红灯骨架 | Session 1 |
+| MapDocument lanes 字段 + MapSerializer round-trip | 依赖 schema 稳定 | Session 2 |
+| SimEngine hybrid + FirstLastMileIntegrationTest | 依赖 LaneGraph 转绿 | Session 3 |
+| LaneEditorPanel / RoutingPage / MapView lane 层 | UI 分层 Session 4–5 | Session 4–5 |
+| verify_phase8_evidence.py / MUTATION M37+ | Phase 8 终审 | Session 7 |
+
+### 🚫 禁止偷懒自检
+- [x] 没有把 lane 编辑堆进 MapEditorPanel（未改 UI）
+- [x] Domain 层无 Qt include
+- [x] 新 Domain 类有对应单测（LaneGraphTest + LaneRouterTest）
+- [x] 未削 CMake target_*
+- [x] LaneGraph `loadFromMap` 后 nodeCount 非恒 0（存节点）
+- [x] SESSION_LOG 本节已完整填写
+
+### 新增/变更文件清单
+| 文件 | 操作 | 说明 |
+|------|------|------|
+| `docs/decisions/018-lane-graph-routing.md` | 新增 | ADR 草案 |
+| `docs/decisions/019-lane-editor-ui.md` | 新增 | ADR 草案 |
+| `src/domain/map/LaneTypes.h` | 新增 | lanes schema 类型 |
+| `src/domain/map/LaneGraph.h/.cpp` | 修改 | API 替换 stub |
+| `src/domain/planning/LaneRouter.h/.cpp` | 新增 | 路由管线骨架 |
+| `tests/domain/LaneGraphTest.cpp` | 新增 | 红灯测 |
+| `tests/domain/LaneRouterTest.cpp` | 新增 | 红灯测 |
+| `src/domain/CMakeLists.txt` | 修改 | 登记源文件 |
+| `tests/CMakeLists.txt` | 修改 | 登记测例 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | Session 0 scope 正确；NOT DO ≥5；无 UI/ SimEngine 蔓延 |
+| Executor | 按 mini-plan 交付 ADR + Domain API + 测 + CMake |
+| Tester | **预期 RED**：LaneGraph 5 测 + LaneRouter 2 测失败；LoadFromMap + RouteEmptyGraph 绿 |
+| Reviewer | **PASS**（Session 0 范围）：无 UI 堆叠；Domain 零 Qt；stub 非恒 nodeCount=0 |
+
+### 用户本地验证
+1. `git pull origin main`
+2. ASCII 构建：`cmake -S . -B D:\build\FleetSim_phase8_s0` → `cmake --build D:\build\FleetSim_phase8_s0`
+3. `D:\build\FleetSim_phase8_s0\tests\FleetSimTests.exe --gtest_filter=LaneGraph*:LaneRouter*`
+4. **预期**：9 测运行；2 PASS（LoadFromMap、RouteEmptyGraph）；7 FAIL（红灯，Session 1 转绿）
+5. Phase 7 回归：`FleetSimTests` 全量应仍 118+ 绿（新增 9 测后总数 127，其中 7 红）
+
+### 下次会话建议
+- **Session 1**：Dijkstra + nearest + centerlinePath；LaneGraphTest 全绿
+- **前置**：本 commit 已 push；红灯测已登记 CMake
+
+---
+
 ## [2026-08-23] Phase 7 Session 7 — MUTATION M34+ / verify_phase7 / 终审 / Phase7 ✅
 
 ### ✅ 已完成

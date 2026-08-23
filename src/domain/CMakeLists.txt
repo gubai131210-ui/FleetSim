@@ -10,6 +10,9 @@ add_library(FleetSimDomain STATIC
     map/MapSerializer.h
     map/LaneGraph.cpp
     map/LaneGraph.h
+    map/LaneTypes.h
+    planning/LaneRouter.cpp
+    planning/LaneRouter.h
     planning/AStarPlanner.cpp
     planning/AStarPlanner.h
     planning/HybridAStarPlanner.cpp
