@@ -48,6 +48,7 @@ add_executable(FleetSimTests
     integration/FirstLastMileIntegrationTest.cpp
     integration/LaneRoutingDemoScenarioTest.cpp
     integration/ExperimentCompareIntegrationTest.cpp
+    integration/BtNavigationIntegrationTest.cpp
 )
 
 target_link_libraries(FleetSimTests

@@ -11,6 +11,49 @@
 
 ---
 
+## [2026-08-23] Phase 9 Session 3 — SimEngine behavior_mode 接线 + BtNavigationIntegrationTest
+
+### 本次 Scope（Planner 定义）
+- 目标：`behavior_mode` / `behavior_tree_path` / `replan_hz` / `recovery_wait_ticks` 序列化 + SimEngine/SimController 接线 + 集成测
+- 允许改动：`SimEngine.*`、`ScenarioLoader/Serializer`、`SimController.cpp`、集成测
+- 明确不在本次范围：UI、bt_navigation_demo 完整场景、CSV
+
+### ✅ 已完成
+- [x] **SimulationConfig** 新增 behavior 四字段（默认 legacy）
+- [x] **ScenarioSerializer** 读写 + `RoundTripBehaviorModeFields` 单测
+- [x] **SimEngine** — `setBehaviorMode` / `loadBehaviorTree` / `tickBehaviorTreeForAgent`；bt 模式跳过 legacy `needs_replan` 自动规划
+- [x] **SimController** — `resolveBehaviorTreePath` + `applyScenarioToEngine` 加载 BT
+- [x] **BtNavigationIntegrationTest**（4 TEST）：BT 规划、legacy 回归、recovery 后重规划、Controller 接线
+- [x] **FleetSimTests 165/165 PASSED**
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| BehaviorTreePanel / BehaviorPage | Session 4 | Session 4 |
+| bt_navigation_demo 场景目录 | Session 5 | Session 5 |
+| ExperimentMetrics CSV | Session 5 | Session 5 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | Session 3 = SimEngine 接线 + 集成测 only |
+| Executor | scenario 字段 + tick 分支 + SimController 路径解析 |
+| Tester | **PASS**：165/165；BtNavigation 4/4；LaneRouting 回归绿 |
+| Reviewer | **PASS**：legacy 默认不变；bt 显式启用才 tick 树 |
+
+### 证据
+- `D:\build\FleetSim_phase9_s0\FleetSimTests.exe` → **165 PASSED**
+
+### 用户本地验证
+1. `git pull origin main`
+2. Run `FleetSimTests`（预期 165/165）
+3. `--gtest_filter=BtNavigationIntegrationTest.*`
+
+### 下次会话建议
+- Session 4：BehaviorTreePanel + BehaviorPage（Workbench Tab 6）
+
+---
+
 ## [2026-08-23] Phase 9 Session 2 — FleetSim 叶节点 + JSON 加载 + BtNavigator
 
 ### 本次 Scope（Planner 定义）

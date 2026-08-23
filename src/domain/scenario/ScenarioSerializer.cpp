@@ -41,6 +41,10 @@ ScenarioData ScenarioSerializer::fromJson(const nlohmann::json& json,
     data.simulation.routing_mode = simulation.value("routing_mode", std::string{});
     data.simulation.lane_snap_radius_m = simulation.value("lane_snap_radius_m", 1.0);
     data.simulation.first_last_planner = simulation.value("first_last_planner", std::string{});
+    data.simulation.behavior_mode = simulation.value("behavior_mode", std::string{"legacy"});
+    data.simulation.behavior_tree_path = simulation.value("behavior_tree_path", std::string{});
+    data.simulation.replan_hz = simulation.value("replan_hz", 1.0);
+    data.simulation.recovery_wait_ticks = simulation.value("recovery_wait_ticks", 20);
 
     for (const auto& vehicle_json : json.at("vehicles")) {
         VehicleConfig vehicle;
@@ -122,6 +126,18 @@ nlohmann::json ScenarioSerializer::toJson(const ScenarioData& scenario)
     }
     if (!scenario.simulation.first_last_planner.empty()) {
         json["simulation"]["first_last_planner"] = scenario.simulation.first_last_planner;
+    }
+    if (scenario.simulation.behavior_mode != "legacy") {
+        json["simulation"]["behavior_mode"] = scenario.simulation.behavior_mode;
+    }
+    if (!scenario.simulation.behavior_tree_path.empty()) {
+        json["simulation"]["behavior_tree_path"] = scenario.simulation.behavior_tree_path;
+    }
+    if (scenario.simulation.replan_hz != 1.0) {
+        json["simulation"]["replan_hz"] = scenario.simulation.replan_hz;
+    }
+    if (scenario.simulation.recovery_wait_ticks != 20) {
+        json["simulation"]["recovery_wait_ticks"] = scenario.simulation.recovery_wait_ticks;
     }
 
     nlohmann::json tasks = nlohmann::json::array();

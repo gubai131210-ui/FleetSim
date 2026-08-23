@@ -3,9 +3,42 @@
 #include "domain/vehicle/Vehicle.h"
 #include "domain/vehicle/VehicleModelFactory.h"
 
+#include <filesystem>
 #include <memory>
 
 namespace fleetsim::app {
+
+namespace {
+
+std::string resolveBehaviorTreePath(const domain::scenario::ScenarioData& scenario)
+{
+    if (scenario.simulation.behavior_tree_path.empty()) {
+        return {};
+    }
+
+    const std::filesystem::path configured(scenario.simulation.behavior_tree_path);
+    if (configured.is_absolute()) {
+        return configured.string();
+    }
+
+    if (!scenario.scenario_directory.empty()) {
+        const std::filesystem::path in_scenario =
+            std::filesystem::path(scenario.scenario_directory) / configured;
+        if (std::filesystem::exists(in_scenario)) {
+            return in_scenario.string();
+        }
+    }
+
+    const std::filesystem::path in_assets =
+        std::filesystem::path("assets") / "behavior_trees" / configured.filename();
+    if (std::filesystem::exists(in_assets)) {
+        return in_assets.string();
+    }
+
+    return configured.string();
+}
+
+}  // namespace
 
 SimController::SimController() = default;
 
@@ -41,6 +74,17 @@ void SimController::applyScenarioToEngine()
     engine_.setLaneMap(scenario_.lanes);
     engine_.setLaneSnapRadiusM(scenario_.simulation.lane_snap_radius_m);
     engine_.setFirstLastPlannerKind(scenario_.simulation.first_last_planner);
+    engine_.setBehaviorMode(
+        scenario_.simulation.behavior_mode.empty() ? "legacy" : scenario_.simulation.behavior_mode);
+    engine_.setReplanHz(scenario_.simulation.replan_hz);
+    engine_.setRecoveryWaitTicks(scenario_.simulation.recovery_wait_ticks);
+
+    if (engine_.behaviorMode() == "bt") {
+        const std::string tree_path = resolveBehaviorTreePath(scenario_);
+        if (!tree_path.empty()) {
+            engine_.loadBehaviorTree(tree_path);
+        }
+    }
 
     for (const auto& vehicle_config : scenario_.vehicles) {
         auto model = domain::vehicle::createVehicleModel(

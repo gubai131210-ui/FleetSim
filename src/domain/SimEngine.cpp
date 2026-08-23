@@ -82,6 +82,7 @@ void SimEngine::clearFleet()
 {
     fleet_.clear();
     selected_vehicle_id_.clear();
+    bt_context_.reset();
 }
 
 void SimEngine::addVehicle(std::unique_ptr<vehicle::Vehicle> vehicle)
@@ -238,6 +239,54 @@ void SimEngine::setFirstLastPlannerKind(const std::string& kind)
         return;
     }
     first_last_planner_kind_ = kind;
+}
+
+void SimEngine::setBehaviorMode(const std::string& mode)
+{
+    if (mode.empty() || mode == "legacy") {
+        behavior_mode_ = "legacy";
+        return;
+    }
+    behavior_mode_ = mode;
+}
+
+void SimEngine::setReplanHz(double hz)
+{
+    replan_hz_ = hz > 0.0 ? hz : 1.0;
+}
+
+void SimEngine::setRecoveryWaitTicks(int ticks)
+{
+    recovery_wait_ticks_ = std::max(0, ticks);
+}
+
+bool SimEngine::loadBehaviorTree(const std::string& json_path)
+{
+    bt_context_.reset();
+    last_bt_result_ = {};
+    if (!bt_navigator_.loadFromJsonFile(json_path)) {
+        return false;
+    }
+    return bt_navigator_.hasTree();
+}
+
+void SimEngine::tickBehaviorTreeForAgent(vehicle::VehicleAgent& agent)
+{
+    if (!bt_navigator_.hasTree() || agent.vehicle == nullptr) {
+        return;
+    }
+
+    if (bt_context_ == nullptr || bt_context_->agentId() != agent.vehicle->id()) {
+        bt_context_ = std::make_unique<behavior::BtSimEngineContext>(*this, agent.vehicle->id());
+    }
+
+    behavior::BtBlackboard& blackboard = bt_navigator_.blackboard();
+    blackboard.setSimContext(bt_context_.get());
+    blackboard.setString(behavior::BbKey::kAgentId, agent.vehicle->id());
+    blackboard.setDouble(behavior::BbKey::kReplanHz, replan_hz_);
+    blackboard.setInt(behavior::BbKey::kRecoveryWaitTicks, recovery_wait_ticks_);
+
+    last_bt_result_ = bt_navigator_.tick(blackboard);
 }
 
 std::string SimEngine::resolvedFirstLastPlannerKind(const vehicle::Vehicle& vehicle) const
@@ -672,25 +721,32 @@ void SimEngine::tick(double dt)
 {
     scheduling_.tick(dt, fleet_);
 
-    bool any_replan = false;
-    for (std::size_t i = 0; i < fleet_.count(); ++i) {
-        if (fleet_.agent(i).needs_replan) {
-            any_replan = true;
-            break;
+    if (behavior_mode_ == "bt" && bt_navigator_.hasTree()) {
+        vehicle::VehicleAgent* bt_agent = selectedAgent();
+        if (bt_agent != nullptr) {
+            tickBehaviorTreeForAgent(*bt_agent);
         }
-    }
-
-    if (any_replan && usesPriorityCoordination()) {
-        replanFleetWithPriorityCoordination();
-    } else if (any_replan) {
+    } else {
+        bool any_replan = false;
         for (std::size_t i = 0; i < fleet_.count(); ++i) {
-            vehicle::VehicleAgent& agent = fleet_.agent(i);
-            if (agent.needs_replan) {
-                agent.needs_replan = false;
-                planPathForAgent(agent);
+            if (fleet_.agent(i).needs_replan) {
+                any_replan = true;
+                break;
             }
         }
-        refreshSpeedProfiles();
+
+        if (any_replan && usesPriorityCoordination()) {
+            replanFleetWithPriorityCoordination();
+        } else if (any_replan) {
+            for (std::size_t i = 0; i < fleet_.count(); ++i) {
+                vehicle::VehicleAgent& agent = fleet_.agent(i);
+                if (agent.needs_replan) {
+                    agent.needs_replan = false;
+                    planPathForAgent(agent);
+                }
+            }
+            refreshSpeedProfiles();
+        }
     }
 
     collision_.tick(dt, fleet_, sim_time_s_, map_);

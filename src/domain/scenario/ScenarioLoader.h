@@ -29,6 +29,12 @@ struct SimulationConfig {
     double lane_snap_radius_m{1.0};
     /// empty → use Planning planner for hybrid first/last mile.
     std::string first_last_planner;
+    /// "legacy" | "bt" — default legacy (ADR-020).
+    std::string behavior_mode{"legacy"};
+    /// Relative to scenario dir or assets/behavior_trees/.
+    std::string behavior_tree_path;
+    double replan_hz{1.0};
+    int recovery_wait_ticks{20};
 };
 
 struct VehicleConfig {

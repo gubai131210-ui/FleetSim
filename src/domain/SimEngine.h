@@ -2,6 +2,9 @@
 
 #include "collision/CollisionModule.h"
 #include "control/PurePursuitTracker.h"
+#include "domain/behavior/BtNavigator.h"
+#include "domain/behavior/BtSimEngineContext.h"
+#include "domain/behavior/BtTypes.h"
 #include "planning/AStarPlanner.h"
 #include "planning/DouglasPeuckerSmoother.h"
 #include "planning/LaneRouter.h"
@@ -96,6 +99,17 @@ public:
     void setFirstLastPlannerKind(const std::string& kind);
     const std::string& firstLastPlannerKind() const { return first_last_planner_kind_; }
 
+    /// behavior: "legacy" | "bt" (default legacy — ADR-020).
+    void setBehaviorMode(const std::string& mode);
+    const std::string& behaviorMode() const { return behavior_mode_; }
+    void setReplanHz(double hz);
+    double replanHz() const { return replan_hz_; }
+    void setRecoveryWaitTicks(int ticks);
+    int recoveryWaitTicks() const { return recovery_wait_ticks_; }
+    bool loadBehaviorTree(const std::string& json_path);
+    const behavior::BtNavigator* btNavigator() const { return &bt_navigator_; }
+    const behavior::BtTickResult& lastBtTickResult() const { return last_bt_result_; }
+
     /// Recompute SpeedProfile for all agents with paths (reads peer Paths).
     void refreshSpeedProfiles();
 
@@ -136,6 +150,7 @@ private:
     void publishPoseUpdate(const vehicle::VehicleAgent& agent);
     void publishPathUpdate(const core::VehicleId& vehicle_id, const core::Path& path);
     void handleAgentGoalReached(vehicle::VehicleAgent& agent);
+    void tickBehaviorTreeForAgent(vehicle::VehicleAgent& agent);
     vehicle::VehicleAgent* selectedAgent();
     const vehicle::VehicleAgent* selectedAgent() const;
 
@@ -169,6 +184,13 @@ private:
     double sim_time_s_{0.0};
     double last_linear_velocity_{0.0};
     int tick_count_{0};
+
+    std::string behavior_mode_{"legacy"};
+    double replan_hz_{1.0};
+    int recovery_wait_ticks_{20};
+    behavior::BtNavigator bt_navigator_;
+    std::unique_ptr<behavior::BtSimEngineContext> bt_context_;
+    behavior::BtTickResult last_bt_result_;
 };
 
 }  // namespace fleetsim::domain

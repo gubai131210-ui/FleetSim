@@ -149,3 +149,24 @@ TEST(ScenarioSerializerTest, RoundTripTasks)
     EXPECT_DOUBLE_EQ(loaded.tasks.front().dropoff.x, 5.0);
     EXPECT_EQ(loaded.tasks.front().priority, 1);
 }
+
+TEST(ScenarioSerializerTest, RoundTripBehaviorModeFields)
+{
+    ScenarioData scenario;
+    scenario.simulation.behavior_mode = "bt";
+    scenario.simulation.behavior_tree_path = "navigate_replan_recovery.json";
+    scenario.simulation.replan_hz = 2.0;
+    scenario.simulation.recovery_wait_ticks = 15;
+
+    const nlohmann::json json = ScenarioSerializer::toJson(scenario);
+    EXPECT_EQ(json["simulation"]["behavior_mode"], "bt");
+    EXPECT_EQ(json["simulation"]["behavior_tree_path"], "navigate_replan_recovery.json");
+    EXPECT_DOUBLE_EQ(json["simulation"]["replan_hz"].get<double>(), 2.0);
+    EXPECT_EQ(json["simulation"]["recovery_wait_ticks"], 15);
+
+    const ScenarioData loaded = ScenarioSerializer::fromJson(json, "/tmp/scenario");
+    EXPECT_EQ(loaded.simulation.behavior_mode, "bt");
+    EXPECT_EQ(loaded.simulation.behavior_tree_path, "navigate_replan_recovery.json");
+    EXPECT_DOUBLE_EQ(loaded.simulation.replan_hz, 2.0);
+    EXPECT_EQ(loaded.simulation.recovery_wait_ticks, 15);
+}
