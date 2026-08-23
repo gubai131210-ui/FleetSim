@@ -11,6 +11,80 @@
 
 ---
 
+## [2026-08-23] Phase 6 Session 0 — ADR-014/015 + MPC/ST stub 红灯骨架
+
+### 本次 Scope（Planner 定义）
+- 目标：锁死 ADR-014/015 选型；落地 `MpcLateralTracker` / `StGraphSpeedPlanner` / `SpeedProfile` stub + 红灯 GTest；CMake 登记
+- 允许改动：`docs/decisions/014|015*.md`、`src/core/types/SpeedProfile.h`、`src/domain/control/MpcLateralTracker.*`、`src/domain/planning/StGraphSpeedPlanner.*`、两处 Domain/tests CMake、`src/core/CMakeLists.txt`、`SESSION_LOG.md`
+- 明确不在本次范围：真 QP/ST、SimEngine 接线、UI、scenario 字段、MUTATION M31+、Phase6 ✅
+
+### ✅ 已完成
+- [x] ADR-014：Eigen 稠密 QP；失败零舵；`setSpeedProfile`；mpc 须显式选
+- [x] ADR-015：`core::SpeedProfile` 与 Path 等长；ST plan 后至少一次 + 每 N=10 tick；禁止 speed_scale 冒充
+- [x] `SpeedProfile.h`；`MpcLateralTracker` stub（零舵 + 读 profile）；`StGraphSpeedPlanner` stub（等长 cruise、忽略 peers）
+- [x] 红灯测：`MpcLateralTrackerTest`（6）、`StGraphSpeedPlannerTest`（4）；CMake 登记
+- [x] 四角色：Planner → Executor → Tester **PASS** → Reviewer（初审缺 SESSION_LOG FAIL → 本条目后复审）
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| 线性化 + Eigen QP | Session 0 只 stub | Session 1 |
+| SimEngine `tracker=mpc` | 跨会话 | Session 2 |
+| ST 真 (s,t) + 读他车 | 跨会话 | Session 3–4 |
+| UI / Monitor 曲线 | 跨会话 | Session 5 |
+| MpcVsStanleyCompare / 多车接线测 | 跨会话 | Session 2/4 |
+| Phase6 ✅ / MUTATION M31+ | 端到端未齐 | Session 6 |
+
+### 🚫 禁止偷懒自检
+- [x] 没有把多个类挤进同一文件
+- [x] 没有在 MainWindow / ControlPanel 堆 MPC/ST 控件
+- [x] Domain 层无 Qt include
+- [x] 新 Domain 类有红灯单测
+- [x] 未跨 Phase 写真算法 / 接线
+- [x] SESSION_LOG 本节已完整填写（含没做什么 + 四角色）
+- [x] CMake 已登记新源；未削 `target_*`；未引 OSQP
+
+### 新增/变更文件清单
+| 文件 | 操作 | 说明 |
+|------|------|------|
+| `docs/decisions/014-linear-mpc.md` | 新增 | ADR-014 |
+| `docs/decisions/015-st-graph-speed.md` | 新增 | ADR-015 |
+| `src/core/types/SpeedProfile.h` | 新增 | 等长剖面 |
+| `src/domain/control/MpcLateralTracker.h/.cpp` | 新增 | stub |
+| `src/domain/planning/StGraphSpeedPlanner.h/.cpp` | 新增 | stub |
+| `tests/domain/MpcLateralTrackerTest.cpp` | 新增 | 红灯 |
+| `tests/domain/StGraphSpeedPlannerTest.cpp` | 新增 | 红灯 |
+| `src/core|domain|tests/CMakeLists.txt` | 修改 | 登记 |
+
+### 接口变更
+- 新增 `core::SpeedProfile`
+- 新增 `control::MpcLateralTracker : IPathTracker`（`setSpeedProfile` / `lastSolveOk`）
+- 新增 `planning::StGraphSpeedPlanner` + `PeerTrajectory`
+- **未改** `IPathTracker::compute` 签名；**未改** SimEngine
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | mini-plan 锁定 Session0 范围与 ADR 五项选型 |
+| Executor | 按 mini-plan 落地 ADR + stub + 红灯测 + CMake |
+| Tester | **PASS**（stub 诚实；10/10 TEST；红灯锚点未弱化；CMake OK）— agent `8a54873b` |
+| Reviewer | 初审 **FAIL**（缺 SESSION_LOG）→ 补条目后复审 **PASS**（agent `cb43aa59`） |
+| 构建取证 | `D:\build\FleetSim_phase6_s0`：Mpc*/StGraph* 共 10 测，**5 PASS / 5 FAIL（红灯）** |
+
+### 用户本地验证
+1. `git pull origin main`
+2. Qt Creator 重新 Configure → Build；或 ASCII：`D:\build\FleetSim_phase6`
+3. 运行 `FleetSimTests`，过滤 `MpcLateral*` / `StGraph*`：
+   - 预期 **FAIL（红灯）**：`SteeringClampedToMax`、`CrossTrackErrorDecreasesOnStraightPath`、`PredictionOrCostNonTrivial`、`PeerCrossingProducesDecelerationNotDistanceStop`、`ClearingPeerObstaclesChangesProfile`
+   - 预期 **PASS**：`LowSpeedNoNan`、`QpFailureReturnsZeroSteer`、`UsesSpeedProfileWhenSet`、`SpeedProfileLengthMatchesPath`、`EmptyObstaclesYieldsNearCruiseProfile`
+4. 旧测 Stanley/Hybrid/Priority/MultiAgv 应仍绿
+
+### 下次会话建议
+- 第一条任务：Session 1 — `MpcLateralTracker` 线性误差模型 + Eigen 稠密 QP，使 MPC 红灯转绿
+- 前置：本会话 stub / ADR 已合入 main
+
+---
+
 ## [2026-08-23] Phase 5 Goal J — FleetSimTests 82/82 green (ASCII out-of-tree)
 
 ### ✅ 已完成

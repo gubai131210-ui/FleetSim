@@ -15,6 +15,8 @@ add_executable(FleetSimTests
     domain/DubinsPathTest.cpp
     domain/PurePursuitTrackerTest.cpp
     domain/StanleyTrackerTest.cpp
+    domain/MpcLateralTrackerTest.cpp
+    domain/StGraphSpeedPlannerTest.cpp
     domain/SteeringAdapterTest.cpp
     domain/VehicleTest.cpp
     domain/BicycleModelTest.cpp

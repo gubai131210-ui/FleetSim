@@ -4,6 +4,7 @@ add_library(FleetSimCore STATIC
     types/VehicleId.h
     types/Waypoint.h
     types/Path.h
+    types/SpeedProfile.h
     types/GridCell.h
     types/Task.h
     types/TimeWindow.h
