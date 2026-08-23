@@ -21,6 +21,8 @@ struct SimulationConfig {
     std::string coordination;
     /// "st_graph" | "none" | empty → none (ADR-015).
     std::string speed_planner;
+    /// "none" | "constant_velocity" | empty → none (ADR-016).
+    std::string prediction;
 };
 
 struct VehicleConfig {

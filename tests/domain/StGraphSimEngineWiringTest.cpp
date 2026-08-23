@@ -176,3 +176,75 @@ TEST(StGraphSimEngineWiringTest, SpeedPlannerNoneDoesNotFillStProfile)
     engine.refreshSpeedProfiles();
     EXPECT_TRUE(engine.fleet().agent(0).speed_profile.speeds.empty());
 }
+
+TEST(StGraphSimEngineWiringTest, PredictionConstantVelocityChangesStProfile)
+{
+    SimEngine engine;
+    engine.setSpeedPlannerKind("st_graph");
+    engine.setCoordinationKind("none");
+
+    auto model_a = fleetsim::domain::vehicle::createVehicleModel("bicycle", 0.5, 1.0, 0.8, 0.6);
+    auto a = std::make_unique<Vehicle>("ego", 1.0, Pose{0.0, 0.0, 0.0}, std::move(model_a));
+    a->setModelKind("bicycle");
+    engine.addVehicle(std::move(a));
+
+    auto model_b = fleetsim::domain::vehicle::createVehicleModel("bicycle", 0.5, 1.0, 0.8, 0.6);
+    auto b = std::make_unique<Vehicle>("peer", 1.0, Pose{2.0, -1.0, 1.5707963267948966}, std::move(model_b));
+    b->setModelKind("bicycle");
+    engine.addVehicle(std::move(b));
+
+    engine.fleet().agent(0).reference_path =
+        makePath({{0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}});
+    // Static path stays below ego corridor (|lat|>0.75); CV extrapolation crosses at (2,0).
+    engine.fleet().agent(1).reference_path =
+        makePath({{2, -1}, {3, -1}, {4, -1}, {5, -1}});
+
+    engine.setPredictionKind("none");
+    engine.refreshSpeedProfiles();
+    const auto profile_none = engine.fleet().agent(0).speed_profile;
+
+    engine.setPredictionKind("constant_velocity");
+    engine.refreshSpeedProfiles();
+    const auto profile_cv = engine.fleet().agent(0).speed_profile;
+
+    ASSERT_EQ(profile_none.speeds.size(), profile_cv.speeds.size());
+    EXPECT_NEAR(minSpeed(profile_none.speeds), 0.5, 1e-3)
+        << "Static peer path should not constrain ego ST profile";
+    EXPECT_LT(minSpeed(profile_cv.speeds), minSpeed(profile_none.speeds) - 1e-3)
+        << "CV prediction must feed crossing occupancy into ST";
+}
+
+TEST(StGraphSimEngineWiringTest, PredictionDefaultNoneMatchesPhase6PeerCollection)
+{
+    SimEngine engine;
+    engine.setSpeedPlannerKind("st_graph");
+    engine.setCoordinationKind("none");
+
+    auto model_a = fleetsim::domain::vehicle::createVehicleModel("bicycle", 0.5, 1.0, 0.8, 0.6);
+    auto a = std::make_unique<Vehicle>("ego", 1.0, Pose{0.0, 0.0, 0.0}, std::move(model_a));
+    a->setModelKind("bicycle");
+    engine.addVehicle(std::move(a));
+
+    auto model_b = fleetsim::domain::vehicle::createVehicleModel("bicycle", 0.5, 1.0, 0.8, 0.6);
+    auto b = std::make_unique<Vehicle>("peer", 1.0, Pose{3.0, -2.0, 1.57}, std::move(model_b));
+    b->setModelKind("bicycle");
+    engine.addVehicle(std::move(b));
+
+    const Path ego = makePath({{0, 0}, {1, 0}, {2, 0}, {3, 0}, {4, 0}, {5, 0}});
+    const Path peer = makePath({{3, -2}, {3, -1}, {3, 0}, {3, 1}, {3, 2}});
+    engine.fleet().agent(0).reference_path = ego;
+    engine.fleet().agent(1).reference_path = peer;
+
+    EXPECT_EQ(engine.predictionKind(), "none");
+    engine.refreshSpeedProfiles();
+    const auto default_profile = engine.fleet().agent(0).speed_profile;
+
+    engine.setPredictionKind("none");
+    engine.refreshSpeedProfiles();
+    const auto explicit_none = engine.fleet().agent(0).speed_profile;
+
+    ASSERT_EQ(default_profile.speeds.size(), explicit_none.speeds.size());
+    for (std::size_t i = 0; i < default_profile.speeds.size(); ++i) {
+        EXPECT_NEAR(default_profile.speeds[i], explicit_none.speeds[i], 1e-9);
+    }
+}

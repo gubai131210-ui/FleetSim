@@ -4,6 +4,7 @@
 #include "control/MpcLateralTracker.h"
 #include "control/StanleyTracker.h"
 #include "planning/HybridAStarPlanner.h"
+#include "prediction/ConstantVelocityPredictor.h"
 
 #include <nlohmann/json.hpp>
 
@@ -202,10 +203,20 @@ void SimEngine::setSpeedPlannerKind(const std::string& kind)
     speed_planner_kind_ = kind;
 }
 
+void SimEngine::setPredictionKind(const std::string& kind)
+{
+    if (kind.empty() || kind == "auto" || kind == "none") {
+        prediction_kind_ = "none";
+        return;
+    }
+    prediction_kind_ = kind;
+}
+
 std::vector<planning::PeerTrajectory> SimEngine::collectPeersFor(
     const core::VehicleId& ego_id) const
 {
     std::vector<planning::PeerTrajectory> peers;
+    const prediction::ConstantVelocityPredictor cv_predictor;
     for (std::size_t i = 0; i < fleet_.count(); ++i) {
         const vehicle::VehicleAgent& other = fleet_.agent(i);
         if (other.vehicle == nullptr || other.vehicle->id() == ego_id) {
@@ -215,8 +226,18 @@ std::vector<planning::PeerTrajectory> SimEngine::collectPeersFor(
             continue;
         }
         planning::PeerTrajectory peer;
-        peer.path = other.reference_path;
-        peer.nominal_speed = 0.5;
+        peer.nominal_speed =
+            other.linear_velocity > 1e-3 ? other.linear_velocity : 0.5;
+        if (prediction_kind_ == "constant_velocity") {
+            peer.path = cv_predictor.predictPath(other.vehicle->pose(),
+                                                 peer.nominal_speed,
+                                                 prediction_horizon_s_,
+                                                 prediction_sample_dt_s_);
+            peer.from_prediction = true;
+        } else {
+            peer.path = other.reference_path;
+            peer.from_prediction = false;
+        }
         peers.push_back(std::move(peer));
     }
     return peers;

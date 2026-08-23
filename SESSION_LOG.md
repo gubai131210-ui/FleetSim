@@ -11,6 +11,49 @@
 
 ---
 
+## [2026-08-23] Phase 7 Session 2 — SimEngine prediction 接线 + wiring 测
+
+### 本次 Scope（Planner mini-plan）
+- **目标**：`SimEngine` `prediction=none|constant_velocity`；`collectPeersFor` CV 外推；scenario 序列化；wiring 单测
+- **允许改动**：`SimEngine.*`、`ScenarioLoader.h`、`ScenarioSerializer.cpp`、`SimController.cpp`、wiring/serializer 测
+- **NOT DO**：ExperimentMetrics（S3）；UI；scenario 资产；假 prediction（静态 Path 换名）
+
+### ✅ 已完成
+- [x] `setPredictionKind` / `predictionKind()`；默认 `none`（Phase 6 回归）
+- [x] `collectPeersFor`：`constant_velocity` → `ConstantVelocityPredictor` + `from_prediction=true`；`none` → `reference_path`
+- [x] `SimulationConfig.prediction` + ScenarioSerializer round-trip
+- [x] `SimController::applyScenarioToEngine` 读取 `simulation.prediction`
+- [x] `StGraphSimEngineWiringTest.PredictionConstantVelocityChangesStProfile` + `PredictionDefaultNoneMatchesPhase6PeerCollection`
+- [x] `ScenarioSerializerTest.RoundTripPredictionConstantVelocity`
+- [x] 回归 **111/111 PASSED**（排除 stub `ExperimentMetricsTest`）
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| ExperimentMetrics 聚合 | Session 3 | Session 3 |
+| AlgorithmWorkbenchDialog | UI | Session 4 |
+| `prediction_st_demo` scenario | 依赖 UI/资产 | Session 5 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | 范围 SimEngine+scenario+wiring 测 |
+| Executor | 按 plan；CV 读 pose 非 Path 拷贝 |
+| Tester | **PASS**：2 新 wiring + 1 serializer；111 回归 |
+| Reviewer | **PASS**：默认 none；§10 无偷懒 |
+
+### 证据
+- `StGraphSimEngineWiringTest.Prediction*` 2/2 PASSED
+- 全量（排除 ExperimentMetrics）111/111
+
+### 用户本地验证
+1. `git pull` → Build → `FleetSimTests --gtest_filter=StGraphSimEngineWiringTest.Prediction*`
+
+### 下次会话建议
+- Session 3：`ExperimentMetrics` 滚动窗口 + 聚合 → `ExperimentMetricsTest` 转绿
+
+---
+
 ## [2026-08-23] Phase 7 Session 1 — ConstantVelocityPredictor CV 外推 + 单测转绿
 
 ### 本次 Scope（Planner mini-plan）

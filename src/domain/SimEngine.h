@@ -81,6 +81,10 @@ public:
     void setSpeedPlannerKind(const std::string& kind);
     const std::string& speedPlannerKind() const { return speed_planner_kind_; }
 
+    /// prediction: "none" | "constant_velocity" (empty → none). ADR-016.
+    void setPredictionKind(const std::string& kind);
+    const std::string& predictionKind() const { return prediction_kind_; }
+
     /// Recompute SpeedProfile for all agents with paths (reads peer Paths).
     void refreshSpeedProfiles();
 
@@ -129,6 +133,9 @@ private:
     std::string tracker_kind_{"auto"};
     std::string coordination_kind_{"priority"};
     std::string speed_planner_kind_{"none"};
+    std::string prediction_kind_{"none"};
+    double prediction_horizon_s_{3.0};
+    double prediction_sample_dt_s_{0.1};
     int st_replan_interval_ticks_{10};
 
     core::VehicleId selected_vehicle_id_;
