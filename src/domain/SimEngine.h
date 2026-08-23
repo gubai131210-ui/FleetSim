@@ -93,6 +93,8 @@ public:
     void setLaneMap(const map::LaneMapData& lanes);
     void setLaneSnapRadiusM(double radius_m);
     double laneSnapRadiusM() const { return lane_snap_radius_m_; }
+    void setFirstLastPlannerKind(const std::string& kind);
+    const std::string& firstLastPlannerKind() const { return first_last_planner_kind_; }
 
     /// Recompute SpeedProfile for all agents with paths (reads peer Paths).
     void refreshSpeedProfiles();
@@ -117,7 +119,9 @@ private:
     core::Path planFreespaceBetween(const map::OccupancyGrid& grid,
                                     const vehicle::Vehicle& vehicle,
                                     const core::Pose& start,
-                                    const core::Pose& goal) const;
+                                    const core::Pose& goal,
+                                    const std::string& planner_kind) const;
+    std::string resolvedFirstLastPlannerKind(const vehicle::Vehicle& vehicle) const;
     static core::Path concatenatePaths(const core::Path& prefix, const core::Path& suffix);
     bool withinLaneSnap(double x, double y, const std::string& node_id) const;
     bool assignReferencePath(vehicle::VehicleAgent& agent, core::Path path);
@@ -155,6 +159,7 @@ private:
     std::string prediction_kind_{"none"};
     std::string routing_mode_{"freespace"};
     double lane_snap_radius_m_{1.0};
+    std::string first_last_planner_kind_;
     double prediction_horizon_s_{3.0};
     double prediction_sample_dt_s_{0.1};
     int st_replan_interval_ticks_{10};

@@ -231,6 +231,23 @@ void SimEngine::setLaneSnapRadiusM(double radius_m)
     lane_snap_radius_m_ = radius_m > 0.0 ? radius_m : 1.0;
 }
 
+void SimEngine::setFirstLastPlannerKind(const std::string& kind)
+{
+    if (kind.empty() || kind == "auto" || kind == "same") {
+        first_last_planner_kind_.clear();
+        return;
+    }
+    first_last_planner_kind_ = kind;
+}
+
+std::string SimEngine::resolvedFirstLastPlannerKind(const vehicle::Vehicle& vehicle) const
+{
+    if (first_last_planner_kind_ == "astar" || first_last_planner_kind_ == "hybrid_astar") {
+        return first_last_planner_kind_;
+    }
+    return resolvedPlannerKind(vehicle);
+}
+
 std::vector<planning::PeerTrajectory> SimEngine::collectPeersFor(
     const core::VehicleId& ego_id) const
 {
@@ -343,10 +360,10 @@ bool SimEngine::planPathForAgent(vehicle::VehicleAgent& agent)
 core::Path SimEngine::planFreespaceBetween(const map::OccupancyGrid& grid,
                                             const vehicle::Vehicle& vehicle,
                                             const core::Pose& start,
-                                            const core::Pose& goal) const
+                                            const core::Pose& goal,
+                                            const std::string& planner_kind) const
 {
-    const std::string kind = resolvedPlannerKind(vehicle);
-    if (kind == "hybrid_astar") {
+    if (planner_kind == "hybrid_astar") {
         const double wheelbase = vehicle.isBicycle() ? vehicle.wheelbaseM() : 0.8;
         const double max_steer = vehicle.isBicycle() ? vehicle.maxSteeringRad() : 0.6;
         planning::HybridAStarPlanner hybrid(wheelbase, max_steer);
@@ -485,11 +502,14 @@ bool SimEngine::planHybridPathForAgent(vehicle::VehicleAgent& agent)
     }
 
     core::Path combined;
-    const core::Path first_mile = planFreespaceBetween(map_, *agent.vehicle, start, entry_pose);
+    const std::string first_last_kind = resolvedFirstLastPlannerKind(*agent.vehicle);
+    const core::Path first_mile =
+        planFreespaceBetween(map_, *agent.vehicle, start, entry_pose, first_last_kind);
     combined = concatenatePaths(combined, first_mile);
     combined = concatenatePaths(combined, *lane_segment);
 
-    const core::Path last_mile = planFreespaceBetween(map_, *agent.vehicle, exit_pose, goal);
+    const core::Path last_mile =
+        planFreespaceBetween(map_, *agent.vehicle, exit_pose, goal, first_last_kind);
     combined = concatenatePaths(combined, last_mile);
 
     if (combined.empty()) {
@@ -505,8 +525,12 @@ bool SimEngine::planPathForAgentOnGrid(vehicle::VehicleAgent& agent,
         return false;
     }
 
-    const core::Path path =
-        planFreespaceBetween(planning_grid, *agent.vehicle, agent.vehicle->pose(), agent.goal);
+    const core::Path path = planFreespaceBetween(
+        planning_grid,
+        *agent.vehicle,
+        agent.vehicle->pose(),
+        agent.goal,
+        resolvedPlannerKind(*agent.vehicle));
     if (path.empty()) {
         agent.reference_path.clear();
         publishPathUpdate(agent.vehicle->id(), agent.reference_path);

@@ -39,6 +39,8 @@ void SimController::applyScenarioToEngine()
     engine_.setRoutingMode(
         scenario_.simulation.routing_mode.empty() ? "freespace" : scenario_.simulation.routing_mode);
     engine_.setLaneMap(scenario_.lanes);
+    engine_.setLaneSnapRadiusM(scenario_.simulation.lane_snap_radius_m);
+    engine_.setFirstLastPlannerKind(scenario_.simulation.first_last_planner);
 
     for (const auto& vehicle_config : scenario_.vehicles) {
         auto model = domain::vehicle::createVehicleModel(

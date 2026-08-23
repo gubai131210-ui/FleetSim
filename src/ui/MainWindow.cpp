@@ -22,6 +22,7 @@
 #include "map/MapScene.h"
 #include "map/MapView.h"
 #include "panels/ControlPanel.h"
+#include "panels/LaneEditorPanel.h"
 #include "panels/MapEditorPanel.h"
 #include "panels/MonitorPanel.h"
 #include "panels/ExperimentComparePanel.h"
@@ -38,6 +39,7 @@
 #include <QMessageBox>
 #include <QStatusBar>
 
+#include <algorithm>
 #include <nlohmann/json.hpp>
 
 namespace fleetsim::ui {
@@ -56,6 +58,7 @@ MainWindow::MainWindow(QWidget* parent)
     setupMenuBar();
     setupDockPanels();
     bindEditorSignals();
+    bindLaneEditorSignals();
     bindMonitorBridge();
     bindTaskPanel();
     setupSimulationLoop();
@@ -91,6 +94,7 @@ void MainWindow::setupUiLayout()
     connect(map_view_, &MapView::polygonObstacleCreated, this, &MainWindow::handlePolygonObstacleCreated);
     connect(map_view_, &MapView::startPointRequested, this, &MainWindow::handleStartPointRequested);
     connect(map_view_, &MapView::endPointRequested, this, &MainWindow::handleEndPointRequested);
+    connect(map_view_, &MapView::laneNodePlaceRequested, this, &MainWindow::handleLaneNodePlaceRequested);
 }
 
 void MainWindow::setupMenuBar()
@@ -123,6 +127,13 @@ void MainWindow::setupDockPanels()
     editor_panel_ = new MapEditorPanel(editor_dock);
     editor_dock->setWidget(editor_panel_);
     addDockWidget(Qt::LeftDockWidgetArea, editor_dock);
+
+    auto* lane_editor_dock = new QDockWidget(tr("Lane Editor"), this);
+    lane_editor_dock->setObjectName(QStringLiteral("LaneEditorDock"));
+    lane_editor_panel_ = new LaneEditorPanel(lane_editor_dock);
+    lane_editor_dock->setWidget(lane_editor_panel_);
+    addDockWidget(Qt::LeftDockWidgetArea, lane_editor_dock);
+    tabifyDockWidget(editor_dock, lane_editor_dock);
 
     auto* monitor_dock = new QDockWidget(tr("Monitor"), this);
     monitor_dock->setObjectName(QStringLiteral("MonitorDock"));
@@ -160,6 +171,11 @@ void MainWindow::setupViewMenu()
     });
     view_menu->addAction(tr("Editor Panel"), this, [this]() {
         if (auto* dock = findChild<QDockWidget*>(QStringLiteral("EditorDock"))) {
+            dock->setVisible(!dock->isVisible());
+        }
+    });
+    view_menu->addAction(tr("Lane Editor Panel"), this, [this]() {
+        if (auto* dock = findChild<QDockWidget*>(QStringLiteral("LaneEditorDock"))) {
             dock->setVisible(!dock->isVisible());
         }
     });
@@ -201,6 +217,33 @@ void MainWindow::bindEditorSignals()
     connect(editor_panel_, &MapEditorPanel::editModeToggled, map_view_, &MapView::setEditModeEnabled);
     connect(editor_panel_, &MapEditorPanel::toolChanged, map_view_, &MapView::setEditorTool);
     connect(editor_panel_, &MapEditorPanel::undoRequested, this, &MainWindow::undoLastEdit);
+    connect(editor_panel_, &MapEditorPanel::editModeToggled, this, [this](bool enabled) {
+        if (enabled) {
+            map_view_->setLaneEditModeEnabled(false);
+        }
+    });
+}
+
+void MainWindow::bindLaneEditorSignals()
+{
+    connect(lane_editor_panel_, &LaneEditorPanel::laneEditModeToggled, map_view_, &MapView::setLaneEditModeEnabled);
+    connect(lane_editor_panel_, &LaneEditorPanel::toolChanged, this, [this](LaneEditorTool tool) {
+        map_view_->setPlacingLaneNode(tool == LaneEditorTool::AddNode);
+    });
+    connect(lane_editor_panel_, &LaneEditorPanel::laneEditModeToggled, this, [this](bool enabled) {
+        if (enabled) {
+            map_view_->setEditModeEnabled(false);
+        }
+    });
+    connect(lane_editor_panel_, &LaneEditorPanel::nodeSelected, this, [this](const QString& node_id) {
+        map_view_->mapScene()->laneGraphicsItem()->setSelectedNodeId(node_id);
+    });
+    connect(lane_editor_panel_, &LaneEditorPanel::connectEdgeRequested,
+            this, &MainWindow::handleLaneConnectEdge);
+    connect(lane_editor_panel_, &LaneEditorPanel::deleteNodeRequested,
+            this, &MainWindow::handleLaneDeleteNode);
+    connect(lane_editor_panel_, &LaneEditorPanel::deleteEdgeRequested,
+            this, &MainWindow::handleLaneDeleteEdge);
 }
 
 void MainWindow::bindMonitorBridge()
@@ -375,6 +418,10 @@ void MainWindow::handlePlannerTracker()
         planner_tracker_settings_.speed_planner.toStdString());
     sim_controller_->engine().setPredictionKind(
         planner_tracker_settings_.prediction.toStdString());
+    sim_controller_->engine().setRoutingMode(planner_tracker_settings_.routing_mode.toStdString());
+    sim_controller_->engine().setLaneSnapRadiusM(planner_tracker_settings_.lane_snap_radius_m);
+    sim_controller_->engine().setFirstLastPlannerKind(
+        planner_tracker_settings_.first_last_planner.toStdString());
 
     if (project_manager_->hasProject()) {
         auto& scenario = project_manager_->scenarioData();
@@ -384,15 +431,17 @@ void MainWindow::handlePlannerTracker()
         scenario.simulation.speed_planner =
             planner_tracker_settings_.speed_planner.toStdString();
         scenario.simulation.prediction = planner_tracker_settings_.prediction.toStdString();
+        scenario.simulation.routing_mode = planner_tracker_settings_.routing_mode.toStdString();
+        scenario.simulation.lane_snap_radius_m = planner_tracker_settings_.lane_snap_radius_m;
+        scenario.simulation.first_last_planner =
+            planner_tracker_settings_.first_last_planner.toStdString();
     }
 
     statusBar()->showMessage(
-        tr("Algorithm workbench applied (planner=%1, tracker=%2, coordination=%3, speed=%4, prediction=%5).")
+        tr("Algorithm workbench applied (planner=%1, tracker=%2, routing=%3).")
             .arg(planner_tracker_settings_.planner,
                  planner_tracker_settings_.tracker,
-                 planner_tracker_settings_.coordination,
-                 planner_tracker_settings_.speed_planner,
-                 planner_tracker_settings_.prediction));
+                 planner_tracker_settings_.routing_mode));
 }
 
 void MainWindow::syncSettingsFromScenario()
@@ -429,6 +478,13 @@ void MainWindow::syncSettingsFromScenario()
         planner_tracker_settings_.prediction =
             QString::fromStdString(scenario.simulation.prediction);
     }
+    if (!scenario.simulation.routing_mode.empty()) {
+        planner_tracker_settings_.routing_mode =
+            QString::fromStdString(scenario.simulation.routing_mode);
+    }
+    planner_tracker_settings_.lane_snap_radius_m = scenario.simulation.lane_snap_radius_m;
+    planner_tracker_settings_.first_last_planner =
+        QString::fromStdString(scenario.simulation.first_last_planner);
 }
 
 void MainWindow::applyProjectToSimulation()
@@ -496,6 +552,19 @@ void MainWindow::refreshLaneOverlay()
         lanes = project_manager_->mapDocument().lanes;
     }
     map_view_->mapScene()->laneGraphicsItem()->setLaneData(lanes);
+    refreshLaneEditorPanel();
+}
+
+void MainWindow::refreshLaneEditorPanel()
+{
+    if (lane_editor_panel_ == nullptr) {
+        return;
+    }
+    domain::map::LaneMapData lanes;
+    if (project_manager_->hasProject()) {
+        lanes = project_manager_->mapDocument().lanes;
+    }
+    lane_editor_panel_->refreshFromLaneData(lanes);
 }
 
 void MainWindow::rebuildEditorObstacles()
@@ -587,6 +656,85 @@ void MainWindow::handleStartPointRequested(double x_m, double y_m)
 void MainWindow::handleEndPointRequested(double x_m, double y_m)
 {
     handleGoalRequest(x_m, y_m);
+}
+
+void MainWindow::handleLaneNodePlaceRequested(double x_m, double y_m)
+{
+    if (!project_manager_->hasProject()) {
+        return;
+    }
+    pushUndoSnapshot();
+
+    domain::map::LaneMapData& lanes = project_manager_->mapDocument().lanes;
+    int max_index = -1;
+    for (const domain::map::LaneNode& node : lanes.nodes) {
+        if (node.id.size() > 1 && node.id.front() == 'n') {
+            try {
+                max_index = std::max(max_index, std::stoi(node.id.substr(1)));
+            } catch (...) {
+            }
+        }
+    }
+    domain::map::LaneNode node;
+    node.id = "n" + std::to_string(max_index + 1);
+    node.x = x_m;
+    node.y = y_m;
+    lanes.nodes.push_back(std::move(node));
+    applyProjectToSimulation();
+    statusBar()->showMessage(tr("Added lane node %1").arg(QString::fromStdString(lanes.nodes.back().id)));
+}
+
+void MainWindow::handleLaneConnectEdge(const QString& from_id,
+                                       const QString& to_id,
+                                       bool bidirectional)
+{
+    if (!project_manager_->hasProject() || from_id.isEmpty() || to_id.isEmpty()) {
+        return;
+    }
+    pushUndoSnapshot();
+
+    domain::map::LaneEdge edge;
+    edge.from = from_id.toStdString();
+    edge.to = to_id.toStdString();
+    edge.bidirectional = bidirectional;
+    project_manager_->mapDocument().lanes.edges.push_back(std::move(edge));
+    applyProjectToSimulation();
+}
+
+void MainWindow::handleLaneDeleteNode(const QString& node_id)
+{
+    if (!project_manager_->hasProject() || node_id.isEmpty()) {
+        return;
+    }
+    pushUndoSnapshot();
+
+    domain::map::LaneMapData& lanes = project_manager_->mapDocument().lanes;
+    const std::string id = node_id.toStdString();
+    lanes.nodes.erase(
+        std::remove_if(lanes.nodes.begin(), lanes.nodes.end(),
+                       [&id](const domain::map::LaneNode& node) { return node.id == id; }),
+        lanes.nodes.end());
+    lanes.edges.erase(
+        std::remove_if(lanes.edges.begin(), lanes.edges.end(),
+                       [&id](const domain::map::LaneEdge& edge) {
+                           return edge.from == id || edge.to == id;
+                       }),
+        lanes.edges.end());
+    applyProjectToSimulation();
+}
+
+void MainWindow::handleLaneDeleteEdge(int edge_index)
+{
+    if (!project_manager_->hasProject() || edge_index < 0) {
+        return;
+    }
+    auto& edges = project_manager_->mapDocument().lanes.edges;
+    if (edge_index >= static_cast<int>(edges.size())) {
+        return;
+    }
+    pushUndoSnapshot();
+    edges.erase(edges.begin() + edge_index);
+    applyProjectToSimulation();
 }
 
 }  // namespace fleetsim::ui

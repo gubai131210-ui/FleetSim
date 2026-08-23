@@ -18,6 +18,7 @@ class SimController;
 
 namespace fleetsim::ui {
 class MapEditorPanel;
+class LaneEditorPanel;
 class MapView;
 class MonitorPanel;
 class ExperimentComparePanel;
@@ -44,6 +45,7 @@ private:
     void setupViewMenu();
     void setupSimulationLoop();
     void bindEditorSignals();
+    void bindLaneEditorSignals();
     void bindMonitorBridge();
     void bindTaskPanel();
     void refreshTaskPanel();
@@ -57,6 +59,7 @@ private:
     void applyProjectToSimulation();
     void refreshMapVisualization();
     void refreshLaneOverlay();
+    void refreshLaneEditorPanel();
     void rebuildEditorObstacles();
     void pushUndoSnapshot();
     void undoLastEdit();
@@ -66,10 +69,15 @@ private:
     void handlePolygonObstacleCreated(const QVector<QPointF>& vertices);
     void handleStartPointRequested(double x_m, double y_m);
     void handleEndPointRequested(double x_m, double y_m);
+    void handleLaneNodePlaceRequested(double x_m, double y_m);
+    void handleLaneConnectEdge(const QString& from_id, const QString& to_id, bool bidirectional);
+    void handleLaneDeleteNode(const QString& node_id);
+    void handleLaneDeleteEdge(int edge_index);
     void handleAddTaskRequest(double pickup_x, double pickup_y, double dropoff_x, double dropoff_y);
 
     MapView* map_view_{nullptr};
     MapEditorPanel* editor_panel_{nullptr};
+    LaneEditorPanel* lane_editor_panel_{nullptr};
     MonitorPanel* monitor_panel_{nullptr};
     ExperimentComparePanel* experiment_compare_panel_{nullptr};
     TaskPanel* task_panel_{nullptr};

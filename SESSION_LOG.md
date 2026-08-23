@@ -11,6 +11,35 @@
 
 ---
 
+## [2026-08-23] Phase 8 Session 5 — LaneEditorPanel + RoutingPage
+
+### 本次 Scope
+- **目标**：独立 `LaneEditorPanel` dock；Workbench 第 5 页 `RoutingPage`；MainWindow 挂载 ≤15 行
+- **NOT DO**：lane 工具堆进 MapEditorPanel；routing 堆进 Speed/Planning；Monitor/Compare 增表单
+
+### ✅ 已完成
+- [x] `LaneEditorPanel` — 节点列表/边连接/删除；Add node 点击地图；与 MapEditor 互斥编辑模式
+- [x] `RoutingPage` — routing_mode、snap 半径、first/last planner
+- [x] `AlgorithmWorkbenchDialog` 第 5 Tab Routing
+- [x] MainWindow Lane Editor dock + View 菜单；lane CRUD handlers + undo
+- [x] SimEngine `setFirstLastPlannerKind`；Scenario `lane_snap_radius_m` / `first_last_planner`
+- [x] MapView `laneNodePlaceRequested`（lane 编辑独立交互）
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | **PASS** |
+| Reviewer | **PASS** — ADR-019 分层；MapEditor 未增 lane 控件 |
+
+### 用户本地验证
+1. View → Lane Editor；Enable lane editing → Add node → 点击地图
+2. Connect 两节点；Save Project → map.json lanes 对象
+3. Algorithm Workbench → Routing 页 → hybrid + snap 1.0
+
+### 下次：Session 6 — lane_routing_demo + 回归
+
+---
+
 ## [2026-08-23] Phase 8 Session 4 — LaneGraphicsItem + MapView 叠加
 
 ### 本次 Scope

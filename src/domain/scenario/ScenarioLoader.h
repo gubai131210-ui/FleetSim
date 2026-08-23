@@ -26,6 +26,9 @@ struct SimulationConfig {
     std::string prediction;
     /// "freespace" | "lane_graph" | "hybrid" | empty → freespace (ADR-018).
     std::string routing_mode;
+    double lane_snap_radius_m{1.0};
+    /// empty → use Planning planner for hybrid first/last mile.
+    std::string first_last_planner;
 };
 
 struct VehicleConfig {

@@ -39,6 +39,8 @@ ScenarioData ScenarioSerializer::fromJson(const nlohmann::json& json,
     data.simulation.speed_planner = simulation.value("speed_planner", std::string{});
     data.simulation.prediction = simulation.value("prediction", std::string{});
     data.simulation.routing_mode = simulation.value("routing_mode", std::string{});
+    data.simulation.lane_snap_radius_m = simulation.value("lane_snap_radius_m", 1.0);
+    data.simulation.first_last_planner = simulation.value("first_last_planner", std::string{});
 
     for (const auto& vehicle_json : json.at("vehicles")) {
         VehicleConfig vehicle;
@@ -114,6 +116,12 @@ nlohmann::json ScenarioSerializer::toJson(const ScenarioData& scenario)
     }
     if (!scenario.simulation.routing_mode.empty()) {
         json["simulation"]["routing_mode"] = scenario.simulation.routing_mode;
+    }
+    if (scenario.simulation.lane_snap_radius_m != 1.0) {
+        json["simulation"]["lane_snap_radius_m"] = scenario.simulation.lane_snap_radius_m;
+    }
+    if (!scenario.simulation.first_last_planner.empty()) {
+        json["simulation"]["first_last_planner"] = scenario.simulation.first_last_planner;
     }
 
     nlohmann::json tasks = nlohmann::json::array();

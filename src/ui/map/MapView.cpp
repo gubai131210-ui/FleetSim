@@ -60,6 +60,19 @@ void MapView::setEditorTool(EditorTool tool)
     polygon_points_.clear();
 }
 
+void MapView::setLaneEditModeEnabled(bool enabled)
+{
+    lane_edit_mode_enabled_ = enabled;
+    if (!enabled) {
+        placing_lane_node_ = false;
+    }
+}
+
+void MapView::setPlacingLaneNode(bool enabled)
+{
+    placing_lane_node_ = enabled;
+}
+
 void MapView::wheelEvent(QWheelEvent* event)
 {
     constexpr double kZoomFactor = 1.15;
@@ -73,6 +86,12 @@ void MapView::wheelEvent(QWheelEvent* event)
 void MapView::mousePressEvent(QMouseEvent* event)
 {
     const QPointF scene_pos = mapToScene(event->pos());
+
+    if (lane_edit_mode_enabled_ && placing_lane_node_ && event->button() == Qt::LeftButton) {
+        emit laneNodePlaceRequested(scene_pos.x(), scene_pos.y());
+        event->accept();
+        return;
+    }
 
     if (edit_mode_enabled_) {
         if (editor_tool_ == EditorTool::Rect && event->button() == Qt::LeftButton) {

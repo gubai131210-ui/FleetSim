@@ -10,6 +10,7 @@ namespace fleetsim::ui {
 class ControlPage;
 class CoordinationPage;
 class PlanningPage;
+class RoutingPage;
 class SpeedPage;
 
 struct AlgorithmWorkbenchSettings {
@@ -18,6 +19,9 @@ struct AlgorithmWorkbenchSettings {
     QString coordination{"priority"};  // priority | none
     QString speed_planner{"none"};     // none | st_graph
     QString prediction{"none"};        // none | constant_velocity
+    QString routing_mode{"freespace"}; // freespace | lane_graph | hybrid
+    double lane_snap_radius_m{1.0};
+    QString first_last_planner;        // empty = same as Planning page
 };
 
 class AlgorithmWorkbenchDialog : public QDialog {
@@ -34,6 +38,7 @@ private:
     ControlPage* control_page_{nullptr};
     SpeedPage* speed_page_{nullptr};
     CoordinationPage* coordination_page_{nullptr};
+    RoutingPage* routing_page_{nullptr};
     QTabWidget* tabs_{nullptr};
 };
 
