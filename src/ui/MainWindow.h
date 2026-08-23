@@ -56,6 +56,7 @@ private:
     void syncSettingsFromScenario();
     void applyProjectToSimulation();
     void refreshMapVisualization();
+    void refreshLaneOverlay();
     void rebuildEditorObstacles();
     void pushUndoSnapshot();
     void undoLastEdit();

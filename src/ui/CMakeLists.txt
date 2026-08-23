@@ -14,6 +14,8 @@ qt_add_library(FleetSimUI STATIC
     graphics/ObstacleOverlayItem.h
     graphics/ObstacleGraphicsItem.cpp
     graphics/ObstacleGraphicsItem.h
+    graphics/LaneGraphicsItem.cpp
+    graphics/LaneGraphicsItem.h
     panels/ControlPanel.cpp
     panels/ControlPanel.h
     panels/MapEditorPanel.cpp

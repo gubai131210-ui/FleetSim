@@ -1,5 +1,6 @@
 #include "MapScene.h"
 
+#include "graphics/LaneGraphicsItem.h"
 #include "graphics/ObstacleOverlayItem.h"
 #include "graphics/PathGraphicsItem.h"
 
@@ -15,6 +16,8 @@ MapScene::MapScene(QObject* parent)
 {
     background_group_ = new QGraphicsItemGroup();
     obstacle_overlay_ = new ObstacleOverlayItem();
+    lane_item_ = new LaneGraphicsItem();
+    lane_layer_ = new QGraphicsItemGroup();
     path_item_ = new PathGraphicsItem();
     path_layer_ = new QGraphicsItemGroup();
     editor_layer_ = new QGraphicsItemGroup();
@@ -22,6 +25,8 @@ MapScene::MapScene(QObject* parent)
 
     addItem(background_group_);
     addItem(obstacle_overlay_);
+    addItem(lane_layer_);
+    lane_layer_->addToGroup(lane_item_);
     addItem(path_layer_);
     path_layer_->addToGroup(path_item_);
     addItem(editor_layer_);
@@ -55,6 +60,16 @@ PathGraphicsItem* MapScene::pathItem()
 ObstacleOverlayItem* MapScene::obstacleOverlayItem()
 {
     return obstacle_overlay_;
+}
+
+LaneGraphicsItem* MapScene::laneGraphicsItem()
+{
+    return lane_item_;
+}
+
+QGraphicsItemGroup* MapScene::laneLayer()
+{
+    return lane_layer_;
 }
 
 QGraphicsItemGroup* MapScene::vehicleLayer()

@@ -14,16 +14,20 @@
 | SettingsDialog | `dialogs/SettingsDialog.*` | 模型/轴距/分配器 | Phase 4 |
 | PlannerTrackerDialog | `dialogs/PlannerTrackerDialog.*` | deprecated → Algorithm Workbench | Phase 7 |
 | AlgorithmWorkbenchDialog | `dialogs/AlgorithmWorkbenchDialog.*` + `dialogs/pages/*Page.*` | Planning/Control/Speed/Coordination 分页 | Phase 7 |
+| ExperimentComparePanel | `ExperimentComparePanel.*` | 实验对比 Current/Baseline | Phase 7 |
+
+## 已有图元（MapView 层）
+
+| 图元 | 文件 | 职责 |
+|------|------|------|
+| LaneGraphicsItem | `graphics/LaneGraphicsItem.*` | lane 节点/边叠加（独立 lane 层） | Phase 8 Session 4 |
 
 ## 计划面板
 
 | 面板 | 计划文件 | Phase | 禁止 |
 |------|---------|-------|------|
-| SettingsDialog | `SettingsDialog.*` | 4 ✅ | 禁止堆在 ControlPanel |
-| PlannerTrackerDialog | `PlannerTrackerDialog.*` | 5–6 ✅ | 禁止堆在 ControlPanel；含 mpc / st_graph |
-| PlannerTrackerDialog（deprecated） | `PlannerTrackerDialog.*` | 已并入 Workbench | 不做 |
-| AlgorithmWorkbenchDialog | `dialogs/AlgorithmWorkbenchDialog.*` + `pages/*` | 四页分页 | Session 4 ✅ |
-| ExperimentComparePanel | `ExperimentComparePanel.*` | 对比指标 Current/Baseline | Phase 7 ✅ |
+| LaneEditorPanel | `LaneEditorPanel.*` | 8 Session 5 | 禁止堆进 MapEditorPanel |
+| RoutingPage | `dialogs/pages/RoutingPage.*` | 8 Session 5 | 禁止堆进 Speed/Planning |
 
 ## 新增面板流程
 

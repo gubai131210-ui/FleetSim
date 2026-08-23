@@ -11,6 +11,36 @@
 
 ---
 
+## [2026-08-23] Phase 8 Session 4 — LaneGraphicsItem + MapView 叠加
+
+### 本次 Scope
+- **目标**：`LaneGraphicsItem` 显示 lane 节点/边；MapScene 独立 lane 层；MainWindow 刷新；lanes 同步 SimEngine
+- **NOT DO**：LaneEditorPanel；RoutingPage；MapEditorPanel 改动；lane 编辑交互
+
+### ✅ 已完成
+- [x] `LaneGraphicsItem` — 有向边箭头、双向虚线、节点圆点、选中高亮 API
+- [x] `MapScene` — `lane_layer_`（z=12，在障碍物之上、路径之下）
+- [x] `MainWindow::refreshLaneOverlay` + `applyProjectToSimulation` 同步 lanes
+- [x] `ProjectManager::load` 同步 `scenario_data_.lanes`
+- [x] CMake + `panels/README.md` 登记
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | **PASS** — 仅可视化层 |
+| Executor | 已交付 |
+| Tester | UI 手动验证：打开含 lanes 的 map.json |
+| Reviewer | **PASS** — lane 层与 editor_layer 分离；MapEditor 未改 |
+
+### 用户本地验证
+1. Build FleetSim；打开含 `lanes:{nodes,edges}` 的 map（或 Session 6 demo）
+2. MapView 应显示蓝色 lane 线与节点圆点
+3. MapEditor 障碍物编辑仍正常
+
+### 下次：Session 5 — LaneEditorPanel + RoutingPage
+
+---
+
 ## [2026-08-23] Phase 8 Session 3 — SimEngine routing_mode + First/Last Mile
 
 ### 本次 Scope（Planner 定义）

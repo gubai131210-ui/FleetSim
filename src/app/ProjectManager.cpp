@@ -41,6 +41,7 @@ bool ProjectManager::load(const std::string& scenario_directory, double inflatio
     map_document_ = domain::map::MapSerializer::fromFile(map_path.string());
     scenario_data_ = domain::scenario::ScenarioSerializer::fromFile(
         scenario_path.string(), scenario_directory, inflation_radius_m);
+    scenario_data_.lanes = map_document_.lanes;
     project_directory_ = scenario_directory;
     loaded_ = true;
     return true;

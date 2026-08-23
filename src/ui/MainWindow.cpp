@@ -441,6 +441,7 @@ void MainWindow::applyProjectToSimulation()
     // only in handleSettings(), which stamps project data before calling this.
     auto scenario = project_manager_->scenarioData();
     scenario.map = project_manager_->buildOccupancyGrid(0.55);
+    scenario.lanes = project_manager_->mapDocument().lanes;
     scenario.scenario_directory = project_manager_->projectDirectory();
 
     sim_controller_->loadScenarioData(std::move(scenario));
@@ -484,7 +485,17 @@ void MainWindow::refreshMapVisualization()
         }
     }
     map_view_->mapScene()->obstacleOverlayItem()->setOccupiedCells(occupied_centers, grid.resolutionM());
+    refreshLaneOverlay();
     rebuildEditorObstacles();
+}
+
+void MainWindow::refreshLaneOverlay()
+{
+    domain::map::LaneMapData lanes;
+    if (project_manager_->hasProject()) {
+        lanes = project_manager_->mapDocument().lanes;
+    }
+    map_view_->mapScene()->laneGraphicsItem()->setLaneData(lanes);
 }
 
 void MainWindow::rebuildEditorObstacles()
