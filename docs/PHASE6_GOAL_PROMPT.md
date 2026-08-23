@@ -22,23 +22,24 @@
 2. docs/DEVELOPMENT_PLAN.md、docs/learning-path.md（确认 Phase 5 ✅、Phase 6 目标）
 3. docs/AGENT_SESSION_TEMPLATE.md
 4. SESSION_LOG.md（Phase 5 Goal J 条目；防回归：CMake EXPORT、中文 Temp、Open Project 覆盖 model、Hybrid/Stanley 假实现）
-5. docs/decisions/001-architecture.md、009-bicycle-control-command.md、011-hybrid-astar.md、012-stanley-tracker.md、013-priority-or-cbs-lite.md
-6. docs/UI_GUIDELINES.md + src/ui/panels/README.md
+5. docs/decisions/001-architecture.md、009-bicycle-control-command.md、011-hybrid-astar.md、012-stanley-tracker.md、013-priority-or-cbs-lite.md；碰撞相关 ADR（TimeWindow/预约）
+6. docs/UI_GUIDELINES.md + src/ui/panels/README.md + docs/MUTATION_CHECKLIST.md
 7. 代码优先：IPathTracker / PurePursuitTracker / StanleyTracker / IPathPlanner / HybridAStarPlanner /
-   BicycleModel / SimEngine / PriorityPathCoordinator / TimeWindowCollisionAvoidance /
-   PlannerTrackerDialog / MonitorBridge / MonitorPanel / 各层 CMakeLists / tests/CMakeLists.txt
+   BicycleModel / SimEngine / PriorityPathCoordinator / TimeWindowCollisionAvoidance / PathReservationTable /
+   core/types/Path.h + Waypoint.h / PlannerTrackerDialog / MonitorBridge / MonitorPanel /
+   各层 CMakeLists / tests/CMakeLists.txt
 
 【Phase 6 完成定义（全部达成才可结束 Goal）】
 A. MpcLateralTracker : IPathTracker — 沿参考轨迹线性化自行车误差动力学；有限时域；输出 steering_angle；有单测；可与 PP/Stanley 切换
-B. QP 求解：教学 MVP 允许「小 horizon + Eigen 稠密 QP（箱约束/无约束+惩罚）」；若引入 OSQP/osqp-eigen，必须 BUILD_INTERFACE + Config find_dependency（禁止破坏 EXPORT）
-C. StGraphSpeedPlanner（或同名）：沿已有 Path 建 (s,t) 图；把他车轨迹映射为 ST 障碍；输出速度剖面 / 时间戳路径；禁止只改「距离<d 停车」冒充 ST
-D. SimEngine：tracker=mpc 分支；可选 speed_planner=st_graph|none；与 Priority/TimeWindow 协同或 ADR 写清边界
-E. scenario / PlannerTrackerDialog 可切换 tracker: pure_pursuit|stanley|mpc；可开/关 ST 速度规划；bicycle 默认可保留 hybrid+stanley，MPC 为可选实验
+B. QP 求解：教学 MVP 允许「小 horizon + Eigen 稠密 QP（箱约束/惩罚）」；单测须断言非平凡代价（Q/R 或预测矩阵非全零）；禁止投影梯度换皮。若引入 OSQP/osqp-eigen，必须 BUILD_INTERFACE + Config find_dependency（禁止破坏 EXPORT）
+C. StGraphSpeedPlanner：沿已有 Path 建 (s,t)；他车已知 Path/预约映射为 ST 障碍；输出 core::SpeedProfile（与 Path 等长的 v[] 和/或 t[]）；禁止距离停车；禁止仅改 speed_scale
+D. SimEngine：tracker=mpc 分支；speed_planner=st_graph|none。ST **必须接线**：plan() 或每 tick 前，用他车已知 Path/预约投影填 ST 障碍，再写出 SpeedProfile；禁止「只写 ADR 说边界」却永不读他车。TimeWindow 可叠加缩放，不可替代 ST。
+E. scenario / PlannerTrackerDialog 可切换 tracker: pure_pursuit|stanley|mpc；可开/关 ST；bicycle 默认可保留 hybrid+stanley，MPC 为可选实验
 F. UI：扩展 PlannerTrackerDialog 或新建 MpcStGraphDialog（禁止堆 ControlPanel/MainWindow）；Monitor 增加 MPC 预测误差或 ST 速度曲线至少一类
 G. CMake：新源登记；保留 target_include_directories / target_link_libraries；Domain 零 Qt、零 rclcpp
-H. 文档：ADR-014（线性 MPC）、ADR-015（ST-Graph 速度规划）；DEVELOPMENT_PLAN Phase6✅；SESSION_LOG；MUTATION M31+
-I. 测试：MpcLateralTrackerTest、StGraphSpeedPlannerTest、MpcVsStanleyCompareTest 或扩展 PlannerSwitch*；用户本地或 ASCII 外置 Build + FleetSimTests 全绿才可 complete
-J. 每会话 commit + push；四角色子 Agent 互相监督 PASS；回复四段式
+H. 文档：ADR-014（线性 MPC）、ADR-015（ST-Graph + SpeedProfile）；DEVELOPMENT_PLAN Phase6✅；SESSION_LOG；docs/MUTATION_CHECKLIST.md M31+
+I. 测试：MpcLateralTrackerTest、StGraphSpeedPlannerTest、MpcVsStanleyCompareTest 或扩展 PlannerSwitch*；至少 1 个多车测：关掉他车 ST 障碍则 FAIL；用户本地或 ASCII 外置 Build（D:\build\FleetSim_*）+ FleetSimTests 全绿才可 complete
+J. 每会话 commit + push；四角色互相监督 PASS；回复四段式
 
 【架构硬约束】
 UI → App → Domain → Core
@@ -48,27 +49,28 @@ App 层一律 domain:: 前缀命名空间
 新 UI = 新/扩展 Dialog + CMake；MainWindow 仅挂载 ≤15 行
 禁止编辑 .cursor/plans/
 中文路径：ProjectManager 测试用仓库内 ASCII test_tmp；交付用户 Build 步骤
+ST 输出类型：新增 core::SpeedProfile（或 TimedPath）：与 Path 等长的 v[] 和/或 t[]；禁止仅改 agent.speed_scale 冒充 ST 交付物；禁止给 Waypoint 乱加字段却不更新 Path 消费者与序列化（ADR-015 必须写死选型）
 
-【四角色子 Agent 团队 — 每会话强制（主 Agent 编排，禁止自评 PASS）】
+【四角色子 Agent 团队 — 每会话强制；本文件角色名覆盖 DEVELOPMENT_PLAN / AGENT_SESSION_TEMPLATE 的 Architect/Implementer 叫法】
 1. Planner（计划）：输出 mini-plan —— 允许改动 / NOT DO / 文件清单 / 测试清单 / 验收标准
 2. Executor（执行）：只按 mini-plan 写代码与 CMake；禁止扩 scope
-3. Tester（测试）：写/跑/补 GTest；缺测 → FAIL；假 MPC（=Stanley 换皮）→ FAIL；假 ST（=距离停车）→ FAIL
-4. Reviewer（检查）：对照 §10 禁止偷懒 + Phase2–5 防回归 + UI_GUIDELINES；输出 PASS/FAIL + 问题列表
-流程：Planner → Executor → Tester → Reviewer；任一 FAIL → 修复后从 Tester 或 Reviewer 重审，不得宣称会话完成。
-可用 Task 工具拉 explore/generalPurpose 扮演四角色；主 Agent 只整合，不代替 Reviewer 盖章。
+3. Tester（测试）：写/跑/补 GTest（优先 ASCII D:\build\FleetSim_*）；缺测 → FAIL；假 MPC（=Stanley 换皮 / 无代价函数断言）→ FAIL；假 ST（=距离停车 / 不读他车）→ FAIL
+4. Reviewer（检查）：对照 §10 + Phase2–5 防回归 + UI_GUIDELINES；输出 PASS/FAIL + 问题列表
+流程：Planner → Executor → Tester → Reviewer。任一 FAIL → 修复；若改了 scope 须重跑 Planner，否则至少重跑 Tester+Reviewer。主 Agent 禁止自评 PASS。SESSION_LOG 须引用四角色结论。
+可用 Task 工具拉 explore/generalPurpose 扮演四角色。
 
 【建议 7 会话，可连续但禁止跳验收】
 0: ADR-014/015 草案 + 接口调研 + 红灯测骨架（Mpc*/StGraph*）
 1: MpcLateralTracker（线性误差模型 + 小 horizon QP）+ MpcLateralTrackerTest
 2: SimEngine/scenario/Dialog 接入 tracker=mpc；与 Stanley 对比测
-3: StGraphSpeedPlanner MVP（他车路径→ST 障碍 + 速度剖面）+ 单测
-4: 与 Priority/TimeWindow 协同接线 + 多车回归
+3: StGraphSpeedPlanner MVP + core::SpeedProfile + 他车障碍单测
+4: SimEngine 强制接线 ST + Priority/TimeWindow 叠加 + 多车回归（忽略他车须 FAIL）
 5: UI/Monitor（MPC/ST 指标）+ 场景资产
 6: 端到端 + MUTATION M31+ + 四角色终审 + push + Phase6 ✅
 
 【禁止偷懒】
-1. 禁止 MPC = Stanley/PP 换皮（必须有预测时域 + 优化/QP 目标，即使是稠密小 QP）
-2. 禁止 ST-Graph = 「距离 < d 就停车」
+1. 禁止 MPC = Stanley/PP 换皮（须有预测时域 + 非平凡代价/矩阵断言）
+2. 禁止 ST-Graph = 「距离 < d 就停车」；禁止只写类不接线；禁止只用 speed_scale 冒充 ST
 3. 禁止 Domain 写 Qt / rclcpp
 4. 禁止把 MPC/ST 控件堆进 ControlPanel/MainWindow
 5. 禁止新 Domain 类无 GTest；禁止跳过 MPC vs Stanley 对比测
@@ -76,11 +78,13 @@ App 层一律 domain:: 前缀命名空间
 7. 禁止 EXPORT 直接 PUBLIC 链未导出的 FetchContent（OSQP 等同 nlohmann 教训）
 8. 禁止完整 Autoware / 完整 nav2 / 完整非线性大规模 MPC / 感知相机激光仿真
 9. 禁止破坏 Phase3 TimeWindow、Phase5 Hybrid/Stanley/Priority 回归（除非 ADR 明确迁移+测）
-10. 禁止 SESSION_LOG 缺「没做什么」；禁止跳过四角色监督
+10. 禁止 SESSION_LOG 缺「没做什么」/缺四角色结论；禁止跳过四角色监督
 11. 禁止未更新 CMakeLists 就加源文件
 12. 禁止测试写中文用户 Temp 导致 MinGW ofstream 假失败
 13. 禁止 horizon>30 却无超时/失败路径（教学规模 N≤15～20）
 14. 禁止把 Eigen 已有依赖删掉另起炉灶无 Qt 矩阵库
+15. 禁止「写 ADR 说不做」规避 ST 读他车的最低接线合同
+16. 角色名以本文件 Planner/Executor/Tester/Reviewer 为准（覆盖旧 Architect/Implementer）
 
 【Todos】
 按会话 0→6 创建/更新；全部完成且 I/J 有测试绿证才 UpdateGoal complete。
@@ -106,11 +110,11 @@ App 层一律 domain:: 前缀命名空间
 
 - [ ] `MpcLateralTracker : IPathTracker`：误差状态、预测时域、QP/等价优化、输出 `steering_angle`；单测含收敛、限舵、低速
 - [ ] `tracker: "mpc"` 可切换；DiffDrive/PP、bicycle/Stanley、Hybrid 回归不破
-- [ ] `StGraphSpeedPlanner`：`(s,t)` 栅格或采样；他车轨迹投影为障碍；输出速度剖面；单测证明「绕开/减速」而非距离停车
-- [ ] SimEngine 接线 + scenario 字段；与 TimeWindow/Priority **协同或 ADR-015 边界清晰**
+- [ ] `StGraphSpeedPlanner`：`(s,t)` 栅格或采样；他车轨迹投影为障碍；输出 `SpeedProfile`；单测证明减速/等待，而非距离停车
+- [ ] SimEngine **接线**：`speed_planner=st_graph` 时 plan/tick 前读他车 Path（或预约）填 ST；TimeWindow 可叠加；至少 1 个多车测在「忽略他车障碍」时失败
 - [ ] UI 独立扩展；Monitor 至少一条新曲线（MPC 横偏预测残差 **或** ST 速度剖面）
-- [ ] ADR-014、ADR-015；DEVELOPMENT_PLAN Phase 6 ✅；SESSION_LOG；MUTATION M31+
-- [ ] GTest +（用户本地 **或** ASCII 外置）FleetSimTests 全绿
+- [ ] ADR-014、ADR-015（含 SpeedProfile 选型）；DEVELOPMENT_PLAN Phase 6 ✅；SESSION_LOG；MUTATION M31+
+- [ ] GTest +（用户本地 **或** ASCII 外置 `D:\build\FleetSim_*`）FleetSimTests 全绿
 
 ### 1.3 明确不做（Phase 6 范围外）
 
@@ -154,11 +158,18 @@ Monitor：新曲线数据源（App MonitorBridge）
 
 ```
 Path (Hybrid/A*) 
-  → [可选] StGraphSpeedPlanner → 带速度/时间的参考
-  → Tracker (PP | Stanley | MPC) → ControlCommand(δ,v)
+  → [可选] StGraphSpeedPlanner(自车Path, 他车Paths/预约) → SpeedProfile{v[], t[]}
+  → Tracker (PP | Stanley | MPC)：δ 来自跟踪；v 优先取 SpeedProfile 当前段（无 ST 则 cruise）
   → Bicycle/DiffDrive integrate
-并行：Priority 占走廊 + TimeWindow 速度缩放（勿无故删除）
+并行：Priority 占走廊 + TimeWindow 速度缩放（叠加，勿删除）
 ```
+
+**SimEngine 时机（硬合同，ADR-015 可细化不可推翻）：**
+
+- `speed_planner=none`：不建 ST；跟踪器 cruise / 既有逻辑。  
+- `speed_planner=st_graph`：在 **plan() 之后、首次跟踪前** 至少跑一次 ST；若他车路径在仿真中更新，允许每 N tick 重算（N 与 dt 写入 ADR）。  
+- 禁止：ST 类已实现但 SimEngine 从不调用。  
+- 禁止：仅用 `agent.speed_scale` 作为 Phase 6 ST 验收交付物。
 
 ---
 
@@ -266,16 +277,21 @@ Autoware：横向 PP **或** MPC，纵向常 PID。Apollo：横向 LQR / 混合 
 ### ADR-014 — 线性 MPC 横向跟踪
 
 1. `MpcLateralTracker : IPathTracker`  
-2. 构造参数：`horizon`、`dt`、`q_lat`、`q_heading`、`r_steer`、`max_steer`、`wheelbase`  
-3. 输出：`steering_angle` + `linear_velocity`（速度可来自 ST 剖面或 cruise）  
-4. 失败：QP 失败 → 回退限舵 Stanley 项 **或** 返回零舵并记日志（ADR 写死一种并测）
+2. 构造参数：`horizon`、`dt`、`q_lat`、`q_heading`、`r_steer`、`max_steer`、`wheelbase`、`cruise_speed`  
+3. 输出：`steering_angle` + `linear_velocity`：若调用方注入当前段目标速度（来自 `SpeedProfile`）则用之，否则 `cruise_speed`。`IPathTracker::compute` 若签名不够，允许 Tracker 持有 `setSpeedProfile` / SimEngine 在 tick 前写入目标 v（ADR 写死一种）  
+4. 失败：QP 失败 → 回退限舵 Stanley 项 **或** 返回零舵并记日志（ADR 写死一种并测）  
+5. 反偷懒：单测须能触达预测矩阵或代价项（权重全 0 → 行为退化须被 M31/M33 捕获）
 
-### ADR-015 — ST-Graph 速度规划
+### ADR-015 — ST-Graph 速度规划 + SpeedProfile
 
-1. 输入：自车 `Path`、他车 `Path`+名义速度（或已预约表）、\(v_{\max},a_{\max}\)  
-2. 输出：每 waypoint 的 \(v\) 或到达时间；SimEngine 跟踪前应用  
-3. 与 TimeWindow：ST 定规划速度；TimeWindow 仍可在冲突时缩放（叠加）  
-4. CBS-lite：不做；Priority 仍负责几何顺序  
+1. 输入：自车 `Path`、他车 `Path`+名义速度（和/或 `PathReservationTable`）、\(v_{\max},a_{\max}\)  
+2. **输出类型（会话 0 必须选死一种并写进 ADR）：**  
+   - **推荐**：`core::SpeedProfile { std::vector<double> speeds; std::vector<double> arrival_times; }` 与 Path waypoints **等长**（或 speeds.size()==path.size()-1 并在 ADR 注明）  
+   - **备选**：`TimedPath` 包装 `Path` + 并行数组  
+   - **禁止**：只改 `Waypoint` 加字段却不更新序列化/所有消费者；**禁止**仅改 `speed_scale`  
+3. SimEngine：`speed_planner=st_graph` 时 **必须调用** ST，并把剖面接到跟踪器速度；TimeWindow 可叠加缩放  
+4. 最低接线测：两车场景，ST 开启时后车在冲突段减速；人为清空他车障碍输入则剖面应变「更激进」或测试断言失败条件  
+5. CBS-lite：不做；Priority 仍负责几何顺序
 
 ---
 
@@ -289,7 +305,8 @@ Autoware：横向 PP **或** MPC，纵向常 PID。Apollo：横向 LQR / 混合 
 | `control/DenseQpSolver.h/.cpp`（可选） | 小规模稠密 QP，隔离求解器 |
 | `planning/StGraph.h/.cpp` | (s,t) 栅格与障碍填充 |
 | `planning/StGraphSpeedPlanner.h/.cpp` | 速度剖面 |
-| 扩展 `SimEngine` | tracker/speed_planner 分支 |
+| `core/types/SpeedProfile.h`（或 TimedPath） | ST 交付物；与 Path 并列 |
+| 扩展 `SimEngine` | tracker/speed_planner 分支 + **实际调用** ST |
 | 扩展 `ScenarioLoader` / Serializer | 字段 |
 
 ### UI / App
@@ -334,9 +351,10 @@ tools/run_phase6_verify.ps1
 
 **规则：**
 
+- 角色名以本文件为准，覆盖 `DEVELOPMENT_PLAN` / `AGENT_SESSION_TEMPLATE` 的 Architect/Implementer。  
 - 主 Agent **禁止**自评 Reviewer PASS。  
 - Tester 与 Reviewer 必须是**独立** Task 子 Agent（或两次不同调用），不可同一回复里「自己测自己过」。  
-- FAIL → 修复 → 至少再跑 Tester + Reviewer。  
+- FAIL → 修复；若改动了允许范围/文件清单 → 重跑 Planner；否则至少再跑 Tester + Reviewer。  
 - Scribe（可由主 Agent 兼任）写 SESSION_LOG，须引用四角色结论。
 
 ---
@@ -374,20 +392,22 @@ tools/run_phase6_verify.ps1
 
 ## §10 禁止偷懒清单（Reviewer 打印打勾）
 
-1. 禁止 MPC = Stanley/PP 换皮  
+1. 禁止 MPC = Stanley/PP 换皮（须有预测时域 + 非平凡代价/矩阵断言）  
 2. 禁止 ST-Graph = 距离停车  
-3. 禁止 Domain 含 Qt / rclcpp  
-4. 禁止切换 UI 塞进 ControlPanel / MainWindow  
-5. 禁止新 Domain 类无 GTest  
-6. 禁止削 CMake `target_include_directories` / `target_link_libraries`  
-7. 禁止 EXPORT 未导出的 FetchContent 目标  
-8. 禁止完整 Autoware / nav2 / 大非线性 MPC / 感知仿真  
-9. 禁止破坏 TimeWindow / Hybrid / Stanley / Priority 无 ADR  
-10. 禁止 SESSION_LOG 缺「没做什么」  
-11. 禁止不加 CMakeLists 就加源文件  
-12. 禁止跳过四角色监督  
-13. 禁止 horizon 过大无失败/超时策略  
-14. 禁止中文 Temp 单测假红  
+3. 禁止 ST 只写类不接线 / 只用 `speed_scale` 冒充交付  
+4. 禁止 Domain 含 Qt / rclcpp  
+5. 禁止切换 UI 塞进 ControlPanel / MainWindow  
+6. 禁止新 Domain 类无 GTest  
+7. 禁止削 CMake `target_include_directories` / `target_link_libraries`  
+8. 禁止 EXPORT 未导出的 FetchContent 目标  
+9. 禁止完整 Autoware / nav2 / 大非线性 MPC / 感知仿真  
+10. 禁止破坏 TimeWindow / Hybrid / Stanley / Priority 无 ADR  
+11. 禁止 SESSION_LOG 缺「没做什么」 / 缺四角色结论  
+12. 禁止不加 CMakeLists 就加源文件  
+13. 禁止跳过四角色监督  
+14. 禁止 horizon 过大无失败/超时策略  
+15. 禁止中文 Temp 单测假红  
+16. 禁止「写 ADR 说不做」规避 ST 读他车的最低接线合同
 
 ---
 
@@ -395,12 +415,12 @@ tools/run_phase6_verify.ps1
 
 | 层级 | 要求 |
 |------|------|
-| 单元 MPC | 直道横偏下降；限舵；QP/求解失败路径；低速不 NaN |
+| 单元 MPC | 直道横偏下降；限舵；QP/求解失败路径；低速不 NaN；**断言 A/B 或代价项非平凡** |
 | 对比 | 同弯道：MPC 与 Stanley 横偏曲线可比较（不必处处更优，但行为可区分） |
-| 单元 ST | 静态障碍 ST 占位；他车横穿 → 减速/等待剖面；空障碍退化为匀速 |
+| 单元 ST | 静态障碍 ST 占位；他车横穿 → 减速/等待剖面；空障碍退化为匀速；**清空他车障碍输入须改变剖面** |
 | 回归 | DiffDrive、MultiAgv、Hybrid*、Stanley*、Priority*、PlannerSwitch*、domain_smoke |
-| 集成 | load→plan→(ST)→mpc tick→弯道姿态；Dialog 切换 tracker |
-| 突变 | M31 MPC 预测矩阵符号；M32 ST 忽略他车占位；M33 QP 权重全 0 |
+| 集成 | load→plan→ST 接线→mpc tick→弯道姿态；Dialog 切换 tracker；`speed_planner=st_graph` 时 SimEngine 必调用 ST |
+| 突变 | M31 MPC 预测矩阵/代价退化；M32 ST 忽略他车占位；M33 QP 权重全 0 |
 
 ---
 
