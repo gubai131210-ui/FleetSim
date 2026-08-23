@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <deque>
 
 namespace fleetsim::domain::experiment {
 
@@ -35,6 +36,7 @@ public:
 private:
     std::size_t max_samples_{500};
     std::size_t tick_count_{0};
+    std::deque<TickSample> samples_;
 };
 
 }  // namespace fleetsim::domain::experiment

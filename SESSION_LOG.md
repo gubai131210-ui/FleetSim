@@ -11,6 +11,37 @@
 
 ---
 
+## [2026-08-23] Phase 7 Session 3 — ExperimentMetrics 聚合 + 单测转绿
+
+### 本次 Scope
+- **目标**：`ExperimentMetrics` 滚动窗口 + `RunSummary` 聚合；`ExperimentMetricsTest` 转绿
+- **允许改动**：`src/domain/experiment/ExperimentMetrics.*`
+- **NOT DO**：UI / MonitorBridge / ExperimentComparePanel（S5）；scenario
+
+### ✅ 已完成
+- [x] `recordTick` 滚动窗口（`std::deque`，`max_samples` 上限）
+- [x] `summarize`：mean |cross-track|、mean |heading|、min ST ref v、MPC solve rate
+- [x] `ExperimentMetricsTest` 3/3 PASSED
+- [x] **FleetSimTests 114/114 PASSED**
+
+### ❌ 未完成 / 故意不做
+| 项目 | 计划 |
+|------|------|
+| MonitorBridge / ExperimentComparePanel 接线 | Session 5 |
+| AlgorithmWorkbenchDialog | Session 4 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner/Executor | 仅 Domain metrics |
+| Tester | **PASS** 114/114 |
+| Reviewer | **PASS** Domain 零 Qt |
+
+### 下次会话
+- Session 4：AlgorithmWorkbenchDialog 四页 + scenario prediction UI 字段
+
+---
+
 ## [2026-08-23] Phase 7 Session 2 — SimEngine prediction 接线 + wiring 测
 
 ### 本次 Scope（Planner mini-plan）
