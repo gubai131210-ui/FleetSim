@@ -18,7 +18,8 @@ public slots:
     void appendSample(double sim_time_s,
                       double cross_track_error_m,
                       double heading_error_rad,
-                      double linear_velocity_mps);
+                      double linear_velocity_mps,
+                      double st_reference_speed_mps);
     void clearSamples();
 
 private:
@@ -31,6 +32,7 @@ private:
     QVector<double> cross_track_series_;
     QVector<double> heading_series_;
     QVector<double> velocity_series_;
+    QVector<double> st_speed_series_;
     static constexpr std::size_t kMaxPoints = 500;
 };
 

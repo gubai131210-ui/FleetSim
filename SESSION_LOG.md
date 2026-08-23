@@ -11,6 +11,63 @@
 
 ---
 
+## [2026-08-23] Phase 6 Session 6 — E2E / MUTATION / 终审 / Phase6 ✅
+
+### ✅ 已完成
+- [x] MUTATION M31–M33；`verify_phase6_evidence.py` + `run_phase6_verify.ps1`（31 PASS）
+- [x] DEVELOPMENT_PLAN Phase 6 ✅
+- [x] ASCII `D:\build\FleetSim_phase6_s0`：**FleetSimTests 104/104 PASSED**
+- [x] 四角色终审 PASS（见下）
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 |
+|------|------|
+| 手工实跑变异注入 | 清单已写；可选后续 |
+| 完整 Autoware / OSQP | Phase6 明确不做 |
+
+### 四角色终审
+| 角色 | 结论 |
+|------|------|
+| Planner | A–J 范围已覆盖 Session0–6 |
+| Executor | 代码/文档/测例齐 |
+| Tester | **PASS**：静态 31 + 运行时 104/104 |
+| Reviewer | **PASS**：§10 + 防回归；无假 MPC/假 ST |
+
+### 证据
+- exe: `D:\build\FleetSim_phase6_s0\FleetSimTests.exe`
+- gtest: 104 tests, 0 failures, EXIT=0
+- xml: `D:\build\FleetSim_phase6_s0\gtest_results.xml`
+- static: `python tools/verify_phase6_evidence.py` → 31 PASS
+
+### 用户本地验证
+1. `git pull origin main`
+2. 可选：`pwsh -File tools/run_phase6_verify.ps1`
+3. Qt Creator Configure → Build；或 ASCII `D:\build\FleetSim_phase6`
+4. 跑 `FleetSimTests`；Open `assets/scenarios/mpc_st_demo`；Dialog 切 mpc / ST-Graph；看 Monitor ST ref v
+
+---
+
+## [2026-08-23] Phase 6 Session 5 — Monitor ST 速度曲线 + mpc_st_demo
+
+### ✅ 已完成
+- [x] MonitorBridge/Panel：Actual v + **ST ref v** 双曲线
+- [x] `assets/scenarios/mpc_st_demo`（tracker=mpc, speed_planner=st_graph）
+- [x] panels/README 更新
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| 独立 MpcStGraphDialog | 已并入 PlannerTrackerDialog | 不做 |
+| MUTATION / Phase6 ✅ | Session 6 | Session 6 |
+
+### 四角色
+| 角色 | 结论 |
+|------|------|
+| Planner/Executor | Monitor ST 曲线 + 资产 |
+| Tester/Reviewer | 随 Session6 终审 |
+
+---
+
 ## [2026-08-23] Phase 6 Session 4 — SimEngine ST 强制接线 + 多车合同
 
 ### 本次 Scope（Planner）

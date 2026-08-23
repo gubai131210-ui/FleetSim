@@ -35,12 +35,21 @@
 | M28 | `HybridAStarPlanner.cpp` / 扩展步 | `motion_resolution` 符号取反或舵角全 0 | `HybridAStarPlannerTest` / `PlannerSwitch*` |
 | M29 | `StanleyTracker.cpp` / k | `k_gain` 取反或忽略横偏项 | `StanleyTrackerTest` |
 | M30 | `PriorityPathCoordinator` / 顺序 | 忽略高优先级，低优先级先占走廊 | `PriorityCoordinatorTest.LowerPriorityDetours*` |
+| M31 | `MpcLateralTracker.cpp` / A,B | 将预测矩阵 A 或 B 置零 | `MpcLateralTrackerTest.PredictionOrCostNonTrivial` |
+| M32 | `StGraphSpeedPlanner.cpp` / peers | `buildOccupancies` 忽略 peers（空列表） | `StGraphSpeedPlannerTest.ClearingPeerObstacles*` / `StGraphSimEngineWiringTest.WithPeers*` |
+| M33 | `MpcLateralTracker.cpp` / Q,R | 强制 `q_lat=q_heading=r_steer=0` | `MpcLateralTrackerTest.PredictionOrCostNonTrivial` / `lastCostNonTrivial` |
 
 ## Phase 5 变异说明
 
 - M28：证明 Hybrid 做了运动学扩展而非栅格 A* 换皮  
 - M29：证明 Stanley 含前轴横偏项，非 Pure Pursuit 换皮  
 - M30：证明 Priority 尊重高优先级轨迹占用  
+
+## Phase 6 变异说明
+
+- M31：证明 MPC 使用非平凡预测矩阵，非 Stanley 换皮  
+- M32：证明 ST 消费他车 Path 占用，非距离停车 / 忽略 peers  
+- M33：证明代价权重非平凡（Q/R），权重全 0 须被测抓住  
 
 ## 执行记录模板
 

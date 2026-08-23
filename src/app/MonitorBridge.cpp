@@ -1,6 +1,7 @@
 #include "MonitorBridge.h"
 
 #include "core/types/Waypoint.h"
+#include "domain/vehicle/FleetManager.h"
 
 #include <nlohmann/json.hpp>
 
@@ -52,7 +53,34 @@ void MonitorBridge::bind()
         double cross_track = 0.0;
         double heading_error = 0.0;
         computePathErrors(x, y, theta, &cross_track, &heading_error);
-        emit sampleReady(sim_time_s_, cross_track, heading_error, linear_velocity);
+
+        double st_ref_speed = linear_velocity;
+        const auto& engine = controller_->engine();
+        const domain::vehicle::VehicleAgent* agent = nullptr;
+        if (!engine.selectedVehicleId().empty()) {
+            agent = engine.fleet().findAgent(engine.selectedVehicleId());
+        }
+        if (agent == nullptr) {
+            agent = engine.fleet().primaryAgent();
+        }
+        if (agent != nullptr && agent->speed_profile.speeds.size() == agent->reference_path.size() &&
+            !agent->reference_path.empty()) {
+            std::size_t best = 0;
+            double best_d2 = std::numeric_limits<double>::infinity();
+            const auto& w = agent->reference_path.waypoints();
+            for (std::size_t i = 0; i < w.size(); ++i) {
+                const double dx = x - w[i].x;
+                const double dy = y - w[i].y;
+                const double d2 = dx * dx + dy * dy;
+                if (d2 < best_d2) {
+                    best_d2 = d2;
+                    best = i;
+                }
+            }
+            st_ref_speed = agent->speed_profile.speeds[best];
+        }
+
+        emit sampleReady(sim_time_s_, cross_track, heading_error, linear_velocity, st_ref_speed);
     });
 }
 

@@ -20,7 +20,8 @@ signals:
     void sampleReady(double sim_time_s,
                      double cross_track_error_m,
                      double heading_error_rad,
-                     double linear_velocity_mps);
+                     double linear_velocity_mps,
+                     double st_reference_speed_mps);
 
 private:
     void computePathErrors(double x_m,
