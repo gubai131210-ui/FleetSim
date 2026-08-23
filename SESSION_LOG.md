@@ -20,6 +20,13 @@
 - [x] `DEVELOPMENT_PLAN` / `learning-path` Phase 8 ✅
 - [x] 四角色终审 PASS（静态证据；runtime 待用户 ASCII/Qt Build）
 
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 |
+|------|------|
+| Agent 代跑 FleetSimTests ASCII Build | 环境缺 Qt6；由用户本地验证 |
+| M37–M39 手工变异执行记录 | 登记说明；执行留作后续 harness |
+| Phase 9 BT / Lanelet2 | 明确 scope 外 |
+
 ### 四角色终审
 | 角色 | 结论 |
 |------|------|
