@@ -11,6 +11,44 @@
 
 ---
 
+## [2026-08-23] Phase 6 Session 3 — StGraphSpeedPlanner 真 ST-Graph MVP
+
+### 本次 Scope（Planner）
+- 目标：他车投影 (s,t) 占用 + 减速剖面；`StGraphSpeedPlannerTest` 全绿
+- NOT DO：SimEngine 接线、UI、距离停车、改 SpeedProfile 合同
+
+### ✅ 已完成
+- [x] 自车弧长累积；peer 投影到 ego 得 (s_hit,t)；ST 占用块
+- [x] 自由流与占用相交则冲突前减速并恢复（非单点硬停）
+- [x] `StGraphSpeedPlannerTest` **4/4 PASS**；ADR-015 → 已接受
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| SimEngine `speed_planner=st_graph` | Session 4 | Session 4 |
+| 多车「忽略他车须 FAIL」集成测 | Session 4 | Session 4 |
+| Monitor ST 曲线 | Session 5 | Session 5 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | mini-plan：投影 + 占用避让减速 |
+| Executor | 按 plan 实装 |
+| Tester | **PASS**（agent `abf3193a`；读 peers + (s,t) 投影；4/4） |
+| Reviewer | **PASS**（agent `abf3193a`；未越界 SimEngine/UI） |
+
+### 构建取证
+- `D:\build\FleetSim_phase6_s0`：`StGraphSpeedPlannerTest.*` **4/4 PASSED**
+
+### 用户本地验证
+1. `git pull`；Build；过滤 `StGraph*` 应全绿
+2. MPC/Stanley/Hybrid 回归应仍绿
+
+### 下次会话
+- Session 4：SimEngine 强制接线 ST + 多车回归
+
+---
+
 ## [2026-08-23] Phase 6 Session 2 — SimEngine/Dialog `tracker=mpc` + vs Stanley
 
 ### 本次 Scope（Planner）

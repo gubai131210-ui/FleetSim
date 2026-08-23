@@ -70,9 +70,16 @@ TEST(StGraphSpeedPlannerTest, PeerCrossingProducesDecelerationNotDistanceStop)
     EXPECT_LT(v_min, 0.5 - 1e-3)
         << "Expected ST deceleration near crossing; stub ignores peers (red light)";
 
-    // Anti distance-stop: must not be a single hard zero only at one cell without
-    // a preceding slow-down trend (Session 3 strengthens this). Soft check:
+    // Anti distance-stop: continuous approach, not a lone hard zero cell.
     EXPECT_GT(v_min, -1e-9);
+    bool has_mid_slow = false;
+    for (std::size_t i = 1; i + 1 < with_peer.speeds.size(); ++i) {
+        if (with_peer.speeds[i] < 0.5 - 1e-3) {
+            has_mid_slow = true;
+            break;
+        }
+    }
+    EXPECT_TRUE(has_mid_slow) << "Expected a deceleration segment, not only endpoints";
 }
 
 TEST(StGraphSpeedPlannerTest, ClearingPeerObstaclesChangesProfile)

@@ -2,7 +2,7 @@
 
 ## 状态
 
-草案（2026-08-23，Phase 6 Session 0；Session 3 实装 ST；Session 4 引擎强制接线）
+已接受（2026-08-23，Phase 6 Session 0 草案；**Session 3 已实装** ST-Graph MVP；Session 4 引擎强制接线）
 
 ## 背景
 

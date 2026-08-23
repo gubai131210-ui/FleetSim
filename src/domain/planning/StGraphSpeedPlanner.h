@@ -7,14 +7,14 @@
 
 namespace fleetsim::domain::planning {
 
-/// Known peer along a geometric path (ADR-015). Session 3+ projects into ST.
+/// Known peer along a geometric path (ADR-015).
 struct PeerTrajectory {
     core::Path path;
     double nominal_speed{0.5};  // m/s along peer path
 };
 
-/// ST-Graph speed planner stub (ADR-015). Session 0: cruise-filled profile,
-/// does NOT read peers into (s,t) obstacles. Real ST lands in Session 3–4.
+/// ST-Graph speed planner (ADR-015): project peers into (s,t) blocks and
+/// produce an equal-length SpeedProfile. Not Euclidean distance-stop.
 class StGraphSpeedPlanner {
 public:
     explicit StGraphSpeedPlanner(double v_max = 0.5,
@@ -29,6 +29,24 @@ public:
     double dtGrid() const { return dt_grid_; }
 
 private:
+    struct Occupancy {
+        double s_min{0.0};
+        double s_max{0.0};
+        double t_min{0.0};
+        double t_max{0.0};
+    };
+
+    static std::vector<double> cumulativeArcLength(const core::Path& path);
+    static bool projectOntoPath(const core::Path& path,
+                                double x,
+                                double y,
+                                double* s_out,
+                                double* lateral_out);
+    std::vector<Occupancy> buildOccupancies(
+        const core::Path& ego_path,
+        const std::vector<double>& ego_s,
+        const std::vector<PeerTrajectory>& peers) const;
+
     double v_max_;
     double a_max_;
     double dt_grid_;
