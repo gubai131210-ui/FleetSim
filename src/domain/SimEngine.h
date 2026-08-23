@@ -61,14 +61,14 @@ public:
     void setPlannerKind(const std::string& kind);
     const std::string& plannerKind() const { return planner_kind_; }
 
-    /// tracker: "pure_pursuit" | "stanley" | "auto" (Session 3 wires stanley).
+    /// tracker: "pure_pursuit" | "stanley" | "mpc" | "auto" (mpc never from auto).
     void setTrackerKind(const std::string& kind);
     const std::string& trackerKind() const { return tracker_kind_; }
 
     /// Resolved planner for a vehicle given current kind + model defaults (ADR-011).
     std::string resolvedPlannerKind(const vehicle::Vehicle& vehicle) const;
 
-    /// Resolved tracker for a vehicle (ADR-012). auto → pure_pursuit.
+    /// Resolved tracker (ADR-012/014). auto → pure_pursuit; mpc must be explicit.
     std::string resolvedTrackerKind(const vehicle::Vehicle& vehicle) const;
 
     /// coordination: "priority" | "none" (empty → priority).

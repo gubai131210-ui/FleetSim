@@ -35,6 +35,21 @@ TEST(ScenarioSerializerTest, RoundTripPlannerTrackerFields)
     EXPECT_EQ(loaded.simulation.tracker, "stanley");
 }
 
+TEST(ScenarioSerializerTest, RoundTripTrackerMpc)
+{
+    ScenarioData scenario;
+    scenario.simulation.dt_s = 0.05;
+    scenario.simulation.realtime = false;
+    scenario.simulation.planner = "hybrid_astar";
+    scenario.simulation.tracker = "mpc";
+
+    const nlohmann::json json = ScenarioSerializer::toJson(scenario);
+    EXPECT_EQ(json["simulation"]["tracker"], "mpc");
+
+    const ScenarioData loaded = ScenarioSerializer::fromJson(json, "/tmp/scenario");
+    EXPECT_EQ(loaded.simulation.tracker, "mpc");
+}
+
 TEST(ScenarioSerializerTest, RoundTripVehicleConfig)
 {
     ScenarioData scenario;

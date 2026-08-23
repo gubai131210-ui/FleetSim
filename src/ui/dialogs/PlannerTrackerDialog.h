@@ -9,7 +9,7 @@ namespace fleetsim::ui {
 
 struct PlannerTrackerSettings {
     QString planner{"auto"};          // auto | astar | hybrid_astar
-    QString tracker{"auto"};          // auto | pure_pursuit | stanley
+    QString tracker{"auto"};          // auto | pure_pursuit | stanley | mpc
     QString coordination{"priority"}; // priority | none
 };
 

@@ -16,7 +16,7 @@ PlannerTrackerDialog::PlannerTrackerDialog(QWidget* parent)
 
     auto* layout = new QVBoxLayout(this);
     layout->addWidget(new QLabel(
-        tr("Path planner, path tracker, and multi-vehicle coordination (Phase 5)."), this));
+        tr("Path planner, path tracker, and multi-vehicle coordination."), this));
 
     auto* form = new QFormLayout();
 
@@ -30,6 +30,7 @@ PlannerTrackerDialog::PlannerTrackerDialog(QWidget* parent)
     tracker_combo_->addItem(tr("Auto (Pure Pursuit)"), QStringLiteral("auto"));
     tracker_combo_->addItem(tr("Pure Pursuit"), QStringLiteral("pure_pursuit"));
     tracker_combo_->addItem(tr("Stanley"), QStringLiteral("stanley"));
+    tracker_combo_->addItem(tr("MPC (linear lateral)"), QStringLiteral("mpc"));
     form->addRow(tr("Tracker"), tracker_combo_);
 
     coordination_combo_ = new QComboBox(this);

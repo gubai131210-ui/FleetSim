@@ -17,6 +17,7 @@ add_executable(FleetSimTests
     domain/StanleyTrackerTest.cpp
     domain/MpcLateralTrackerTest.cpp
     domain/DenseQpSolverTest.cpp
+    domain/MpcVsStanleyCompareTest.cpp
     domain/StGraphSpeedPlannerTest.cpp
     domain/SteeringAdapterTest.cpp
     domain/VehicleTest.cpp

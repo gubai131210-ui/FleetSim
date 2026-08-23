@@ -15,7 +15,7 @@ struct SimulationConfig {
     bool realtime{false};
     /// "astar" | "hybrid_astar" | empty/"auto" (bicycle → hybrid_astar, else astar).
     std::string planner;
-    /// "pure_pursuit" | "stanley" | empty/"auto" (Session 3 wires stanley).
+    /// "pure_pursuit" | "stanley" | "mpc" | empty/"auto" (mpc never from auto).
     std::string tracker;
     /// "priority" | "none" | empty → priority (ADR-013).
     std::string coordination;

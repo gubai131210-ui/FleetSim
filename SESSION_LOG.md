@@ -11,6 +11,49 @@
 
 ---
 
+## [2026-08-23] Phase 6 Session 2 — SimEngine/Dialog `tracker=mpc` + vs Stanley
+
+### 本次 Scope（Planner）
+- 目标：接入 `tracker=mpc`；Dialog 可切换；`MpcVsStanleyCompareTest`；auto 永不推 mpc
+- 允许：SimEngine、PlannerTrackerDialog、scenario 注释、对比/切换/序列化测、CMake、SESSION_LOG、ADR-014 注记
+- NOT DO：真 ST、Monitor 新曲线、OSQP、默认场景改 mpc、堆 ControlPanel
+
+### ✅ 已完成
+- [x] `resolvedTrackerKind`：显式 `mpc`；`auto`→`pure_pursuit`
+- [x] `tick` mpc 分支调用真 `MpcLateralTracker::compute`
+- [x] Dialog Tracker 增「MPC (linear lateral)」
+- [x] `MpcVsStanleyCompareTest`（舵角可区分 + 非平凡代价）
+- [x] `TrackerKindMpcResolvesExplicitly`；`RoundTripTrackerMpc`
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| ST 真实现 / SimEngine 接线 | Session 3–4 | Session 3–4 |
+| Monitor MPC/ST 曲线 | Session 5 | Session 5 |
+| 弯道闭环对比强化 | 直道已够反换皮 | 可选后续 |
+| setSpeedProfile 引擎接线 | 依赖 ST | Session 4 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | mini-plan：resolved/tick/Dialog/对比测 |
+| Executor | 按 plan 接线 + 测 |
+| Tester | **PASS**（agent `ca4da096`；tick 真调 MPC；auto≠mpc） |
+| Reviewer | 初审 FAIL（缺 SESSION_LOG）→ 复审 **PASS**（agent `d8b17455`） |
+
+### 构建取证
+- `D:\build\FleetSim_phase6_s0`：过滤测含 MpcVsStanley / TrackerKind* / RoundTripTrackerMpc / MpcLateral* → **PASSED**（EXIT=0）
+
+### 用户本地验证
+1. `git pull`；Build
+2. File → Planner/Tracker → 选 MPC；观察舵角与 Stanley 不同
+3. 过滤：`MpcVsStanley*`、`TrackerKindMpc*` 应绿；`StGraph*` 仍可红
+
+### 下次会话
+- Session 3：`StGraphSpeedPlanner` 真 (s,t) + 他车障碍单测转绿
+
+---
+
 ## [2026-08-23] Phase 6 Session 1 — MpcLateralTracker 线性化 + Eigen 稠密 QP
 
 ### 本次 Scope（Planner）

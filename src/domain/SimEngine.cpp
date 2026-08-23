@@ -1,6 +1,7 @@
 #include "SimEngine.h"
 
 #include "collision/PriorityPathCoordinator.h"
+#include "control/MpcLateralTracker.h"
 #include "control/StanleyTracker.h"
 #include "planning/HybridAStarPlanner.h"
 
@@ -166,10 +167,11 @@ std::string SimEngine::resolvedPlannerKind(const vehicle::Vehicle& vehicle) cons
 
 std::string SimEngine::resolvedTrackerKind(const vehicle::Vehicle& /*vehicle*/) const
 {
-    if (tracker_kind_ == "stanley" || tracker_kind_ == "pure_pursuit") {
+    if (tracker_kind_ == "stanley" || tracker_kind_ == "pure_pursuit" ||
+        tracker_kind_ == "mpc") {
         return tracker_kind_;
     }
-    // auto → Pure Pursuit (DiffDrive regression + bicycle_demo default).
+    // auto / unknown → Pure Pursuit; mpc never implied by auto (ADR-014).
     return "pure_pursuit";
 }
 
@@ -409,18 +411,20 @@ void SimEngine::tick(double dt)
 
         core::ControlCommand command;
         const std::string tracker_kind = resolvedTrackerKind(*agent.vehicle);
+        const double max_steer =
+            agent.vehicle->isBicycle() ? agent.vehicle->maxSteeringRad() : 0.6;
+        const double wheelbase =
+            agent.vehicle->isBicycle() ? agent.vehicle->wheelbaseM() : 0.8;
         if (tracker_kind == "stanley") {
             // Rebuild with vehicle geometry so δ limits / wheelbase match the agent.
-            control::StanleyTracker stanley(
-                1.5,
-                0.1,
-                agent.vehicle->isBicycle() ? agent.vehicle->maxSteeringRad() : 0.6,
-                agent.vehicle->isBicycle() ? agent.vehicle->wheelbaseM() : 0.8,
-                0.5);
+            control::StanleyTracker stanley(1.5, 0.1, max_steer, wheelbase, 0.5);
             command = stanley.compute(agent.vehicle->pose(), agent.reference_path, dt);
-            if (!agent.vehicle->isBicycle()) {
-                // DiffDrive uses ω; Stanley already fills angular_velocity from δ.
-            }
+        } else if (tracker_kind == "mpc") {
+            // Explicit mpc only (ADR-014); cruise until Session 4 wires SpeedProfile.
+            const double mpc_dt = (dt > 1e-6) ? dt : 0.05;
+            control::MpcLateralTracker mpc(
+                10, mpc_dt, 2.0, 2.0, 0.5, max_steer, wheelbase, 0.5);
+            command = mpc.compute(agent.vehicle->pose(), agent.reference_path, dt);
         } else if (agent.vehicle->isBicycle()) {
             command = pure_pursuit_tracker_.compute(agent.vehicle->pose(),
                                                     agent.reference_path,

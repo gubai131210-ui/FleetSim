@@ -2,7 +2,7 @@
 
 ## 状态
 
-已接受（2026-08-23，Phase 6 Session 0 草案；**Session 1 已实装**线性化 + Eigen 稠密箱约束 QP；Session 2 引擎接线）
+已接受（2026-08-23，Phase 6 Session 0 草案；Session 1 实装线性化 + Eigen 稠密箱约束 QP；**Session 2 引擎/Dialog 接线 `tracker=mpc`**）
 
 ## 背景
 

@@ -68,6 +68,23 @@ TEST(PlannerSwitchIntegrationTest, TrackerKindStanleyResolvesAndDiffersFromPureP
     EXPECT_EQ(engine.resolvedTrackerKind(*vehicle), "pure_pursuit");
 }
 
+TEST(PlannerSwitchIntegrationTest, TrackerKindMpcResolvesExplicitly)
+{
+    SimEngine engine;
+    auto model = fleetsim::domain::vehicle::createVehicleModel("bicycle", 0.5, 1.0, 0.8, 0.6);
+    auto vehicle = std::make_unique<Vehicle>("car_0", 1.2, Pose{0.0, 0.0, 0.0}, std::move(model));
+    vehicle->setModelKind("bicycle");
+    vehicle->setWheelbaseM(0.8);
+    vehicle->setMaxSteeringRad(0.6);
+
+    engine.setTrackerKind("mpc");
+    EXPECT_EQ(engine.resolvedTrackerKind(*vehicle), "mpc");
+
+    engine.setTrackerKind("auto");
+    EXPECT_EQ(engine.resolvedTrackerKind(*vehicle), "pure_pursuit");
+    EXPECT_NE(engine.resolvedTrackerKind(*vehicle), "mpc");
+}
+
 TEST(PlannerSwitchIntegrationTest, BicycleAutoDefaultsToHybridAstar)
 {
     SimEngine engine;
