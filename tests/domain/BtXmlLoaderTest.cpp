@@ -7,6 +7,8 @@
 #include <gtest/gtest.h>
 
 #include <filesystem>
+#include <fstream>
+#include <sstream>
 #include <memory>
 #include <string>
 #include <vector>
@@ -49,6 +51,19 @@ std::string xmlAssetPath()
 
 }  // namespace
 
+TEST(BtXmlLoaderTest, LoadsSingleActionXml)
+{
+    const std::string xml = R"(<?xml version="1.0"?>
+<root main_tree_to_execute="T">
+  <BehaviorTree ID="T">
+    <Action ID="PlanPath"/>
+  </BehaviorTree>
+</root>)";
+    BtXmlLoadError error;
+    const auto root = BtXmlLoader::loadFromXmlString(xml, &error);
+    ASSERT_TRUE(root.has_value()) << error.message;
+}
+
 TEST(BtXmlLoaderTest, UnknownTagFailsLoad)
 {
     const std::string xml = R"(<?xml version="1.0"?>
@@ -65,8 +80,13 @@ TEST(BtXmlLoaderTest, UnknownTagFailsLoad)
 
 TEST(BtXmlLoaderTest, LoadsNavigateSpinBackupAsset)
 {
+    std::ifstream input(xmlAssetPath());
+    ASSERT_TRUE(input.is_open());
+    std::ostringstream buffer;
+    buffer << input.rdbuf();
+
     BtXmlLoadError error;
-    const auto root = BtXmlLoader::loadFromFile(xmlAssetPath(), &error);
+    const auto root = BtXmlLoader::loadFromXmlString(buffer.str(), &error);
     ASSERT_TRUE(root.has_value()) << error.message;
     EXPECT_FALSE(root.value()->name().empty());
 }

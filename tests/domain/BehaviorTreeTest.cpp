@@ -13,6 +13,7 @@
 
 using fleetsim::domain::behavior::BtBlackboard;
 using fleetsim::domain::behavior::BtFallbackNode;
+using fleetsim::domain::behavior::BtReactiveFallbackNode;
 using fleetsim::domain::behavior::BtNavigator;
 using fleetsim::domain::behavior::BtNode;
 using fleetsim::domain::behavior::BtNodePtr;
@@ -126,6 +127,40 @@ TEST(BehaviorTreeTest, FallbackAllFailureReturnsFailure)
 
     BtFallbackNode fb("FbAllFail", std::move(children));
     EXPECT_EQ(fb.tick(bb), NodeStatus::Failure);
+}
+
+TEST(BehaviorTreeTest, ReactiveFallbackReevaluatesConditionsWhileActionRunning)
+{
+    class DelayedSuccessCondition final : public BtNode {
+    public:
+        NodeStatus tick(BtBlackboard& /*blackboard*/) override
+        {
+            return (++ticks_ >= 2) ? NodeStatus::Success : NodeStatus::Failure;
+        }
+        std::string name() const override { return "GoalReady"; }
+        BtNodeType type() const override { return BtNodeType::Condition; }
+
+    private:
+        int ticks_{0};
+    };
+
+    BtBlackboard reactive_bb;
+    std::vector<BtNodePtr> reactive_children;
+    reactive_children.push_back(std::make_unique<DelayedSuccessCondition>());
+    reactive_children.push_back(makeLeaf("LongAction", NodeStatus::Running));
+    BtReactiveFallbackNode reactive("Reactive", std::move(reactive_children));
+
+    EXPECT_EQ(reactive.tick(reactive_bb), NodeStatus::Running);
+    EXPECT_EQ(reactive.tick(reactive_bb), NodeStatus::Success);
+
+    BtBlackboard fallback_bb;
+    std::vector<BtNodePtr> fallback_children;
+    fallback_children.push_back(std::make_unique<DelayedSuccessCondition>());
+    fallback_children.push_back(makeLeaf("LongAction", NodeStatus::Running));
+    BtFallbackNode fallback("Fallback", std::move(fallback_children));
+
+    EXPECT_EQ(fallback.tick(fallback_bb), NodeStatus::Running);
+    EXPECT_EQ(fallback.tick(fallback_bb), NodeStatus::Running);
 }
 
 TEST(BehaviorTreeTest, RecoveryPrimaryFailThenRecoverySuccessRetriesPrimary)

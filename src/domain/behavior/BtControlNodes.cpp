@@ -70,7 +70,30 @@ BtFallbackNode::BtFallbackNode(std::string name, std::vector<BtNodePtr> children
 NodeStatus BtFallbackNode::tick(BtBlackboard& blackboard)
 {
     blackboard.setString(BbKey::kActiveNodeName, name_);
-    return tickChildrenFallback(children_, blackboard, active_child_name_);
+    active_child_name_.clear();
+
+    if (children_.empty()) {
+        resume_running_child_ = false;
+        return NodeStatus::Failure;
+    }
+
+    const std::size_t start_index = resume_running_child_ ? running_child_index_ : 0;
+    for (std::size_t i = start_index; i < children_.size(); ++i) {
+        active_child_name_ = children_[i]->name();
+        const NodeStatus status = children_[i]->tick(blackboard);
+        if (status == NodeStatus::Success) {
+            resume_running_child_ = false;
+            return NodeStatus::Success;
+        }
+        if (status == NodeStatus::Running) {
+            running_child_index_ = i;
+            resume_running_child_ = true;
+            return NodeStatus::Running;
+        }
+    }
+
+    resume_running_child_ = false;
+    return NodeStatus::Failure;
 }
 
 BtRecoveryNode::BtRecoveryNode(std::string name,
@@ -135,10 +158,35 @@ BtRoundRobinNode::BtRoundRobinNode(std::string name, std::vector<BtNodePtr> chil
 {
 }
 
-NodeStatus BtRoundRobinNode::tick(BtBlackboard& /*blackboard*/)
+NodeStatus BtRoundRobinNode::tick(BtBlackboard& blackboard)
 {
-    // Session 0 stub — Session 2 implements rotation semantics.
+    blackboard.setString(BbKey::kActiveNodeName, name_);
     active_child_name_.clear();
+
+    if (children_.empty()) {
+        return NodeStatus::Failure;
+    }
+
+    if (current_index_ >= children_.size()) {
+        current_index_ = 0;
+    }
+
+    for (std::size_t i = current_index_; i < children_.size(); ++i) {
+        active_child_name_ = children_[i]->name();
+        const NodeStatus status = children_[i]->tick(blackboard);
+        if (status == NodeStatus::Success) {
+            current_index_ = std::min(i + 1, children_.size() - 1);
+            return NodeStatus::Success;
+        }
+        if (status == NodeStatus::Running) {
+            current_index_ = i;
+            return NodeStatus::Running;
+        }
+
+        current_index_ = std::min(i + 1, children_.size() - 1);
+    }
+
+    current_index_ = 0;
     return NodeStatus::Failure;
 }
 
@@ -148,10 +196,26 @@ BtReactiveFallbackNode::BtReactiveFallbackNode(std::string name, std::vector<BtN
 {
 }
 
-NodeStatus BtReactiveFallbackNode::tick(BtBlackboard& /*blackboard*/)
+NodeStatus BtReactiveFallbackNode::tick(BtBlackboard& blackboard)
 {
-    // Session 0 stub — Session 2 implements reactive interrupt semantics.
+    blackboard.setString(BbKey::kActiveNodeName, name_);
     active_child_name_.clear();
+
+    if (children_.empty()) {
+        return NodeStatus::Failure;
+    }
+
+    for (const auto& child : children_) {
+        active_child_name_ = child->name();
+        const NodeStatus status = child->tick(blackboard);
+        if (status == NodeStatus::Success) {
+            return NodeStatus::Success;
+        }
+        if (status == NodeStatus::Running) {
+            return NodeStatus::Running;
+        }
+    }
+
     return NodeStatus::Failure;
 }
 

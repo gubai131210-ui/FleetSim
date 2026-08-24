@@ -35,6 +35,8 @@ private:
     std::string name_;
     std::vector<BtNodePtr> children_;
     std::string active_child_name_;
+    std::size_t running_child_index_{0};
+    bool resume_running_child_{false};
 };
 
 /// Nav2-aligned RecoveryNode: primary child first; on FAILURE tick recovery child.

@@ -11,6 +11,54 @@
 
 ---
 
+## [2026-08-24] Phase 10 Session 2 — BtXmlLoader + RoundRobin + ReactiveFallback
+
+### 本次 Scope（Planner 定义）
+- **目标**：Nav2/BT.CPP 子集 XML 加载；RoundRobin 轮转、ReactiveFallback 重评估、Fallback RUNNING 恢复；`BtXmlLoaderTest` + ReactiveFallback 单测全绿
+- **允许改动**：`BtXmlLoader.cpp`；`BtControlNodes.*`；`BehaviorTreeTest.cpp`；`BtXmlLoaderTest.cpp`；`SESSION_LOG.md`
+- **NOT DO**：Spin/BackUp/ClearInflation 运动学；MultiBt SimEngine 接线；CBS-lite 实装；UI 四件套
+
+### ✅ 已完成
+- [x] **BtXmlLoader** — 手写 XML 解析 `<root>`/`<BehaviorTree>`/控制节点/Action/Condition；修复 `findBehaviorTreeRoot` 悬垂指针（返回 `std::optional<XmlElement>`）
+- [x] **BtRoundRobinNode** — 失败子节点后尝试下一个；成功时推进 index
+- [x] **BtReactiveFallbackNode** — 每 tick 从首子节点重评估（中断语义）
+- [x] **BtFallbackNode** — 恢复 RUNNING 子节点而非重头
+- [x] **BtXmlLoaderTest** — **4/4 PASS**（含 `navigate_spin_backup_recovery.xml` 资产）
+- [x] **BehaviorTreeTest** — `ReactiveFallbackReevaluatesConditionsWhileActionRunning` PASS
+- [x] **全量回归** — **183/187 PASS**（4 红灯：BtMotionRecovery 3 + CbsLite 1，预期 Session 3–5）
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| Spin/BackUp/ClearInflation 运动学 | Session 2 仅 XML/控制节点 | Session 3 |
+| MultiBtNavigator SimEngine 接线 | 依赖 Session 3–4 | Session 4 |
+| CbsLiteCoordinator 实装 | Session 5 scope | Session 5 |
+| UI / demo / verify≥60 | 后续会话 | Session 6–7 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | Session 2 scope：BtXml + 控制节点；NOT DO Motion/CBS/UI |
+| Executor | `BtXmlLoader.cpp` ~530 行；`BtControlNodes` RoundRobin/ReactiveFallback/Fallback 修复 |
+| Tester | **PASS**：BtXmlLoaderTest 4/4；BehaviorTreeTest ReactiveFallback；全量 183/187 |
+| Reviewer | **PASS**（本地）：悬垂指针修复后资产加载稳定；ADR-023 子集对齐 |
+
+### 证据
+- build: `D:\build\FleetSim_phase10_s0\FleetSimTests.exe`
+- gtest: `BtXmlLoaderTest.*` → **4 PASSED**
+- gtest 全量: **183 PASSED, 4 FAILED**（预期红灯）
+
+### 用户本地验证
+1. `git pull origin main`
+2. 重建 `FleetSimTests`（ASCII 路径 `D:\build\FleetSim_phase10_s0`）
+3. `FleetSimTests.exe --gtest_filter=BtXmlLoaderTest.*`（4 PASS）
+4. 全量测预期 183 PASS / 4 FAIL
+
+### 下次会话建议
+- **Session 3**：Spin/BackUp/ClearInflation 运动学 → `BtMotionRecoveryTest` 绿
+
+---
+
 ## [2026-08-24] Phase 10 Session 1 — OsmLaneletImporter 实装
 
 ### 本次 Scope（Planner 定义）
