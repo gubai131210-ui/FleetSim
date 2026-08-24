@@ -11,6 +11,51 @@
 
 ---
 
+## [2026-08-24] Phase 10 Session 5 — CbsLiteCoordinator 真实现 + coordination 切换
+
+### 本次 Scope（Planner 定义）
+- **目标**：depth-bounded CBS-lite（时空冲突检测 → 约束树 → 底层 spacetime A* 重规划）；SimEngine `coordination=cbs_lite`；`CbsLiteCoordinatorTest` 全绿
+- **允许改动**：`CbsLiteCoordinator.*`、`SimEngine.*`、`ScenarioLoader/Serializer.*`、`SimController.cpp`、`SESSION_LOG.md`
+- **NOT DO**：UI 四件套；demo 场景；verify_phase10≥60；完整 EECBS
+
+### ✅ 已完成
+- [x] **CbsLiteCoordinator** — 顶点时空冲突检测；约束 `(agent,t,cell)`；BFS 约束树；spacetime A* 底层重规划（wait+move）
+- [x] **SimEngine** — `usesCbsLiteCoordination()` / `replanFleetWithCbsLiteCoordination()`；与 priority 可切换
+- [x] **Scenario** — `cbs_max_depth` / `cbs_time_limit_ms` 序列化
+- [x] **CbsLiteCoordinatorTest** — **2/2 PASS**
+- [x] **全量回归** — **189/189 PASS**（FleetSimTests 全绿）
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| UI CoordinationPage cbs_lite | Session 6 scope | Session 6 |
+| cbs_lite_demo / osm_lanelet_demo | Session 7 scope | Session 7 |
+| verify_phase10 ≥60 | Session 7 | Session 7 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | Session 5 scope：CBS-lite 真算法 + SimEngine 切换；NOT DO UI/demo |
+| Executor | 约束树 + spacetime replan；非 Priority 换皮 |
+| Tester | **PASS**：CbsLiteCoordinatorTest 2/2；全量 189/189 |
+| Reviewer | **PASS**（本地）：constraints_added>0；depth=0 立即失败；ADR-024 对齐 |
+
+### 证据
+- build: `D:\build\FleetSim_phase10_s0\FleetSimTests.exe`
+- gtest: `CbsLiteCoordinatorTest.*` → **2 PASSED**
+- gtest 全量: **189 PASSED, 0 FAILED**
+
+### 用户本地验证
+1. `git pull origin main`
+2. 重建 `FleetSimTests`
+3. `FleetSimTests.exe --gtest_filter=CbsLiteCoordinatorTest.*`（2 PASS）
+4. 全量测预期 **189 PASS / 0 FAIL**
+
+### 下次会话建议
+- **Session 6**：UI 四件套（OsmImportPanel / MapImportPage / BehaviorXmlPage / MultiAgentBehaviorPanel）
+
+---
+
 ## [2026-08-24] Phase 10 Session 4 — Multi-agent BT 隔离 + SimEngine 接线
 
 ### 本次 Scope（Planner 定义）

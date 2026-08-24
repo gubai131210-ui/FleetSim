@@ -86,6 +86,11 @@ void SimController::applyScenarioToEngine()
     engine_.setRecoveryWaitTicks(scenario_.simulation.recovery_wait_ticks);
     engine_.setBtFormat(scenario_.simulation.bt_format);
 
+    domain::collision::CbsLiteConfig cbs_config;
+    cbs_config.max_depth = scenario_.simulation.cbs_max_depth;
+    cbs_config.time_limit_ms = scenario_.simulation.cbs_time_limit_ms;
+    engine_.setCbsLiteConfig(cbs_config);
+
     for (const auto& vehicle_config : scenario_.vehicles) {
         auto model = domain::vehicle::createVehicleModel(
             vehicle_config.model,

@@ -37,6 +37,8 @@ struct SimulationConfig {
     std::string bt_format{"json"};
     double replan_hz{1.0};
     int recovery_wait_ticks{20};
+    int cbs_max_depth{10};
+    int cbs_time_limit_ms{100};
 };
 
 struct VehicleConfig {

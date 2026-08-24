@@ -46,6 +46,8 @@ ScenarioData ScenarioSerializer::fromJson(const nlohmann::json& json,
     data.simulation.bt_format = simulation.value("bt_format", std::string{"json"});
     data.simulation.replan_hz = simulation.value("replan_hz", 1.0);
     data.simulation.recovery_wait_ticks = simulation.value("recovery_wait_ticks", 20);
+    data.simulation.cbs_max_depth = simulation.value("cbs_max_depth", 10);
+    data.simulation.cbs_time_limit_ms = simulation.value("cbs_time_limit_ms", 100);
 
     for (const auto& vehicle_json : json.at("vehicles")) {
         VehicleConfig vehicle;
@@ -143,6 +145,12 @@ nlohmann::json ScenarioSerializer::toJson(const ScenarioData& scenario)
     }
     if (scenario.simulation.recovery_wait_ticks != 20) {
         json["simulation"]["recovery_wait_ticks"] = scenario.simulation.recovery_wait_ticks;
+    }
+    if (scenario.simulation.cbs_max_depth != 10) {
+        json["simulation"]["cbs_max_depth"] = scenario.simulation.cbs_max_depth;
+    }
+    if (scenario.simulation.cbs_time_limit_ms != 100) {
+        json["simulation"]["cbs_time_limit_ms"] = scenario.simulation.cbs_time_limit_ms;
     }
 
     nlohmann::json tasks = nlohmann::json::array();

@@ -216,7 +216,17 @@ void SimEngine::setCoordinationKind(const std::string& kind)
 
 bool SimEngine::usesPriorityCoordination() const
 {
-    return coordination_kind_ != "none";
+    return coordination_kind_ == "priority" || coordination_kind_.empty();
+}
+
+bool SimEngine::usesCbsLiteCoordination() const
+{
+    return coordination_kind_ == "cbs_lite";
+}
+
+void SimEngine::setCbsLiteConfig(const collision::CbsLiteConfig& config)
+{
+    cbs_lite_config_ = config;
 }
 
 void SimEngine::setSpeedPlannerKind(const std::string& kind)
@@ -686,6 +696,49 @@ void SimEngine::replanFleetWithPriorityCoordination()
     refreshSpeedProfiles();
 }
 
+void SimEngine::replanFleetWithCbsLiteCoordination()
+{
+    collision_.clearReservations();
+    map::OccupancyGrid working = map_;
+
+    for (std::size_t i = 0; i < fleet_.count(); ++i) {
+        vehicle::VehicleAgent& agent = fleet_.agent(i);
+        if (agent.vehicle == nullptr) {
+            continue;
+        }
+        if (agent.needs_replan) {
+            agent.needs_replan = false;
+            if (routing_mode_ == "freespace") {
+                planPathForAgentOnGrid(agent, working);
+            } else {
+                planPathForAgent(agent);
+            }
+        }
+    }
+
+    const collision::CbsLiteResult resolved =
+        collision::CbsLiteCoordinator::resolve(fleet_, map_, cbs_lite_config_);
+    if (resolved.success && resolved.paths.size() == fleet_.count()) {
+        for (std::size_t i = 0; i < fleet_.count(); ++i) {
+            vehicle::VehicleAgent& agent = fleet_.agent(i);
+            if (agent.vehicle == nullptr || i >= resolved.paths.size()) {
+                continue;
+            }
+            assignReferencePath(agent, resolved.paths[i]);
+        }
+    }
+
+    for (std::size_t i = 0; i < fleet_.count(); ++i) {
+        vehicle::VehicleAgent& agent = fleet_.agent(i);
+        if (agent.vehicle == nullptr || agent.reference_path.empty()) {
+            continue;
+        }
+        collision_.reservePath(
+            agent.vehicle->id(), agent.reference_path, sim_time_s_, agent.task_priority, map_);
+    }
+    refreshSpeedProfiles();
+}
+
 bool SimEngine::planPath()
 {
     vehicle::VehicleAgent* agent = selectedAgent();
@@ -693,6 +746,10 @@ bool SimEngine::planPath()
         return false;
     }
     agent->needs_replan = true;
+    if (usesCbsLiteCoordination() && fleet_.count() > 1) {
+        replanFleetWithCbsLiteCoordination();
+        return !agent->reference_path.empty();
+    }
     if (usesPriorityCoordination() && fleet_.count() > 1) {
         replanFleetWithPriorityCoordination();
         return !agent->reference_path.empty();
@@ -712,6 +769,10 @@ bool SimEngine::planPathFor(const core::VehicleId& vehicle_id)
         return false;
     }
     agent->needs_replan = true;
+    if (usesCbsLiteCoordination() && fleet_.count() > 1) {
+        replanFleetWithCbsLiteCoordination();
+        return !agent->reference_path.empty();
+    }
     if (usesPriorityCoordination() && fleet_.count() > 1) {
         replanFleetWithPriorityCoordination();
         return !agent->reference_path.empty();
@@ -802,7 +863,9 @@ void SimEngine::tick(double dt)
             }
         }
 
-        if (any_replan && usesPriorityCoordination()) {
+        if (any_replan && usesCbsLiteCoordination() && fleet_.count() > 1) {
+            replanFleetWithCbsLiteCoordination();
+        } else if (any_replan && usesPriorityCoordination() && fleet_.count() > 1) {
             replanFleetWithPriorityCoordination();
         } else if (any_replan) {
             for (std::size_t i = 0; i < fleet_.count(); ++i) {

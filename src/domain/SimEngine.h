@@ -1,6 +1,7 @@
 #pragma once
 
 #include "collision/CollisionModule.h"
+#include "collision/CbsLiteCoordinator.h"
 #include "control/PurePursuitTracker.h"
 #include "domain/behavior/BtNavigator.h"
 #include "domain/behavior/BtSimEngineContext.h"
@@ -83,6 +84,9 @@ public:
     void setCoordinationKind(const std::string& kind);
     const std::string& coordinationKind() const { return coordination_kind_; }
     bool usesPriorityCoordination() const;
+    bool usesCbsLiteCoordination() const;
+    void setCbsLiteConfig(const collision::CbsLiteConfig& config);
+    const collision::CbsLiteConfig& cbsLiteConfig() const { return cbs_lite_config_; }
 
     /// speed_planner: "st_graph" | "none" (empty → none). ADR-015.
     void setSpeedPlannerKind(const std::string& kind);
@@ -153,6 +157,7 @@ private:
     bool withinLaneSnap(double x, double y, const std::string& node_id) const;
     bool assignReferencePath(vehicle::VehicleAgent& agent, core::Path path);
     void replanFleetWithPriorityCoordination();
+    void replanFleetWithCbsLiteCoordination();
     std::vector<planning::PeerTrajectory> collectPeersFor(
         const core::VehicleId& ego_id) const;
     void refreshSpeedProfileFor(vehicle::VehicleAgent& agent);
@@ -183,6 +188,7 @@ private:
     std::string planner_kind_{"auto"};
     std::string tracker_kind_{"auto"};
     std::string coordination_kind_{"priority"};
+    collision::CbsLiteConfig cbs_lite_config_;
     std::string speed_planner_kind_{"none"};
     std::string prediction_kind_{"none"};
     std::string routing_mode_{"freespace"};
