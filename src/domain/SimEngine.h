@@ -5,6 +5,7 @@
 #include "domain/behavior/BtNavigator.h"
 #include "domain/behavior/BtSimEngineContext.h"
 #include "domain/behavior/BtTypes.h"
+#include "domain/behavior/MultiBtNavigator.h"
 #include "planning/AStarPlanner.h"
 #include "planning/DouglasPeuckerSmoother.h"
 #include "planning/LaneRouter.h"
@@ -23,6 +24,7 @@
 
 #include <memory>
 #include <string>
+#include <unordered_map>
 
 namespace fleetsim::domain {
 
@@ -106,8 +108,16 @@ public:
     double replanHz() const { return replan_hz_; }
     void setRecoveryWaitTicks(int ticks);
     int recoveryWaitTicks() const { return recovery_wait_ticks_; }
-    bool loadBehaviorTree(const std::string& json_path);
-    const behavior::BtNavigator* btNavigator() const { return &bt_navigator_; }
+    void setBtFormat(const std::string& format);
+    const std::string& btFormat() const { return bt_format_; }
+    bool loadBehaviorTree(const std::string& path, const std::string& format = "json");
+    bool loadBehaviorTreeForAgent(const core::VehicleId& agent_id,
+                                  const std::string& path,
+                                  const std::string& format = "json");
+    const behavior::BtNavigator* btNavigator() const;
+    behavior::BtNavigator* btNavigator();
+    const behavior::MultiBtNavigator& multiBtNavigator() const { return multi_bt_navigator_; }
+    behavior::MultiBtNavigator& multiBtNavigator() { return multi_bt_navigator_; }
     const behavior::BtTickResult& lastBtTickResult() const { return last_bt_result_; }
 
     /// Recompute SpeedProfile for all agents with paths (reads peer Paths).
@@ -191,8 +201,10 @@ private:
     std::string behavior_mode_{"legacy"};
     double replan_hz_{1.0};
     int recovery_wait_ticks_{20};
-    behavior::BtNavigator bt_navigator_;
-    std::unique_ptr<behavior::BtSimEngineContext> bt_context_;
+    std::string bt_format_{"json"};
+    std::string default_bt_tree_path_;
+    behavior::MultiBtNavigator multi_bt_navigator_;
+    std::unordered_map<std::string, std::unique_ptr<behavior::BtSimEngineContext>> bt_contexts_;
     behavior::BtTickResult last_bt_result_;
 };
 

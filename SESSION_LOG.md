@@ -11,6 +11,53 @@
 
 ---
 
+## [2026-08-24] Phase 10 Session 4 — Multi-agent BT 隔离 + SimEngine 接线
+
+### 本次 Scope（Planner 定义）
+- **目标**：每车独立 `BtNavigator` + `BtBlackboard`；SimEngine BT 模式 tick 全车；scenario `bt_format` + per-vehicle `behavior_tree_path`；`MultiBtNavigationTest` 全绿
+- **允许改动**：`MultiBtNavigator.*`、`SimEngine.*`、`BtNavigator.*`、`ScenarioLoader/Serializer.*`、`SimController.cpp`、`MultiBtNavigationTest.cpp`、`SESSION_LOG.md`
+- **NOT DO**：CBS-lite 实装；UI 四件套；demo 场景
+
+### ✅ 已完成
+- [x] **MultiBtNavigator** — `loadTreeForAgent` / `tickAgent` / `setDefaultTree` / `clear`
+- [x] **SimEngine** — 以 `MultiBtNavigator` 替换单车 `bt_navigator_`；BT 模式 tick 所有 agent；per-agent `BtSimEngineContext`
+- [x] **BtNavigator** — `loadFromFile(path, json|xml)` 统一 JSON/XML 加载
+- [x] **Scenario** — `simulation.bt_format`；`vehicles[].behavior_tree_path` 可选覆盖
+- [x] **SimController** — 先加车再加载默认/ per-vehicle 行为树
+- [x] **MultiBtNavigationTest** — **4/4 PASS**（含 SimEngine 双车 tick 隔离）
+- [x] **全量回归** — **188/189 PASS**（1 红灯 CbsLite，预期 Session 5）
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| CbsLiteCoordinator 实装 | Session 5 scope | Session 5 |
+| UI 四件套 | Session 6 scope | Session 6 |
+| demo + verify≥60 | Session 7 | Session 7 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | Session 4 scope：Multi BT + SimEngine；NOT DO CBS/UI |
+| Executor | MultiBtNavigator 注册表 + SimEngine 全车 tick；scenario bt_format |
+| Tester | **PASS**：MultiBtNavigationTest 4/4；BtNavigationIntegration 4/4；全量 188/189 |
+| Reviewer | **PASS**（本地）：禁止共享 blackboard；btNavigator() 兼容选中车 |
+
+### 证据
+- build: `D:\build\FleetSim_phase10_s0\FleetSimTests.exe`
+- gtest: `MultiBtNavigationTest.*` → **4 PASSED**
+- gtest 全量: **188 PASSED, 1 FAILED**（预期红灯）
+
+### 用户本地验证
+1. `git pull origin main`
+2. 重建 `FleetSimTests`
+3. `FleetSimTests.exe --gtest_filter=MultiBtNavigationTest.*`（4 PASS）
+4. 全量测预期 188 PASS / 1 FAIL
+
+### 下次会话建议
+- **Session 5**：CbsLiteCoordinator 真实现 → `CbsLiteCoordinatorTest` 绿
+
+---
+
 ## [2026-08-24] Phase 10 Session 3 — Spin / BackUp / ClearInflation 运动 Recovery
 
 ### 本次 Scope（Planner 定义）

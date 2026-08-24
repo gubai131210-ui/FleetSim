@@ -10,13 +10,14 @@ namespace fleetsim::app {
 
 namespace {
 
-std::string resolveBehaviorTreePath(const domain::scenario::ScenarioData& scenario)
+std::string resolveBehaviorTreePath(const domain::scenario::ScenarioData& scenario,
+                                    const std::string& configured_path)
 {
-    if (scenario.simulation.behavior_tree_path.empty()) {
+    if (configured_path.empty()) {
         return {};
     }
 
-    const std::filesystem::path configured(scenario.simulation.behavior_tree_path);
+    const std::filesystem::path configured(configured_path);
     if (configured.is_absolute()) {
         return configured.string();
     }
@@ -36,6 +37,11 @@ std::string resolveBehaviorTreePath(const domain::scenario::ScenarioData& scenar
     }
 
     return configured.string();
+}
+
+std::string resolveScenarioBehaviorTreePath(const domain::scenario::ScenarioData& scenario)
+{
+    return resolveBehaviorTreePath(scenario, scenario.simulation.behavior_tree_path);
 }
 
 }  // namespace
@@ -78,13 +84,7 @@ void SimController::applyScenarioToEngine()
         scenario_.simulation.behavior_mode.empty() ? "legacy" : scenario_.simulation.behavior_mode);
     engine_.setReplanHz(scenario_.simulation.replan_hz);
     engine_.setRecoveryWaitTicks(scenario_.simulation.recovery_wait_ticks);
-
-    if (engine_.behaviorMode() == "bt") {
-        const std::string tree_path = resolveBehaviorTreePath(scenario_);
-        if (!tree_path.empty()) {
-            engine_.loadBehaviorTree(tree_path);
-        }
-    }
+    engine_.setBtFormat(scenario_.simulation.bt_format);
 
     for (const auto& vehicle_config : scenario_.vehicles) {
         auto model = domain::vehicle::createVehicleModel(
@@ -104,6 +104,24 @@ void SimController::applyScenarioToEngine()
             vehicle->setMaxSteeringRad(vehicle_config.max_steering_rad);
         }
         engine_.addVehicle(std::move(vehicle));
+    }
+
+    if (engine_.behaviorMode() == "bt") {
+        const std::string default_tree_path = resolveScenarioBehaviorTreePath(scenario_);
+        if (!default_tree_path.empty()) {
+            engine_.loadBehaviorTree(default_tree_path, scenario_.simulation.bt_format);
+        }
+        for (const auto& vehicle_config : scenario_.vehicles) {
+            if (vehicle_config.behavior_tree_path.empty()) {
+                continue;
+            }
+            const std::string tree_path =
+                resolveBehaviorTreePath(scenario_, vehicle_config.behavior_tree_path);
+            if (!tree_path.empty()) {
+                engine_.loadBehaviorTreeForAgent(
+                    vehicle_config.id, tree_path, scenario_.simulation.bt_format);
+            }
+        }
     }
 
     if (!scenario_.vehicles.empty()) {

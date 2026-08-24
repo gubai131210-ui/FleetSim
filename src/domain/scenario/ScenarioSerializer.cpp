@@ -43,6 +43,7 @@ ScenarioData ScenarioSerializer::fromJson(const nlohmann::json& json,
     data.simulation.first_last_planner = simulation.value("first_last_planner", std::string{});
     data.simulation.behavior_mode = simulation.value("behavior_mode", std::string{"legacy"});
     data.simulation.behavior_tree_path = simulation.value("behavior_tree_path", std::string{});
+    data.simulation.bt_format = simulation.value("bt_format", std::string{"json"});
     data.simulation.replan_hz = simulation.value("replan_hz", 1.0);
     data.simulation.recovery_wait_ticks = simulation.value("recovery_wait_ticks", 20);
 
@@ -55,6 +56,7 @@ ScenarioData ScenarioSerializer::fromJson(const nlohmann::json& json,
         vehicle.wheelbase_m = vehicle_json.value("wheelbase_m", 0.8);
         vehicle.max_steering_rad = vehicle_json.value("max_steering_rad", 0.6);
         vehicle.initial_pose = parsePose(vehicle_json.at("pose"));
+        vehicle.behavior_tree_path = vehicle_json.value("behavior_tree_path", std::string{});
         data.vehicles.push_back(std::move(vehicle));
     }
 
@@ -133,6 +135,9 @@ nlohmann::json ScenarioSerializer::toJson(const ScenarioData& scenario)
     if (!scenario.simulation.behavior_tree_path.empty()) {
         json["simulation"]["behavior_tree_path"] = scenario.simulation.behavior_tree_path;
     }
+    if (scenario.simulation.bt_format != "json") {
+        json["simulation"]["bt_format"] = scenario.simulation.bt_format;
+    }
     if (scenario.simulation.replan_hz != 1.0) {
         json["simulation"]["replan_hz"] = scenario.simulation.replan_hz;
     }
@@ -178,6 +183,9 @@ nlohmann::json ScenarioSerializer::toJson(const ScenarioData& scenario)
         if (vehicle.model == "bicycle") {
             vehicle_json["wheelbase_m"] = vehicle.wheelbase_m;
             vehicle_json["max_steering_rad"] = vehicle.max_steering_rad;
+        }
+        if (!vehicle.behavior_tree_path.empty()) {
+            vehicle_json["behavior_tree_path"] = vehicle.behavior_tree_path;
         }
         vehicles.push_back(std::move(vehicle_json));
     }

@@ -1,20 +1,39 @@
 #include "BtNavigator.h"
 
 #include "BtTreeLoader.h"
+#include "BtXmlLoader.h"
 
 namespace fleetsim::domain::behavior {
 
 bool BtNavigator::loadFromJsonFile(const std::string& path)
 {
-    BtTreeLoadError error;
-    auto loaded = BtTreeLoader::loadFromFile(path, &error);
-    if (!loaded.has_value()) {
-        root_.reset();
-        tree_name_.clear();
-        return false;
+    return loadFromFile(path, "json");
+}
+
+bool BtNavigator::loadFromFile(const std::string& path, const std::string& format)
+{
+    BtNodePtr loaded;
+    if (format == "xml") {
+        BtXmlLoadError error;
+        auto xml_loaded = BtXmlLoader::loadFromFile(path, &error);
+        if (!xml_loaded.has_value()) {
+            root_.reset();
+            tree_name_.clear();
+            return false;
+        }
+        loaded = std::move(xml_loaded.value());
+    } else {
+        BtTreeLoadError error;
+        auto json_loaded = BtTreeLoader::loadFromFile(path, &error);
+        if (!json_loaded.has_value()) {
+            root_.reset();
+            tree_name_.clear();
+            return false;
+        }
+        loaded = std::move(json_loaded.value());
     }
 
-    root_ = std::move(loaded.value());
+    root_ = std::move(loaded);
     tree_name_ = root_ ? root_->name() : std::string{};
     last_status_ = NodeStatus::Failure;
     return root_ != nullptr;

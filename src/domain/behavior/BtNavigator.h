@@ -20,6 +20,7 @@ public:
     BtNavigator() = default;
 
     bool loadFromJsonFile(const std::string& path);
+    bool loadFromFile(const std::string& path, const std::string& format = "json");
     bool hasTree() const { return root_ != nullptr; }
 
     BtTickResult tick(BtBlackboard& blackboard);

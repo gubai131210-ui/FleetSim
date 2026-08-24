@@ -97,7 +97,11 @@ void SimEngine::clearFleet()
 {
     fleet_.clear();
     selected_vehicle_id_.clear();
-    bt_context_.reset();
+    bt_contexts_.clear();
+    multi_bt_navigator_.clear();
+    if (!default_bt_tree_path_.empty()) {
+        multi_bt_navigator_.setDefaultTree(default_bt_tree_path_, bt_format_);
+    }
 }
 
 void SimEngine::addVehicle(std::unique_ptr<vehicle::Vehicle> vehicle)
@@ -105,10 +109,15 @@ void SimEngine::addVehicle(std::unique_ptr<vehicle::Vehicle> vehicle)
     if (vehicle == nullptr) {
         return;
     }
+    const core::VehicleId agent_id = vehicle->id();
     if (selected_vehicle_id_.empty()) {
-        selected_vehicle_id_ = vehicle->id();
+        selected_vehicle_id_ = agent_id;
     }
     fleet_.addVehicle(std::move(vehicle));
+
+    if (behavior_mode_ == "bt" && !default_bt_tree_path_.empty()) {
+        multi_bt_navigator_.loadDefaultTreeForAgent(agent_id);
+    }
 }
 
 void SimEngine::setVehicle(std::unique_ptr<vehicle::Vehicle> vehicle)
@@ -275,33 +284,77 @@ void SimEngine::setRecoveryWaitTicks(int ticks)
     recovery_wait_ticks_ = std::max(0, ticks);
 }
 
-bool SimEngine::loadBehaviorTree(const std::string& json_path)
+void SimEngine::setBtFormat(const std::string& format)
 {
-    bt_context_.reset();
-    last_bt_result_ = {};
-    if (!bt_navigator_.loadFromJsonFile(json_path)) {
-        return false;
+    if (format.empty() || format == "json") {
+        bt_format_ = "json";
+        return;
     }
-    return bt_navigator_.hasTree();
+    bt_format_ = format;
+}
+
+const behavior::BtNavigator* SimEngine::btNavigator() const
+{
+    if (selected_vehicle_id_.empty() || !multi_bt_navigator_.hasAgent(selected_vehicle_id_)) {
+        return nullptr;
+    }
+    return &multi_bt_navigator_.navigatorFor(selected_vehicle_id_);
+}
+
+behavior::BtNavigator* SimEngine::btNavigator()
+{
+    if (selected_vehicle_id_.empty()) {
+        return nullptr;
+    }
+    return &multi_bt_navigator_.navigatorFor(selected_vehicle_id_);
+}
+
+bool SimEngine::loadBehaviorTree(const std::string& path, const std::string& format)
+{
+    default_bt_tree_path_ = path;
+    const std::string resolved_format = format.empty() ? bt_format_ : format;
+    bt_format_ = resolved_format;
+    bt_contexts_.clear();
+    last_bt_result_ = {};
+    multi_bt_navigator_.setDefaultTree(path, resolved_format);
+
+    bool any_loaded = false;
+    for (std::size_t i = 0; i < fleet_.count(); ++i) {
+        const vehicle::VehicleAgent& agent = fleet_.agent(i);
+        if (agent.vehicle == nullptr) {
+            continue;
+        }
+        any_loaded = multi_bt_navigator_.loadDefaultTreeForAgent(agent.vehicle->id()) || any_loaded;
+    }
+    return any_loaded;
+}
+
+bool SimEngine::loadBehaviorTreeForAgent(const core::VehicleId& agent_id,
+                                         const std::string& path,
+                                         const std::string& format)
+{
+    const std::string resolved_format = format.empty() ? bt_format_ : format;
+    return multi_bt_navigator_.loadTreeForAgent(agent_id, path, resolved_format);
 }
 
 void SimEngine::tickBehaviorTreeForAgent(vehicle::VehicleAgent& agent)
 {
-    if (!bt_navigator_.hasTree() || agent.vehicle == nullptr) {
+    if (agent.vehicle == nullptr) {
         return;
     }
 
-    if (bt_context_ == nullptr || bt_context_->agentId() != agent.vehicle->id()) {
-        bt_context_ = std::make_unique<behavior::BtSimEngineContext>(*this, agent.vehicle->id());
+    behavior::BtNavigator& navigator = multi_bt_navigator_.navigatorFor(agent.vehicle->id());
+    if (!navigator.hasTree()) {
+        return;
     }
 
-    behavior::BtBlackboard& blackboard = bt_navigator_.blackboard();
-    blackboard.setSimContext(bt_context_.get());
-    blackboard.setString(behavior::BbKey::kAgentId, agent.vehicle->id());
-    blackboard.setDouble(behavior::BbKey::kReplanHz, replan_hz_);
-    blackboard.setInt(behavior::BbKey::kRecoveryWaitTicks, recovery_wait_ticks_);
+    const core::VehicleId& agent_id = agent.vehicle->id();
+    if (bt_contexts_.find(agent_id) == bt_contexts_.end()) {
+        bt_contexts_[agent_id] = std::make_unique<behavior::BtSimEngineContext>(*this, agent_id);
+    }
 
-    last_bt_result_ = bt_navigator_.tick(blackboard);
+    last_bt_result_ = multi_bt_navigator_.tickAgent(
+        agent_id, *bt_contexts_[agent_id], replan_hz_, recovery_wait_ticks_);
 }
 
 std::string SimEngine::resolvedFirstLastPlannerKind(const vehicle::Vehicle& vehicle) const
@@ -736,10 +789,9 @@ void SimEngine::tick(double dt)
 {
     scheduling_.tick(dt, fleet_);
 
-    if (behavior_mode_ == "bt" && bt_navigator_.hasTree()) {
-        vehicle::VehicleAgent* bt_agent = selectedAgent();
-        if (bt_agent != nullptr) {
-            tickBehaviorTreeForAgent(*bt_agent);
+    if (behavior_mode_ == "bt") {
+        for (std::size_t i = 0; i < fleet_.count(); ++i) {
+            tickBehaviorTreeForAgent(fleet_.agent(i));
         }
     } else {
         bool any_replan = false;

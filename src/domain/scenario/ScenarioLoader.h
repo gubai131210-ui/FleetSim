@@ -33,6 +33,8 @@ struct SimulationConfig {
     std::string behavior_mode{"legacy"};
     /// Relative to scenario dir or assets/behavior_trees/.
     std::string behavior_tree_path;
+    /// "json" | "xml" — default json (ADR-023).
+    std::string bt_format{"json"};
     double replan_hz{1.0};
     int recovery_wait_ticks{20};
 };
@@ -45,6 +47,8 @@ struct VehicleConfig {
     double wheelbase_m{0.8};       // used when model == "bicycle"
     double max_steering_rad{0.6};  // used when model == "bicycle"
     core::Pose initial_pose;
+    /// Optional per-vehicle BT asset; falls back to simulation.behavior_tree_path (ADR-025).
+    std::string behavior_tree_path;
 };
 
 struct ScenarioData {
