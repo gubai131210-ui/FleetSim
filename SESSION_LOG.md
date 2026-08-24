@@ -11,6 +11,53 @@
 
 ---
 
+## [2026-08-24] Phase 10 Session 3 — Spin / BackUp / ClearInflation 运动 Recovery
+
+### 本次 Scope（Planner 定义）
+- **目标**：实装 Spin/BackUp/ClearInflation 真运动学（非 Wait 换皮）；`BtMotionRecoveryTest` 全绿
+- **允许改动**：`IBtSimContext.*`、`BtSimEngineContext.*`、`BtMotionRecoveryNodes.*`、`OccupancyGrid.*`、`SimEngine.*`、`BtTypes.h`、`BtMotionRecoveryTest.cpp`、`SESSION_LOG.md`
+- **NOT DO**：MultiBt SimEngine 接线；CBS-lite 实装；UI 四件套
+
+### ✅ 已完成
+- [x] **IBtSimContext 扩展** — `agentPose` / `applyYawDelta` / `applyBodyTranslation` / `clearInflationLayer` / `occupiedCellCount`
+- [x] **BtSpinRecoveryNode** — ω 积分至 `spin_rad`（多 tick Running → Success）
+- [x] **BtBackUpRecoveryNode** — 沿车体后方 `-heading` 倒退 `backup_dist_m`
+- [x] **BtClearInflationNode** — 恢复 `OccupancyGrid` base 层（inflate 前快照）；黑板 `inflation_cleared`
+- [x] **OccupancyGrid** — `base_cells_` + `clearInflation()` + `occupiedCellCount()`
+- [x] **BtMotionRecoveryTest** — **3/3 PASS**（yaw/位移/inflation 副作用断言）
+- [x] **全量回归** — **186/187 PASS**（1 红灯 CbsLite，预期 Session 5）
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| MultiBtNavigator SimEngine 接线 | Session 4 scope | Session 4 |
+| CbsLiteCoordinator 实装 | Session 5 scope | Session 5 |
+| UI / demo / verify≥60 | 后续会话 | Session 6–7 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | Session 3 scope：Motion Recovery 三叶节点；NOT DO CBS/MultiBt/UI |
+| Executor | 运动学经 IBtSimContext 接线；ClearInflation 用 grid base 层恢复 |
+| Tester | **PASS**：BtMotionRecoveryTest 3/3；全量 186/187 |
+| Reviewer | **PASS**（本地）：非 Wait 换皮；pose/栅格可断言变化；ADR-023 对齐 |
+
+### 证据
+- build: `D:\build\FleetSim_phase10_s0\FleetSimTests.exe`
+- gtest: `BtMotionRecoveryTest.*` → **3 PASSED**
+- gtest 全量: **186 PASSED, 1 FAILED**（预期红灯）
+
+### 用户本地验证
+1. `git pull origin main`
+2. 重建 `FleetSimTests`（ASCII 路径）
+3. `FleetSimTests.exe --gtest_filter=BtMotionRecoveryTest.*`（3 PASS）
+4. 全量测预期 186 PASS / 1 FAIL
+
+### 下次会话建议
+- **Session 4**：Multi-agent BT 隔离 + SimEngine 接线 → `MultiBtNavigationTest` 绿
+
+---
+
 ## [2026-08-24] Phase 10 Session 2 — BtXmlLoader + RoundRobin + ReactiveFallback
 
 ### 本次 Scope（Planner 定义）

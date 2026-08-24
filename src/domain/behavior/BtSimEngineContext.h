@@ -31,6 +31,12 @@ public:
     void clearReplanRequest() override;
     double simDt() const override;
 
+    core::Pose agentPose() const override;
+    void applyYawDelta(double delta_rad) override;
+    void applyBodyTranslation(double forward_m, double lateral_m) override;
+    bool clearInflationLayer() override;
+    std::size_t occupiedCellCount() const override;
+
     SimEngine& engine() { return engine_; }
     const core::VehicleId& agentId() const { return agent_id_; }
 

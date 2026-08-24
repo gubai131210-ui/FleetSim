@@ -20,6 +20,8 @@ public:
 private:
     std::string name_;
     double spin_rad_{0.0};
+    double accumulated_rad_{0.0};
+    bool active_{false};
 };
 
 /// Straight-line backup along vehicle rear heading (ADR-023).
@@ -35,6 +37,8 @@ private:
     std::string name_;
     double backup_dist_m_{0.0};
     double backup_speed_mps_{0.0};
+    double accumulated_dist_m_{0.0};
+    bool active_{false};
 };
 
 /// Teaching ClearCostmap — clears inflation layer or obstacle cache before replan (ADR-023).

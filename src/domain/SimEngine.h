@@ -117,6 +117,9 @@ public:
     bool planPathFor(const core::VehicleId& vehicle_id);
     const core::Path& referencePath() const;
 
+    bool clearMapInflation();
+    std::size_t mapOccupiedCellCount() const;
+
     void tick(double dt);
 
     int tickCount() const;

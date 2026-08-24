@@ -28,6 +28,9 @@ public:
     double cellCenterY(int row) const;
 
     void inflate(double radius_m);
+    void clearInflation();
+    bool hasInflationBase() const { return !base_cells_.empty(); }
+    std::size_t occupiedCellCount() const;
 
     const std::vector<uint8_t>& data() const { return cells_; }
 
@@ -40,6 +43,7 @@ private:
     double width_m_{0.0};
     double height_m_{0.0};
     std::vector<uint8_t> cells_;
+    std::vector<uint8_t> base_cells_;
 };
 
 }  // namespace fleetsim::domain::map

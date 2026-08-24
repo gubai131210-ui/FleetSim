@@ -78,6 +78,21 @@ const map::OccupancyGrid& SimEngine::map() const
     return map_;
 }
 
+bool SimEngine::clearMapInflation()
+{
+    if (!map_.hasInflationBase()) {
+        return false;
+    }
+    const std::size_t before = map_.occupiedCellCount();
+    map_.clearInflation();
+    return map_.occupiedCellCount() < before;
+}
+
+std::size_t SimEngine::mapOccupiedCellCount() const
+{
+    return map_.occupiedCellCount();
+}
+
 void SimEngine::clearFleet()
 {
     fleet_.clear();

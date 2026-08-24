@@ -33,6 +33,7 @@ inline constexpr const char* kRecoveryCount = "recovery_count";
 inline constexpr const char* kActiveNodeName = "active_node_name";
 inline constexpr const char* kReplanHz = "replan_hz";
 inline constexpr const char* kRecoveryWaitTicks = "recovery_wait_ticks";
+inline constexpr const char* kInflationCleared = "inflation_cleared";
 }  // namespace BbKey
 
 /// FleetSim registered action / condition node names (JSON "name" field).

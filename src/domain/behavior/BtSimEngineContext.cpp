@@ -111,4 +111,48 @@ double BtSimEngineContext::simDt() const
     return engine_.clock().fixedDt();
 }
 
+core::Pose BtSimEngineContext::agentPose() const
+{
+    const vehicle::VehicleAgent* current = agent();
+    if (current == nullptr || current->vehicle == nullptr) {
+        return core::Pose{};
+    }
+    return current->vehicle->pose();
+}
+
+void BtSimEngineContext::applyYawDelta(double delta_rad)
+{
+    vehicle::VehicleAgent* mutable_agent = agent();
+    if (mutable_agent == nullptr || mutable_agent->vehicle == nullptr) {
+        return;
+    }
+    core::Pose pose = mutable_agent->vehicle->pose();
+    pose.theta += delta_rad;
+    mutable_agent->vehicle->setPose(pose);
+}
+
+void BtSimEngineContext::applyBodyTranslation(double forward_m, double lateral_m)
+{
+    vehicle::VehicleAgent* mutable_agent = agent();
+    if (mutable_agent == nullptr || mutable_agent->vehicle == nullptr) {
+        return;
+    }
+    core::Pose pose = mutable_agent->vehicle->pose();
+    const double cos_theta = std::cos(pose.theta);
+    const double sin_theta = std::sin(pose.theta);
+    pose.x += forward_m * cos_theta - lateral_m * sin_theta;
+    pose.y += forward_m * sin_theta + lateral_m * cos_theta;
+    mutable_agent->vehicle->setPose(pose);
+}
+
+bool BtSimEngineContext::clearInflationLayer()
+{
+    return engine_.clearMapInflation();
+}
+
+std::size_t BtSimEngineContext::occupiedCellCount() const
+{
+    return engine_.mapOccupiedCellCount();
+}
+
 }  // namespace fleetsim::domain::behavior

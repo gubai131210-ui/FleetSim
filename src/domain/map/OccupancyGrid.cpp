@@ -60,6 +60,10 @@ void OccupancyGrid::inflate(double radius_m)
         return;
     }
 
+    if (base_cells_.empty()) {
+        base_cells_ = cells_;
+    }
+
     const int radius_cells = static_cast<int>(std::ceil(radius_m / resolution_m_));
     std::vector<uint8_t> inflated = cells_;
 
@@ -86,6 +90,25 @@ void OccupancyGrid::inflate(double radius_m)
     }
 
     cells_ = std::move(inflated);
+}
+
+void OccupancyGrid::clearInflation()
+{
+    if (base_cells_.empty()) {
+        return;
+    }
+    cells_ = base_cells_;
+}
+
+std::size_t OccupancyGrid::occupiedCellCount() const
+{
+    std::size_t count = 0U;
+    for (const uint8_t cell : cells_) {
+        if (cell != 0U) {
+            ++count;
+        }
+    }
+    return count;
 }
 
 int OccupancyGrid::index(int row, int col) const
