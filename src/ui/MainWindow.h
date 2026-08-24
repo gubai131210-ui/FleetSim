@@ -23,6 +23,8 @@ class MapView;
 class MonitorPanel;
 class ExperimentComparePanel;
 class BehaviorTreePanel;
+class OsmImportPanel;
+class MultiAgentBehaviorPanel;
 class TaskPanel;
 class VehicleInfoPanel;
 }
@@ -56,6 +58,7 @@ private:
     void handleSaveProject();
     void handleSettings();
     void handlePlannerTracker();
+    void handleOsmImport(const QString& osm_path);
     void syncSettingsFromScenario();
     void applyProjectToSimulation();
     void refreshMapVisualization();
@@ -82,6 +85,8 @@ private:
     MonitorPanel* monitor_panel_{nullptr};
     ExperimentComparePanel* experiment_compare_panel_{nullptr};
     BehaviorTreePanel* behavior_tree_panel_{nullptr};
+    OsmImportPanel* osm_import_panel_{nullptr};
+    MultiAgentBehaviorPanel* multi_agent_behavior_panel_{nullptr};
     TaskPanel* task_panel_{nullptr};
     VehicleInfoPanel* vehicle_info_panel_{nullptr};
 

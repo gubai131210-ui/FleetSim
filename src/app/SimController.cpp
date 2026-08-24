@@ -1,5 +1,6 @@
 #include "SimController.h"
 
+#include "domain/map/OsmLaneletImporter.h"
 #include "domain/vehicle/Vehicle.h"
 #include "domain/vehicle/VehicleModelFactory.h"
 
@@ -44,6 +45,51 @@ std::string resolveScenarioBehaviorTreePath(const domain::scenario::ScenarioData
     return resolveBehaviorTreePath(scenario, scenario.simulation.behavior_tree_path);
 }
 
+std::string resolveOsmPath(const domain::scenario::ScenarioData& scenario,
+                           const std::string& configured_path)
+{
+    if (configured_path.empty()) {
+        return {};
+    }
+
+    const std::filesystem::path configured(configured_path);
+    if (configured.is_absolute()) {
+        return configured.string();
+    }
+
+    if (!scenario.scenario_directory.empty()) {
+        const std::filesystem::path in_scenario =
+            std::filesystem::path(scenario.scenario_directory) / configured;
+        if (std::filesystem::exists(in_scenario)) {
+            return in_scenario.string();
+        }
+    }
+
+    const std::filesystem::path in_assets =
+        std::filesystem::path("assets") / "maps" / configured.filename();
+    if (std::filesystem::exists(in_assets)) {
+        return in_assets.string();
+    }
+
+    return configured.string();
+}
+
+void applyOsmLaneMap(domain::scenario::ScenarioData& scenario, domain::SimEngine& engine)
+{
+    if (scenario.simulation.map_source != "osm" || scenario.simulation.osm_path.empty()) {
+        return;
+    }
+
+    const std::string osm_path = resolveOsmPath(scenario, scenario.simulation.osm_path);
+    domain::map::OsmImportError error;
+    const auto lanes = domain::map::OsmLaneletImporter::importFromFile(osm_path, &error);
+    if (!lanes.has_value()) {
+        return;
+    }
+    scenario.lanes = lanes.value();
+    engine.setLaneMap(scenario.lanes);
+}
+
 }  // namespace
 
 SimController::SimController() = default;
@@ -79,6 +125,7 @@ void SimController::applyScenarioToEngine()
         scenario_.simulation.routing_mode.empty() ? "freespace" : scenario_.simulation.routing_mode);
     engine_.setLaneMap(scenario_.lanes);
     engine_.setLaneSnapRadiusM(scenario_.simulation.lane_snap_radius_m);
+    applyOsmLaneMap(scenario_, engine_);
     engine_.setFirstLastPlannerKind(scenario_.simulation.first_last_planner);
     engine_.setBehaviorMode(
         scenario_.simulation.behavior_mode.empty() ? "legacy" : scenario_.simulation.behavior_mode);

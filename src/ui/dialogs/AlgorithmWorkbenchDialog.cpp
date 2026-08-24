@@ -1,8 +1,10 @@
 #include "AlgorithmWorkbenchDialog.h"
 
 #include "BehaviorPage.h"
+#include "BehaviorXmlPage.h"
 #include "ControlPage.h"
 #include "CoordinationPage.h"
+#include "MapImportPage.h"
 #include "PlanningPage.h"
 #include "RoutingPage.h"
 #include "SpeedPage.h"
@@ -17,7 +19,7 @@ AlgorithmWorkbenchDialog::AlgorithmWorkbenchDialog(QWidget* parent)
     : QDialog(parent)
 {
     setWindowTitle(tr("Algorithm Workbench"));
-    resize(460, 360);
+    resize(480, 400);
 
     auto* layout = new QVBoxLayout(this);
     tabs_ = new QTabWidget(this);
@@ -27,6 +29,8 @@ AlgorithmWorkbenchDialog::AlgorithmWorkbenchDialog(QWidget* parent)
     coordination_page_ = new CoordinationPage(tabs_);
     routing_page_ = new RoutingPage(tabs_);
     behavior_page_ = new BehaviorPage(tabs_);
+    map_import_page_ = new MapImportPage(tabs_);
+    behavior_xml_page_ = new BehaviorXmlPage(tabs_);
 
     tabs_->addTab(planning_page_, tr("Planning"));
     tabs_->addTab(control_page_, tr("Control"));
@@ -34,6 +38,8 @@ AlgorithmWorkbenchDialog::AlgorithmWorkbenchDialog(QWidget* parent)
     tabs_->addTab(coordination_page_, tr("Coordination"));
     tabs_->addTab(routing_page_, tr("Routing"));
     tabs_->addTab(behavior_page_, tr("Behavior"));
+    tabs_->addTab(map_import_page_, tr("Map Import"));
+    tabs_->addTab(behavior_xml_page_, tr("Behavior XML"));
     layout->addWidget(tabs_);
 
     auto* buttons = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
@@ -50,6 +56,8 @@ AlgorithmWorkbenchSettings AlgorithmWorkbenchDialog::settings() const
     out.speed_planner = speed_page_->speedPlanner();
     out.prediction = speed_page_->prediction();
     out.coordination = coordination_page_->coordination();
+    out.cbs_max_depth = coordination_page_->cbsMaxDepth();
+    out.cbs_time_limit_ms = coordination_page_->cbsTimeLimitMs();
     out.routing_mode = routing_page_->routingMode();
     out.lane_snap_radius_m = routing_page_->laneSnapRadiusM();
     out.first_last_planner = routing_page_->firstLastPlanner();
@@ -58,6 +66,13 @@ AlgorithmWorkbenchSettings AlgorithmWorkbenchDialog::settings() const
     out.replan_hz = behavior_page_->replanHz();
     out.recovery_wait_ticks = behavior_page_->recoveryWaitTicks();
     out.recovery_enabled = behavior_page_->recoveryEnabled();
+    out.map_source = map_import_page_->mapSource();
+    out.osm_path = map_import_page_->osmPath();
+    out.bt_format = behavior_xml_page_->btFormat();
+    out.behavior_xml_tree_path = behavior_xml_page_->behaviorTreePath();
+    out.spin_rad = behavior_xml_page_->spinRad();
+    out.backup_dist_m = behavior_xml_page_->backupDistM();
+    out.backup_speed_mps = behavior_xml_page_->backupSpeedMps();
     return out;
 }
 
@@ -68,6 +83,8 @@ void AlgorithmWorkbenchDialog::setSettings(const AlgorithmWorkbenchSettings& set
     speed_page_->setSpeedPlanner(settings.speed_planner);
     speed_page_->setPrediction(settings.prediction);
     coordination_page_->setCoordination(settings.coordination);
+    coordination_page_->setCbsMaxDepth(settings.cbs_max_depth);
+    coordination_page_->setCbsTimeLimitMs(settings.cbs_time_limit_ms);
     routing_page_->setRoutingMode(settings.routing_mode);
     routing_page_->setLaneSnapRadiusM(settings.lane_snap_radius_m);
     routing_page_->setFirstLastPlanner(settings.first_last_planner);
@@ -76,6 +93,15 @@ void AlgorithmWorkbenchDialog::setSettings(const AlgorithmWorkbenchSettings& set
     behavior_page_->setReplanHz(settings.replan_hz);
     behavior_page_->setRecoveryWaitTicks(settings.recovery_wait_ticks);
     behavior_page_->setRecoveryEnabled(settings.recovery_enabled);
+    map_import_page_->setMapSource(settings.map_source);
+    map_import_page_->setOsmPath(settings.osm_path);
+    behavior_xml_page_->setBtFormat(settings.bt_format);
+    behavior_xml_page_->setBehaviorTreePath(
+        settings.behavior_xml_tree_path.isEmpty() ? settings.behavior_tree_path
+                                                  : settings.behavior_xml_tree_path);
+    behavior_xml_page_->setSpinRad(settings.spin_rad);
+    behavior_xml_page_->setBackupDistM(settings.backup_dist_m);
+    behavior_xml_page_->setBackupSpeedMps(settings.backup_speed_mps);
 }
 
 }  // namespace fleetsim::ui

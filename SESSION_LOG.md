@@ -11,6 +11,55 @@
 
 ---
 
+## [2026-08-24] Phase 10 Session 6 — UI 四件套 + CoordinationPage CBS-lite
+
+### 本次 Scope（Planner 定义）
+- **目标**：OsmImportPanel + MapImportPage(Tab7) + BehaviorXmlPage(Tab8) + MultiAgentBehaviorPanel；CoordinationPage 扩展 cbs_lite；负向审计通过
+- **允许改动**：`src/ui/panels/*`、`src/ui/dialogs/pages/*`、`AlgorithmWorkbenchDialog.*`、`MainWindow.*`、`MonitorBridge.*`、`ScenarioLoader.*`、`SimController.cpp`、`verify_phase10_evidence.py`、`panels/README.md`
+- **NOT DO**：demo 场景；verify≥60 完整终审；MapEditor/LaneEditor/BehaviorPage 污染 OSM/XML 控件
+
+### ✅ 已完成
+- [x] **OsmImportPanel** — OSM 路径 / Preview / Import to project（独立 dock）
+- [x] **MapImportPage** — Tab 7：`map_source` / `osm_path`
+- [x] **BehaviorXmlPage** — Tab 8：`bt_format` / tree path / spin / backup 参数
+- [x] **MultiAgentBehaviorPanel** — 多车 BT 只读表格；MonitorBridge 每 tick 更新
+- [x] **CoordinationPage** — `cbs_lite` + depth/time limit 字段
+- [x] **Scenario** — `map_source` / `osm_path` / spin / backup 序列化；SimController OSM 加载
+- [x] **verify_phase10_evidence.py** — **42 PASS**（含 UI 负向审计 + 行数限制）
+- [x] **全量回归** — **189/189 PASS**
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| osm_lanelet_demo / cbs_lite_demo | Session 7 scope | Session 7 |
+| verify≥60 完整项 | Session 7 扩展 | Session 7 |
+| M43+ / DEVELOPMENT_PLAN ✅ | Session 7 | Session 7 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | Session 6 scope：UI 四件套 + 负向审计；NOT DO demo/终审 |
+| Executor | 8 个新 UI 文件 + Workbench Tab 7–8 + MainWindow 挂载 |
+| Tester | **PASS**：189/189；verify 42/42；负向审计 MapEditor/BehaviorPage 无污染 |
+| Reviewer | **PASS**（本地）：各 Panel/Page .cpp ≤300 行；职责分离 ADR-025 |
+
+### 证据
+- build: `D:\build\FleetSim_phase10_s0\FleetSimTests.exe`
+- gtest 全量: **189 PASSED, 0 FAILED**
+- verify: `python tools/verify_phase10_evidence.py` → **42 PASS**
+
+### 用户本地验证
+1. `git pull origin main`
+2. 重建 FleetSim UI + Tests
+3. 打开 FleetSim → View 菜单可见 OSM Import / Multi-Agent BT dock
+4. Algorithm Workbench → Tab 7 Map Import / Tab 8 Behavior XML
+5. `python tools/verify_phase10_evidence.py`（42 PASS）
+
+### 下次会话建议
+- **Session 7**：demo 场景 + verify≥60 + M43+ + Phase 10 终审
+
+---
+
 ## [2026-08-24] Phase 10 Session 5 — CbsLiteCoordinator 真实现 + coordination 切换
 
 ### 本次 Scope（Planner 定义）

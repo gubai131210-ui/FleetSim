@@ -39,6 +39,12 @@ struct SimulationConfig {
     int recovery_wait_ticks{20};
     int cbs_max_depth{10};
     int cbs_time_limit_ms{100};
+    /// "json" | "osm" — default json (ADR-022).
+    std::string map_source{"json"};
+    std::string osm_path;
+    double spin_rad{1.5707963267948966};
+    double backup_dist_m{0.3};
+    double backup_speed_mps{0.1};
 };
 
 struct VehicleConfig {

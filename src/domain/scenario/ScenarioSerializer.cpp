@@ -48,6 +48,11 @@ ScenarioData ScenarioSerializer::fromJson(const nlohmann::json& json,
     data.simulation.recovery_wait_ticks = simulation.value("recovery_wait_ticks", 20);
     data.simulation.cbs_max_depth = simulation.value("cbs_max_depth", 10);
     data.simulation.cbs_time_limit_ms = simulation.value("cbs_time_limit_ms", 100);
+    data.simulation.map_source = simulation.value("map_source", std::string{"json"});
+    data.simulation.osm_path = simulation.value("osm_path", std::string{});
+    data.simulation.spin_rad = simulation.value("spin_rad", 1.5707963267948966);
+    data.simulation.backup_dist_m = simulation.value("backup_dist_m", 0.3);
+    data.simulation.backup_speed_mps = simulation.value("backup_speed_mps", 0.1);
 
     for (const auto& vehicle_json : json.at("vehicles")) {
         VehicleConfig vehicle;
@@ -151,6 +156,21 @@ nlohmann::json ScenarioSerializer::toJson(const ScenarioData& scenario)
     }
     if (scenario.simulation.cbs_time_limit_ms != 100) {
         json["simulation"]["cbs_time_limit_ms"] = scenario.simulation.cbs_time_limit_ms;
+    }
+    if (scenario.simulation.map_source != "json") {
+        json["simulation"]["map_source"] = scenario.simulation.map_source;
+    }
+    if (!scenario.simulation.osm_path.empty()) {
+        json["simulation"]["osm_path"] = scenario.simulation.osm_path;
+    }
+    if (scenario.simulation.spin_rad != 1.5707963267948966) {
+        json["simulation"]["spin_rad"] = scenario.simulation.spin_rad;
+    }
+    if (scenario.simulation.backup_dist_m != 0.3) {
+        json["simulation"]["backup_dist_m"] = scenario.simulation.backup_dist_m;
+    }
+    if (scenario.simulation.backup_speed_mps != 0.1) {
+        json["simulation"]["backup_speed_mps"] = scenario.simulation.backup_speed_mps;
     }
 
     nlohmann::json tasks = nlohmann::json::array();

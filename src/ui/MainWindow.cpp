@@ -6,6 +6,8 @@
 #include "app/SimController.h"
 #include "core/EventBus.h"
 #include "core/types/Task.h"
+#include "domain/map/OsmLaneletImporter.h"
+#include "domain/collision/CbsLiteCoordinator.h"
 #include "domain/map/OccupancyGrid.h"
 #include "dialogs/ProjectDialog.h"
 #include "dialogs/SettingsDialog.h"
@@ -28,6 +30,8 @@
 #include "panels/MonitorPanel.h"
 #include "panels/ExperimentComparePanel.h"
 #include "panels/BehaviorTreePanel.h"
+#include "panels/OsmImportPanel.h"
+#include "panels/MultiAgentBehaviorPanel.h"
 #include "panels/TaskPanel.h"
 #include "panels/VehicleInfoPanel.h"
 
@@ -40,6 +44,8 @@
 #include <QMenuBar>
 #include <QMessageBox>
 #include <QStatusBar>
+
+#include <QVector>
 
 #include <algorithm>
 #include <filesystem>
@@ -197,6 +203,18 @@ void MainWindow::setupDockPanels()
     behavior_tree_panel_ = new BehaviorTreePanel(behavior_dock);
     behavior_dock->setWidget(behavior_tree_panel_);
     addDockWidget(Qt::RightDockWidgetArea, behavior_dock);
+
+    auto* osm_dock = new QDockWidget(tr("OSM Import"), this);
+    osm_dock->setObjectName(QStringLiteral("OsmImportDock"));
+    osm_import_panel_ = new OsmImportPanel(osm_dock);
+    osm_dock->setWidget(osm_import_panel_);
+    addDockWidget(Qt::LeftDockWidgetArea, osm_dock);
+
+    auto* multi_bt_dock = new QDockWidget(tr("Multi-Agent BT"), this);
+    multi_bt_dock->setObjectName(QStringLiteral("MultiAgentBehaviorDock"));
+    multi_agent_behavior_panel_ = new MultiAgentBehaviorPanel(multi_bt_dock);
+    multi_bt_dock->setWidget(multi_agent_behavior_panel_);
+    addDockWidget(Qt::RightDockWidgetArea, multi_bt_dock);
 }
 
 void MainWindow::setupViewMenu()
@@ -239,6 +257,16 @@ void MainWindow::setupViewMenu()
     });
     view_menu->addAction(tr("Behavior Tree Panel"), this, [this]() {
         if (auto* dock = findChild<QDockWidget*>(QStringLiteral("BehaviorTreeDock"))) {
+            dock->setVisible(!dock->isVisible());
+        }
+    });
+    view_menu->addAction(tr("OSM Import Panel"), this, [this]() {
+        if (auto* dock = findChild<QDockWidget*>(QStringLiteral("OsmImportDock"))) {
+            dock->setVisible(!dock->isVisible());
+        }
+    });
+    view_menu->addAction(tr("Multi-Agent BT Panel"), this, [this]() {
+        if (auto* dock = findChild<QDockWidget*>(QStringLiteral("MultiAgentBehaviorDock"))) {
             dock->setVisible(!dock->isVisible());
         }
     });
@@ -298,6 +326,22 @@ void MainWindow::bindMonitorBridge()
             &ExperimentComparePanel::updateBaseline);
     connect(monitor_bridge_, &app::MonitorBridge::behaviorTreeStatusUpdated, behavior_tree_panel_,
             &BehaviorTreePanel::updateStatus);
+    connect(monitor_bridge_, &app::MonitorBridge::multiAgentBehaviorUpdated, this,
+            [this](const QVector<app::AgentBehaviorSnapshot>& agents) {
+                QVector<MultiAgentBehaviorRow> rows;
+                rows.reserve(agents.size());
+                for (const app::AgentBehaviorSnapshot& agent : agents) {
+                    MultiAgentBehaviorRow row;
+                    row.agent_id = agent.agent_id;
+                    row.tree_name = agent.tree_name;
+                    row.active_node = agent.active_node;
+                    row.node_status = agent.node_status;
+                    row.path_valid = agent.path_valid;
+                    rows.push_back(row);
+                }
+                multi_agent_behavior_panel_->updateAgents(rows);
+            });
+    connect(osm_import_panel_, &OsmImportPanel::importRequested, this, &MainWindow::handleOsmImport);
     connect(experiment_compare_panel_, &ExperimentComparePanel::captureBaselineRequested, monitor_bridge_,
             &app::MonitorBridge::captureBaseline);
     connect(experiment_compare_panel_, &ExperimentComparePanel::exportCsvRequested, this,
@@ -480,16 +524,26 @@ void MainWindow::handlePlannerTracker()
     sim_controller_->engine().setReplanHz(planner_tracker_settings_.replan_hz);
     sim_controller_->engine().setRecoveryWaitTicks(
         planner_tracker_settings_.recovery_wait_ticks);
+    sim_controller_->engine().setBtFormat(planner_tracker_settings_.bt_format.toStdString());
+
+    domain::collision::CbsLiteConfig cbs_config;
+    cbs_config.max_depth = planner_tracker_settings_.cbs_max_depth;
+    cbs_config.time_limit_ms = planner_tracker_settings_.cbs_time_limit_ms;
+    sim_controller_->engine().setCbsLiteConfig(cbs_config);
 
     if (sim_controller_->engine().behaviorMode() == "bt") {
         const QString scenario_dir =
             project_manager_->hasProject()
                 ? QString::fromStdString(project_manager_->scenarioData().scenario_directory)
                 : QString();
-        const std::string tree_path = resolveBehaviorTreePathForUi(
-            planner_tracker_settings_.behavior_tree_path, scenario_dir);
+        const QString configured_tree = planner_tracker_settings_.bt_format == QStringLiteral("xml")
+                                            ? planner_tracker_settings_.behavior_xml_tree_path
+                                            : planner_tracker_settings_.behavior_tree_path;
+        const std::string tree_path =
+            resolveBehaviorTreePathForUi(configured_tree, scenario_dir);
         if (!tree_path.empty()) {
-            sim_controller_->engine().loadBehaviorTree(tree_path);
+            sim_controller_->engine().loadBehaviorTree(
+                tree_path, planner_tracker_settings_.bt_format.toStdString());
         }
     }
 
@@ -512,6 +566,14 @@ void MainWindow::handlePlannerTracker()
         scenario.simulation.replan_hz = planner_tracker_settings_.replan_hz;
         scenario.simulation.recovery_wait_ticks =
             planner_tracker_settings_.recovery_wait_ticks;
+        scenario.simulation.bt_format = planner_tracker_settings_.bt_format.toStdString();
+        scenario.simulation.map_source = planner_tracker_settings_.map_source.toStdString();
+        scenario.simulation.osm_path = planner_tracker_settings_.osm_path.toStdString();
+        scenario.simulation.spin_rad = planner_tracker_settings_.spin_rad;
+        scenario.simulation.backup_dist_m = planner_tracker_settings_.backup_dist_m;
+        scenario.simulation.backup_speed_mps = planner_tracker_settings_.backup_speed_mps;
+        scenario.simulation.cbs_max_depth = planner_tracker_settings_.cbs_max_depth;
+        scenario.simulation.cbs_time_limit_ms = planner_tracker_settings_.cbs_time_limit_ms;
     }
 
     statusBar()->showMessage(
@@ -569,6 +631,50 @@ void MainWindow::syncSettingsFromScenario()
     planner_tracker_settings_.replan_hz = scenario.simulation.replan_hz;
     planner_tracker_settings_.recovery_wait_ticks = scenario.simulation.recovery_wait_ticks;
     planner_tracker_settings_.recovery_enabled = scenario.simulation.recovery_wait_ticks > 0;
+    planner_tracker_settings_.bt_format = QString::fromStdString(scenario.simulation.bt_format);
+    planner_tracker_settings_.map_source = QString::fromStdString(scenario.simulation.map_source);
+    planner_tracker_settings_.osm_path = QString::fromStdString(scenario.simulation.osm_path);
+    planner_tracker_settings_.behavior_xml_tree_path =
+        planner_tracker_settings_.bt_format == QStringLiteral("xml")
+            ? planner_tracker_settings_.behavior_tree_path
+            : QString();
+    planner_tracker_settings_.spin_rad = scenario.simulation.spin_rad;
+    planner_tracker_settings_.backup_dist_m = scenario.simulation.backup_dist_m;
+    planner_tracker_settings_.backup_speed_mps = scenario.simulation.backup_speed_mps;
+    planner_tracker_settings_.cbs_max_depth = scenario.simulation.cbs_max_depth;
+    planner_tracker_settings_.cbs_time_limit_ms = scenario.simulation.cbs_time_limit_ms;
+    if (osm_import_panel_ != nullptr && !planner_tracker_settings_.osm_path.isEmpty()) {
+        osm_import_panel_->setOsmPath(planner_tracker_settings_.osm_path);
+    }
+}
+
+void MainWindow::handleOsmImport(const QString& osm_path)
+{
+    if (!project_manager_->hasProject() || osm_path.isEmpty()) {
+        statusBar()->showMessage(tr("Open a project before importing OSM."));
+        return;
+    }
+
+    domain::map::OsmImportError error;
+    const auto lanes = domain::map::OsmLaneletImporter::importFromFile(osm_path.toStdString(), &error);
+    if (!lanes.has_value()) {
+        statusBar()->showMessage(
+            tr("OSM import failed: %1").arg(QString::fromStdString(error.message)));
+        return;
+    }
+
+    project_manager_->mapDocument().lanes = lanes.value();
+    project_manager_->scenarioData().lanes = lanes.value();
+    project_manager_->scenarioData().simulation.map_source = "osm";
+    project_manager_->scenarioData().simulation.osm_path = osm_path.toStdString();
+    sim_controller_->engine().setLaneMap(lanes.value());
+    refreshLaneOverlay();
+    refreshLaneEditorPanel();
+    osm_import_panel_->setSummaryText(
+        tr("Imported — %1 nodes, %2 edges")
+            .arg(static_cast<qint64>(lanes->nodes.size()))
+            .arg(static_cast<qint64>(lanes->edges.size())));
+    statusBar()->showMessage(tr("OSM lanes imported into project."));
 }
 
 void MainWindow::applyProjectToSimulation()

@@ -4,12 +4,21 @@
 
 #include <QObject>
 #include <QString>
+#include <QVector>
 
 namespace fleetsim::domain::experiment {
 struct RunSummary;
 }
 
 namespace fleetsim::app {
+
+struct AgentBehaviorSnapshot {
+    QString agent_id;
+    QString tree_name;
+    QString active_node;
+    QString node_status;
+    bool path_valid{false};
+};
 
 class MonitorBridge : public QObject {
     Q_OBJECT
@@ -50,9 +59,12 @@ signals:
                                    bool replan_requested,
                                    int recovery_count);
 
+    void multiAgentBehaviorUpdated(const QVector<AgentBehaviorSnapshot>& agents);
+
 private:
     void emitSummary(const domain::experiment::RunSummary& summary);
     void emitBehaviorTreeStatus();
+    void emitMultiAgentBehaviorStatus();
     void computePathErrors(double x_m,
                            double y_m,
                            double theta_rad,

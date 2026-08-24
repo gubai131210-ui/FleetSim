@@ -17,6 +17,8 @@
 | ExperimentComparePanel | `ExperimentComparePanel.*` | 实验对比 Current/Baseline + Export CSV | Phase 7+9 |
 | LaneEditorPanel | `LaneEditorPanel.*` | lane 节点/边 CRUD（独立 dock） | Phase 8 Session 5 |
 | BehaviorTreePanel | `BehaviorTreePanel.*` | BT 状态监控（只读 dock） | Phase 9 Session 4 |
+| OsmImportPanel | `OsmImportPanel.*` | OSM 路径 / 预览 / 导入（独立 dock） | Phase 10 Session 6 |
+| MultiAgentBehaviorPanel | `MultiAgentBehaviorPanel.*` | 多车 BT 只读监控 | Phase 10 Session 6 |
 
 ## 已有图元（MapView 层）
 
@@ -34,6 +36,8 @@
 | CoordinationPage | 4 | 多车协调 |
 | RoutingPage | 5 | routing_mode |
 | BehaviorPage | 6 | behavior_mode / tree / replan_hz / recovery |
+| MapImportPage | 7 | map_source / osm_path |
+| BehaviorXmlPage | 8 | bt_format / xml tree / spin / backup |
 
 ## 新增面板流程
 

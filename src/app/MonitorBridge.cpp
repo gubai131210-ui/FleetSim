@@ -1,6 +1,7 @@
 #include "MonitorBridge.h"
 
 #include "domain/behavior/BtTypes.h"
+#include "domain/behavior/MultiBtNavigator.h"
 #include "domain/experiment/ExperimentMetrics.h"
 #include "core/types/Waypoint.h"
 #include "domain/vehicle/FleetManager.h"
@@ -179,6 +180,7 @@ void MonitorBridge::emitBehaviorTreeStatus()
     const QString mode = QString::fromStdString(engine.behaviorMode());
     if (engine.behaviorMode() != "bt") {
         emit behaviorTreeStatusUpdated(mode, {}, {}, {}, false, false, 0);
+        emit multiAgentBehaviorUpdated({});
         return;
     }
 
@@ -204,6 +206,47 @@ void MonitorBridge::emitBehaviorTreeStatus()
         path_valid,
         replan_requested,
         recovery_count);
+    emitMultiAgentBehaviorStatus();
+}
+
+void MonitorBridge::emitMultiAgentBehaviorStatus()
+{
+    if (controller_ == nullptr) {
+        return;
+    }
+
+    const domain::SimEngine& engine = controller_->engine();
+    if (engine.behaviorMode() != "bt") {
+        emit multiAgentBehaviorUpdated({});
+        return;
+    }
+
+    QVector<AgentBehaviorSnapshot> rows;
+    const domain::behavior::MultiBtNavigator& multi = engine.multiBtNavigator();
+    for (std::size_t i = 0; i < engine.fleet().count(); ++i) {
+        const domain::vehicle::VehicleAgent& agent = engine.fleet().agent(i);
+        if (agent.vehicle == nullptr) {
+            continue;
+        }
+        const std::string& agent_id = agent.vehicle->id();
+        if (!multi.hasAgent(agent_id)) {
+            continue;
+        }
+        const domain::behavior::BtNavigator& navigator = multi.navigatorFor(agent_id);
+        if (!navigator.hasTree()) {
+            continue;
+        }
+        const domain::behavior::BtBlackboard& blackboard = multi.blackboardFor(agent_id);
+        AgentBehaviorSnapshot row;
+        row.agent_id = QString::fromStdString(agent_id);
+        row.tree_name = QString::fromStdString(navigator.treeName());
+        row.active_node = QString::fromStdString(
+            blackboard.getString(domain::behavior::BbKey::kActiveNodeName).value_or(navigator.treeName()));
+        row.path_valid = blackboard.getBool(domain::behavior::BbKey::kPathValid).value_or(false);
+        row.node_status = QStringLiteral("—");
+        rows.push_back(row);
+    }
+    emit multiAgentBehaviorUpdated(rows);
 }
 
 void MonitorBridge::computePathErrors(double x_m,
