@@ -61,6 +61,8 @@ addToolBar(...)->addAction("Play", this, [this]{ ... });
 | 7 | `AlgorithmWorkbenchDialog` + `ExperimentComparePanel` |
 | 8 | **`LaneEditorPanel`**（车道拓扑）、**`RoutingPage`**（Workbench 第 5 页）；禁止堆进 MapEditor/Monitor |
 | 9 | **`BehaviorTreePanel`**（BT 监控 dock）、**`BehaviorPage`**（Workbench 第 6 页）；ComparePanel 仅增 CSV 导出；禁止堆进 Routing/Monitor |
+| 10 | **`OsmImportPanel` / `MultiAgentBehaviorPanel`**；Workbench **MapImportPage / BehaviorXmlPage**；禁止堆进 MapEditor/LaneEditor/BehaviorPage |
+| 11 | **`PerceptionPanel`**；Workbench **PerceptionPage / MultiModalPredictionPage / RegulatoryPage / NonlinearControlPage**；Coordination 仅增 eecbs；禁止堆进 Control/Speed/MapImport |
 
 ## SVG 车辆
 
