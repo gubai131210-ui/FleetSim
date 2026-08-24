@@ -11,6 +11,54 @@
 
 ---
 
+## [2026-08-24] Phase 10 Session 1 — OsmLaneletImporter 实装
+
+### 本次 Scope（Planner 定义）
+- **目标**：实装 OSM 教学子集解析 → centerline 中点插值 → 共享 OSM node id 后继 → `LaneMapData`；`OsmLaneletImporterTest` 全绿
+- **允许改动**：`src/domain/map/OsmLaneletImporter.cpp`（`.h` 接口不变）；`SESSION_LOG.md`
+- **NOT DO**：BtXml/CBS/Motion/UI/SimEngine 接线；引入 Lanelet2/pugixml/Qt
+
+### ✅ 已完成
+- [x] **OsmLaneletImporter** — 手写 XML 解析 `node`/`way`/`relation(type=lanelet)`
+- [x] **坐标** — `local_x`/`local_y` 或 `x`/`y`；无本地坐标 node 跳过
+- [x] **Centerline** — left/right 弧长插值中点；可选 `centerline` way
+- [x] **后继拓扑** — `left_exit`+`right_exit` OSM id 匹配下一 lanelet `entry`（非几何距离）
+- [x] **OsmLaneletImporterTest** — **4/4 PASS**
+- [x] **全量回归** — **179/185 PASS**（6 红灯仍为 BtXml/Cbs/Motion）
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| BtXmlLoader + RoundRobin/ReactiveFallback | Session 1 仅 Osm | Session 2 |
+| Spin/BackUp/ClearInflation | 依赖 Session 2–3 | Session 3 |
+| SimEngine map_source/osm_path | 依赖多模块 | Session 4 |
+| CbsLiteCoordinator | Session 5 | Session 5 |
+| UI / demo / verify≥60 | 后续会话 | Session 6–7 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | Session 1 scope：仅 Osm 算法；NOT DO UI/SimEngine/Bt/CBS |
+| Executor | `OsmLaneletImporter.cpp` ~430 行；零 Qt；接口不变 |
+| Tester | **PASS**：OsmLaneletImporterTest 4/4；全量 179/185 |
+| Reviewer | **PASS**（子 Agent `59bb6320`）：node-id 后继、非空图、ADR-022 对齐 |
+
+### 证据
+- build: `D:\build\FleetSim_phase10_s0\FleetSimTests.exe`
+- gtest: `OsmLaneletImporterTest.*` → **4 PASSED**
+- gtest 全量: **179 PASSED, 6 FAILED**（预期红灯）
+
+### 用户本地验证
+1. `git pull origin main`
+2. 重建 `FleetSimTests`（ASCII 路径）
+3. `FleetSimTests.exe --gtest_filter=OsmLaneletImporterTest.*`（4 PASS）
+4. 全量测预期 179 PASS / 6 FAIL
+
+### 下次会话建议
+- **Session 2**：BtXmlLoader + RoundRobin + ReactiveFallback → `BtXmlLoaderTest` 绿
+
+---
+
 ## [2026-08-24] Phase 10 Session 0 — ADR-022…025 + Domain 接口 + 红灯测骨架
 
 ### 本次 Scope（Planner 定义）
