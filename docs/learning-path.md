@@ -11,6 +11,6 @@
 | Phase 7 | 常速预测 + ST 增强 + 实验工作台 UI | 动态障碍预测、仿真指标对比 | 神经网络预测、Behavior Tree ✅ |
 | Phase 8 | LaneGraph + First/Last Mile + Lane 编辑 UI | 车道级路由、Nav2 Route 思想 | 完整 Lanelet2、BT 引擎（→ Phase 9） ✅ |
 | Phase 9 | Behavior Tree MVP + CSV 导出 + Behavior UI 分层 | Nav2 BT 编排 plan/follow/replan/recovery | 完整 BT.CPP、Lanelet2 导入（→ Phase 10） ✅ |
-| Phase 10 | OSM 子集导入 + BT XML/Spin·BackUp + 多车 BT + CBS-lite | HD Map、Nav2 Behavior Server、MAPF 约束树 | 完整 EECBS、感知、Groot2（→ Phase 11） |
+| Phase 10 | OSM 子集导入 + BT XML/Spin·BackUp + 多车 BT + CBS-lite | HD Map、Nav2 Behavior Server、MAPF 约束树 | 完整 EECBS、感知、Groot2（→ Phase 11） ✅ |
 
 Domain 层保持无 Qt。Phase 7–9 ✅。Phase 8：LaneGraph + hybrid + **LaneEditorPanel / RoutingPage**。Phase 9：BT MVP + CSV + **BehaviorTreePanel / BehaviorPage**。Phase 10 目标见 `docs/PHASE10_GOAL_PROMPT.md`。

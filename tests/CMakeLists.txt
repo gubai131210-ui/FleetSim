@@ -56,6 +56,8 @@ add_executable(FleetSimTests
     integration/BtNavigationIntegrationTest.cpp
     integration/BtNavigationDemoScenarioTest.cpp
     integration/MultiBtNavigationTest.cpp
+    integration/OsmLaneletDemoScenarioTest.cpp
+    integration/CbsLiteDemoScenarioTest.cpp
 )
 
 target_link_libraries(FleetSimTests

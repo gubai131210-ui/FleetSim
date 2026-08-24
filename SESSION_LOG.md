@@ -11,6 +11,57 @@
 
 ---
 
+## [2026-08-24] Phase 10 Session 7 — demo 场景 + verify≥60 + M43+ + Phase 10 终审
+
+### 本次 Scope（Planner 定义）
+- **目标**：`osm_lanelet_demo` / `cbs_lite_demo` 场景 + 集成测 + `verify_phase10_evidence.py` ≥60 PASS + M43–M46 + DEVELOPMENT_PLAN Phase 10 ✅
+- **允许改动**：`assets/scenarios/*`、`tests/integration/*`、`tools/verify_phase10*`、`docs/*`、`SESSION_LOG.md`
+- **NOT DO**：引入 Lanelet2/BT.CPP 库；UI 堆控件；破坏 Phase 7–9 回归；stub 冒充算法
+
+### ✅ 已完成
+- [x] **osm_lanelet_demo** — `map_source=osm` + teaching OSM 导入 + hybrid/lane_graph 规划
+- [x] **cbs_lite_demo** — 两车对向 + `coordination=cbs_lite` + CBS 重规划
+- [x] **OsmLaneletDemoScenarioTest** — 3/3 PASS
+- [x] **CbsLiteDemoScenarioTest** — 4/4 PASS
+- [x] **verify_phase10_evidence.py** — **102 PASS**（≥60 目标达成）
+- [x] **run_phase10_verify.ps1** — 静态验证脚本
+- [x] **M43–M46** — MUTATION_CHECKLIST 登记
+- [x] **ADR-022…025** — 状态更新为「已接受」
+- [x] **DEVELOPMENT_PLAN / learning-path** — Phase 10 ✅
+- [x] **全量回归** — **196/196 PASS**
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| 完整 EECBS / 感知 / Groot2 | Phase 11 范围 | Phase 11 |
+| 用户本地 Qt GUI 手测 | 中文路径约束 | 用户自行验证 |
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | Session 7 scope：demo + verify≥60 + M43+ + 终审；NOT DO 新 UI/外部库 |
+| Executor | 2 demo 场景 + 2 集成测 + verify 102 项 + 文档更新 |
+| Tester | **PASS**：196/196；新测 7/7；verify 102/102 |
+| Reviewer | **PASS**：11 项算法清单均有 Domain+GTest；demo 可加载；Phase 7–9 静态+运行时回归绿 |
+
+### 证据
+- build: `D:\build\FleetSim_phase10_s0\FleetSimTests.exe`
+- gtest 全量: **196 PASSED, 0 FAILED**
+- verify: `python tools/verify_phase10_evidence.py` → **102 PASS**
+
+### 用户本地验证
+1. `git pull origin main`
+2. 重建 FleetSimTests（ASCII 路径）
+3. `python tools/verify_phase10_evidence.py`（≥60 PASS）
+4. 打开 `osm_lanelet_demo` → 确认 OSM 车道显示与 hybrid 规划
+5. 打开 `cbs_lite_demo` → 两车对向无长时间卡死
+6. 回归：`bt_navigation_demo`、`lane_routing_demo`、`prediction_st_demo`
+
+### Phase 10 完成
+- 全部 11 项算法 + UI 四件套 + ADR-022–025 + verify≥60 + FleetSimTests 全绿 → **Phase 10 ✅**
+
+---
+
 ## [2026-08-24] Phase 10 Session 6 — UI 四件套 + CoordinationPage CBS-lite
 
 ### 本次 Scope（Planner 定义）

@@ -2,7 +2,7 @@
 
 ## 状态
 
-草案（2026-08-24，Phase 10 Session 0；Session 1 实装 `OsmLaneletImporter`）
+已接受（2026-08-24，Phase 10 Session 7 终审）
 
 ## 背景
 

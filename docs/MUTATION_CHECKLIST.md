@@ -78,6 +78,13 @@
 - M41：`BtControlNodes.cpp` — Sequence 在子 FAILURE 时仍 SUCCESS | `BehaviorTreeTest.SequenceStopsOnFirstFailure`  
 - M42：`SimEngine.cpp` — BT 模式分支禁用，`tickBehaviorTreeForAgent` 永不调用 | `BtNavigationIntegrationTest.*` / `BtNavigationDemoScenarioTest.*`  
 
+## Phase 10 变异说明
+
+- M43：`OsmLaneletImporter.cpp` — 丢弃所有 relation 或 centerline 恒空 | `OsmLaneletImporterTest.*`
+- M44：`BtMotionRecoveryNodes.cpp` — Spin 不修改 yaw | `BtMotionRecoveryTest.Spin*`
+- M45：`BtControlNodes.cpp` — RoundRobin 恒 tick 第一个 child | `BtXmlLoaderTest` / RoundRobin 专用测
+- M46：`CbsLiteCoordinator.cpp` — 忽略冲突恒返回原路径 | `CbsLiteCoordinatorTest.*`
+
 ## 执行记录模板
 
 ```

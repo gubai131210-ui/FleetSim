@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "simulation": {
+    "dt_s": 0.05,
+    "realtime": false,
+    "planner": "astar",
+    "tracker": "pure_pursuit",
+    "coordination": "cbs_lite",
+    "routing_mode": "freespace",
+    "cbs_max_depth": 10,
+    "cbs_time_limit_ms": 500
+  },
+  "vehicles": [
+    {
+      "id": "agv_0",
+      "model": "diff_drive",
+      "svg": "assets/vehicles/agv_diff.svg",
+      "length_m": 1.0,
+      "pose": { "x": 2.0, "y": 5.0, "theta": 0.0 }
+    },
+    {
+      "id": "agv_1",
+      "model": "diff_drive",
+      "svg": "assets/vehicles/agv_diff.svg",
+      "length_m": 1.0,
+      "pose": { "x": 18.0, "y": 5.0, "theta": 3.141592653589793 }
+    }
+  ],
+  "tasks": []
+}

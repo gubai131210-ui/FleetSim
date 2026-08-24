@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "simulation": {
+    "dt_s": 0.05,
+    "realtime": false,
+    "planner": "astar",
+    "tracker": "pure_pursuit",
+    "coordination": "none",
+    "routing_mode": "hybrid",
+    "lane_snap_radius_m": 2.0,
+    "map_source": "osm",
+    "osm_path": "teaching_lanelet_subset.osm"
+  },
+  "vehicles": [
+    {
+      "id": "agv_0",
+      "model": "diff_drive",
+      "svg": "assets/vehicles/agv_diff.svg",
+      "length_m": 1.0,
+      "pose": { "x": 0.5, "y": 0.0, "theta": 0.0 }
+    }
+  ],
+  "tasks": []
+}
