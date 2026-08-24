@@ -622,11 +622,14 @@ assets/scenarios/bt_navigation_demo/
 
 ## §17 Phase 10 展望（勿在 Phase 9 实现）
 
+> **已落地为完整 Goal 提示词**：`docs/PHASE10_GOAL_PROMPT.md`（复制 §0 执行）。
+
 - BT **XML** 导入（Nav2 子集兼容）  
 - **Lanelet2/OSM** 轻量导入插件  
 - 多车 **每 agent 独立 BT** + 黑板隔离  
 - Spin / BackUp **运动 recovery**（需车辆运动学）  
-- 感知 / 多模态预测 — 明确另阶段  
+- CBS-lite 真冲突消解  
+- 感知 / 多模态预测 — 明确 Phase 11+  
 
 ---
 
