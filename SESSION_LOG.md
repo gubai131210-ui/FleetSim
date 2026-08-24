@@ -11,6 +11,68 @@
 
 ---
 
+## [2026-08-24] Phase 10 Session 0 — ADR-022…025 + Domain 接口 + 红灯测骨架
+
+### 本次 Scope（Planner 定义）
+- **目标**：ADR-022…025 草案；Phase 10 Domain 接口存根；红灯 GTest 骨架（Osm* / BtXml* / CbsLite* / BtMotion* 预期 FAIL）；CMake + verify_phase10 骨架 + 教学资产
+- **允许改动**：`docs/decisions/022–025`；`src/domain/map/OsmLaneletImporter.*`；`src/domain/behavior/BtXmlLoader.*`、`BtMotionRecoveryNodes.*`、`MultiBtNavigator.*`、`BtControlNodes.*`（RoundRobin/ReactiveFallback 存根）；`src/domain/collision/CbsLiteCoordinator.*`；`tests/domain/OsmLaneletImporterTest.cpp` 等 5 测文件；`assets/maps/teaching_lanelet_subset.osm`；`assets/behavior_trees/navigate_spin_backup_recovery.xml`；`tools/verify_phase10_evidence.py`；CMakeLists
+- **NOT DO**：Osm/BtXml/CBS 真算法；SimEngine/scenario 接线；UI 四件套（OsmImportPanel/MapImportPage/BehaviorXmlPage/MultiAgentBehaviorPanel）；demo 场景；M43+；破坏 Phase 9 171 测回归
+
+### ✅ 已完成
+- [x] **ADR-022** `docs/decisions/022-osm-lanelet-import.md` — OSM 子集、centerline、node-id 后继、map_source
+- [x] **ADR-023** `docs/decisions/023-bt-xml-motion-recovery.md` — BtXmlLoader、Spin/BackUp/ClearInflation、RoundRobin/ReactiveFallback
+- [x] **ADR-024** `docs/decisions/024-cbs-lite.md` — 约束树 + bounded replan、coordination=cbs_lite
+- [x] **ADR-025** `docs/decisions/025-multi-bt-ui-ia.md` — 多车 BT 隔离 + UI 分层硬合同
+- [x] **Domain 存根** — OsmLaneletImporter、BtXmlLoader、BtMotionRecoveryNodes、MultiBtNavigator、CbsLiteCoordinator、BtRoundRobinNode、BtReactiveFallbackNode
+- [x] **红灯测** — 14 TEST（6 PASS / 8 FAIL 预期）；全量 **177/185 PASS**（Phase 7–9 回归未破）
+- [x] **verify_phase10_evidence.py** — Session 0 骨架 **21 PASS**
+- [x] **资产** — `teaching_lanelet_subset.osm`、`navigate_spin_backup_recovery.xml`
+
+### ❌ 未完成 / 故意不做
+| 项目 | 原因 | 计划 |
+|------|------|------|
+| OsmLaneletImporter 真解析 | Session 0 仅接口+红灯 | Session 1 |
+| BtXmlLoader + RoundRobin/ReactiveFallback 语义 | 存根返回 Failure | Session 2 |
+| Spin/BackUp/ClearInflation 运动学 | 存根 | Session 3 |
+| SimEngine 多车 BT 接线 | 依赖 Session 2–4 | Session 4 |
+| CbsLiteCoordinator 约束树 | 存根 | Session 5 |
+| UI 四件套 | 分层 Session 6 | Session 6 |
+| demo + verify≥60 + M43+ + Phase10 ✅ | 终审 Session 7 | Session 7 |
+
+### 🚫 禁止偷懒自检
+- [x] 未改 MapEditorPanel / LaneEditorPanel / BehaviorPage / MainWindow
+- [x] Domain 零 Qt / rclcpp
+- [x] 存根非 fake-pass（import 返回 nullopt，非空图）
+- [x] CMake target_include_directories / target_link_libraries 未削
+- [x] 新 Domain 模块均有 GTest
+- [x] SESSION_LOG 四角色 + 没做什么
+
+### 四角色结论
+| 角色 | 结论 |
+|------|------|
+| Planner | mini-plan：ADR + 接口 + 红灯；NOT DO ≥8（无 UI/真算法/SimEngine/demo） |
+| Executor | 交付 4 ADR + 10 Domain 源 + 5 测 + 2 资产 + verify 骨架 + CMake |
+| Tester | **PASS（Session 0）**：Phase10 filter **6 PASS / 8 FAIL**；全量 **177/185**；Domain 零 Qt |
+| Reviewer | **PASS**（子 Agent `7999227e`）：scope 合规、stub 非 fake-pass、无 UI 污染 |
+
+### 证据
+- build: `D:\build\FleetSim_phase10_s0\FleetSimTests.exe`
+- gtest Phase10 filter: **6 PASSED, 8 FAILED**（Session 0 预期）
+- gtest 全量: **177 PASSED, 8 FAILED**
+- verify: `python tools/verify_phase10_evidence.py` → **21 PASS**
+
+### 用户本地验证
+1. `git pull origin main`
+2. ASCII：`cmake -S . -B D:\build\FleetSim_phase10_s0 -DCMAKE_PREFIX_PATH=D:/QT/6.11.1/mingw_64 -G "MinGW Makefiles"` + `cmake --build D:\build\FleetSim_phase10_s0 --target FleetSimTests`
+3. `FleetSimTests.exe --gtest_filter=OsmLaneletImporterTest.*:BtXmlLoaderTest.*:BtMotionRecoveryTest.*:CbsLiteCoordinatorTest.*:MultiBtNavigationTest.*`（预期 8 FAIL）
+4. 全量 FleetSimTests 预期 177 PASS / 8 FAIL
+5. `python tools/verify_phase10_evidence.py`（21 PASS）
+
+### 下次会话建议
+- **Session 1**：实装 `OsmLaneletImporter`（centerline + node-id 后继）→ `OsmLaneletImporterTest` 全绿
+
+---
+
 ## [2026-08-23] Phase 9 Session 6 — verify_phase9 + M40+ + 终审 ✅
 
 ### 本次 Scope（Planner 定义）

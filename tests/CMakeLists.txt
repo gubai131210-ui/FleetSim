@@ -29,6 +29,8 @@ add_executable(FleetSimTests
     domain/ExperimentMetricsExportTest.cpp
     domain/BehaviorTreeTest.cpp
     domain/BtTreeLoaderTest.cpp
+    domain/BtXmlLoaderTest.cpp
+    domain/BtMotionRecoveryTest.cpp
     domain/BtFleetNodesTest.cpp
     domain/SteeringAdapterTest.cpp
     domain/VehicleTest.cpp
@@ -43,6 +45,8 @@ add_executable(FleetSimTests
     domain/HungarianAssignerTest.cpp
     domain/PathReservationTableTest.cpp
     domain/PriorityCoordinatorTest.cpp
+    domain/CbsLiteCoordinatorTest.cpp
+    domain/OsmLaneletImporterTest.cpp
     domain/FleetManagerTest.cpp
     integration/DemoScenarioTest.cpp
     integration/MultiAgvScenarioTest.cpp
@@ -51,6 +55,7 @@ add_executable(FleetSimTests
     integration/ExperimentCompareIntegrationTest.cpp
     integration/BtNavigationIntegrationTest.cpp
     integration/BtNavigationDemoScenarioTest.cpp
+    integration/MultiBtNavigationTest.cpp
 )
 
 target_link_libraries(FleetSimTests

@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<root main_tree_to_execute="NavigateSpinBackup">
+  <BehaviorTree ID="NavigateSpinBackup">
+    <RecoveryNode name="NavigateRecovery" number_of_retries="2">
+      <Sequence name="Navigate">
+        <Action ID="PlanPath"/>
+        <Action ID="FollowUntilGoal"/>
+      </Sequence>
+      <RoundRobin name="RecoveryRR">
+        <Action ID="ClearInflation"/>
+        <Action ID="Spin" spin_rad="1.57"/>
+        <Action ID="WaitRecovery"/>
+        <Action ID="BackUp" backup_dist="0.3"/>
+      </RoundRobin>
+    </RecoveryNode>
+  </BehaviorTree>
+</root>

@@ -11,6 +11,8 @@ add_library(FleetSimDomain STATIC
     map/LaneGraph.cpp
     map/LaneGraph.h
     map/LaneTypes.h
+    map/OsmLaneletImporter.cpp
+    map/OsmLaneletImporter.h
     planning/LaneRouter.cpp
     planning/LaneRouter.h
     planning/AStarPlanner.cpp
@@ -73,6 +75,8 @@ add_library(FleetSimDomain STATIC
     collision/TimeWindowCollisionAvoidance.h
     collision/PriorityPathCoordinator.cpp
     collision/PriorityPathCoordinator.h
+    collision/CbsLiteCoordinator.cpp
+    collision/CbsLiteCoordinator.h
     collision/ICollisionAvoidance.h
     behavior/BtTypes.h
     behavior/BtBlackboard.h
@@ -93,6 +97,12 @@ add_library(FleetSimDomain STATIC
     behavior/BtFleetActionNodes.cpp
     behavior/BtFleetConditionNodes.h
     behavior/BtFleetConditionNodes.cpp
+    behavior/BtXmlLoader.h
+    behavior/BtXmlLoader.cpp
+    behavior/BtMotionRecoveryNodes.h
+    behavior/BtMotionRecoveryNodes.cpp
+    behavior/MultiBtNavigator.h
+    behavior/MultiBtNavigator.cpp
 )
 
 include(GNUInstallDirs)

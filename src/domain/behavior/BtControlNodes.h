@@ -58,4 +58,40 @@ private:
     std::string active_child_name_;
 };
 
+/// Nav2 RoundRobin: rotate child index; any SUCCESS → SUCCESS; all FAILURE → FAILURE.
+class BtRoundRobinNode final : public BtNode {
+public:
+    explicit BtRoundRobinNode(std::string name, std::vector<BtNodePtr> children);
+
+    NodeStatus tick(BtBlackboard& blackboard) override;
+    std::string name() const override { return name_; }
+    BtNodeType type() const override { return BtNodeType::RoundRobin; }
+    std::string activeChildName() const override { return active_child_name_; }
+
+    std::size_t currentChildIndex() const { return current_index_; }
+
+private:
+    std::string name_;
+    std::vector<BtNodePtr> children_;
+    std::size_t current_index_{0};
+    std::string active_child_name_;
+};
+
+/// BT.CPP ReactiveFallback: re-evaluate from first child each tick; high-priority SUCCESS
+/// can interrupt a RUNNING lower-priority child.
+class BtReactiveFallbackNode final : public BtNode {
+public:
+    explicit BtReactiveFallbackNode(std::string name, std::vector<BtNodePtr> children);
+
+    NodeStatus tick(BtBlackboard& blackboard) override;
+    std::string name() const override { return name_; }
+    BtNodeType type() const override { return BtNodeType::ReactiveFallback; }
+    std::string activeChildName() const override { return active_child_name_; }
+
+private:
+    std::string name_;
+    std::vector<BtNodePtr> children_;
+    std::string active_child_name_;
+};
+
 }  // namespace fleetsim::domain::behavior

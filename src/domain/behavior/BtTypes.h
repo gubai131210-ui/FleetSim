@@ -17,6 +17,8 @@ enum class BtNodeType : std::uint8_t {
     Fallback,
     Recovery,
     Rate,
+    RoundRobin,
+    ReactiveFallback,
     Action,
     Condition,
 };
@@ -39,6 +41,9 @@ inline constexpr const char* kPlanPath = "PlanPath";
 inline constexpr const char* kFollowUntilGoal = "FollowUntilGoal";
 inline constexpr const char* kWaitRecovery = "WaitRecovery";
 inline constexpr const char* kReplanIfTimer = "ReplanIfTimer";
+inline constexpr const char* kSpin = "Spin";
+inline constexpr const char* kBackUp = "BackUp";
+inline constexpr const char* kClearInflation = "ClearInflation";
 }  // namespace BtActionName
 
 namespace BtConditionName {
@@ -71,6 +76,10 @@ inline const char* btNodeTypeToString(BtNodeType type)
         return "Recovery";
     case BtNodeType::Rate:
         return "Rate";
+    case BtNodeType::RoundRobin:
+        return "RoundRobin";
+    case BtNodeType::ReactiveFallback:
+        return "ReactiveFallback";
     case BtNodeType::Action:
         return "Action";
     case BtNodeType::Condition:

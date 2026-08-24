@@ -129,4 +129,30 @@ NodeStatus BtRecoveryNode::tick(BtBlackboard& blackboard)
     }
 }
 
+BtRoundRobinNode::BtRoundRobinNode(std::string name, std::vector<BtNodePtr> children)
+    : name_(std::move(name))
+    , children_(std::move(children))
+{
+}
+
+NodeStatus BtRoundRobinNode::tick(BtBlackboard& /*blackboard*/)
+{
+    // Session 0 stub — Session 2 implements rotation semantics.
+    active_child_name_.clear();
+    return NodeStatus::Failure;
+}
+
+BtReactiveFallbackNode::BtReactiveFallbackNode(std::string name, std::vector<BtNodePtr> children)
+    : name_(std::move(name))
+    , children_(std::move(children))
+{
+}
+
+NodeStatus BtReactiveFallbackNode::tick(BtBlackboard& /*blackboard*/)
+{
+    // Session 0 stub — Session 2 implements reactive interrupt semantics.
+    active_child_name_.clear();
+    return NodeStatus::Failure;
+}
+
 }  // namespace fleetsim::domain::behavior

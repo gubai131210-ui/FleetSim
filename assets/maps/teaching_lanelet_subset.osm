@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<osm version="0.6" generator="FleetSim teaching subset">
+  <!-- Lanelet 1: straight segment n0 → n4, left/right bounds -->
+  <node id="1001">
+    <tag k="local_x" v="0.0"/>
+    <tag k="local_y" v="1.0"/>
+  </node>
+  <node id="1002">
+    <tag k="local_x" v="4.0"/>
+    <tag k="local_y" v="1.0"/>
+  </node>
+  <node id="1003">
+    <tag k="local_x" v="0.0"/>
+    <tag k="local_y" v="-1.0"/>
+  </node>
+  <node id="1004">
+    <tag k="local_x" v="4.0"/>
+    <tag k="local_y" v="-1.0"/>
+  </node>
+  <node id="1005">
+    <tag k="local_x" v="8.0"/>
+    <tag k="local_y" v="1.0"/>
+  </node>
+  <node id="1006">
+    <tag k="local_x" v="8.0"/>
+    <tag k="local_y" v="-1.0"/>
+  </node>
+
+  <way id="2001">
+    <nd ref="1001"/>
+    <nd ref="1002"/>
+  </way>
+  <way id="2002">
+    <nd ref="1003"/>
+    <nd ref="1004"/>
+  </way>
+  <way id="2003">
+    <nd ref="1005"/>
+    <nd ref="1006"/>
+  </way>
+  <way id="2004">
+    <nd ref="1002"/>
+    <nd ref="1005"/>
+  </way>
+  <way id="2005">
+    <nd ref="1004"/>
+    <nd ref="1006"/>
+  </way>
+
+  <relation id="3001">
+    <tag k="type" v="lanelet"/>
+    <member type="way" ref="2001" role="left"/>
+    <member type="way" ref="2002" role="right"/>
+  </relation>
+  <relation id="3002">
+    <tag k="type" v="lanelet"/>
+    <member type="way" ref="2004" role="left"/>
+    <member type="way" ref="2005" role="right"/>
+  </relation>
+</osm>
